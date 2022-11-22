@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0" PrivateAssets="all" />
+    </ItemGroup>
+    
+    <Target Name="RemoveCompressedFilesInPublishDir" AfterTargets="AfterPublish">
+        <ItemGroup>
+            <FilesToDelete Include="$(ProjectDir)../../app/src/main/assets/**/*.br;$(ProjectDir)../../app/src/main/assets/**/*.gz" />
+        </ItemGroup>
+
+        <Delete Files="@(FilesToDelete)" />
+    </Target>
+</Project>

@@ -14,12 +14,10 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="Theme.MediWecker.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <style name="Theme.MediWecker.Light.NoActionBar.FullScreen" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
     </style>
-
-    <style name="Theme.MediWecker.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="Theme.MediWecker.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>
