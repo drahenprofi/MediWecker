@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         webView.loadUrl("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html");
     }
 
-    private fun setAlarm() {
+    fun setAlarm() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(this, AlarmReceiver::class.java)
         val pendingIntent =
@@ -56,22 +56,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("Medicine Reminder", "setAlarm")
     }
 
-    class WebAppInterface internal constructor(c: Context) {
-        var mContext: Context
 
-        init {
-            mContext = c
-        }
-
-        @JavascriptInterface
-        fun showToast(msg: String): String {
-            //Log.i("-->>", msg)
-            Toast.makeText(mContext, "$msg", Toast.LENGTH_SHORT).show()
-            (mContext as MainActivity).setAlarm()
-
-            return "Hello from Android!"
-        }
-    }
 
     private class LocalChromeClient : WebChromeClient() {
         override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
