@@ -7,7 +7,7 @@
   "linkerEnabled": false,
   "resources": {
     "assembly": {
-      "MediWeckerUI.dll": "sha256-wLByG6XTRLQ7Me\/xkvO2xAxIvBZxj4Mc4cA2Q9+8P+E=",
+      "MediWeckerUI.dll": "sha256-HwXDWCYgQl9HoCo\/Y7MwWLM0wPRSYJzo0oG1+t9MDhQ=",
       "Microsoft.AspNetCore.Authorization.dll": "sha256-NFh6IBi88fjYMkbq\/IMrfqfn7JXFa8CwRo31QNrEQ+w=",
       "Microsoft.AspNetCore.Components.dll": "sha256-9VddC0kXU8yC0LxsoSLOvzSAzJZxM+P1hCgrsV6GGBw=",
       "Microsoft.AspNetCore.Components.Forms.dll": "sha256-11bIX\/fyH9chfWgC1L1jFvAt2Ppq+6bcXl1eH6OmxMA=",

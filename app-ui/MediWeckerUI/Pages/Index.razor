@@ -7,4 +7,23 @@
 
 Welcome to your new app.
 
+<button @onclick="OnClick">Send message to android</button>
+
 <SurveyPrompt Title="How is Blazor working for you?"/>
+
+@code {
+    [Inject]
+    public IJSRuntime JS { get; set; }
+
+    public async Task OnClick()
+    {
+        try
+        {
+            JS.InvokeVoidAsync("Android.showToast", "Hello from Blazor inside WebView!");
+        }
+        catch
+        {
+            
+        }
+    }
+}
