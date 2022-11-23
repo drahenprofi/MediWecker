@@ -56,8 +56,6 @@ class MainActivity : AppCompatActivity() {
         Log.d("Medicine Reminder", "setAlarm")
     }
 
-
-
     private class LocalChromeClient : WebChromeClient() {
         override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
             if (consoleMessage != null) {
@@ -87,7 +85,6 @@ class MainActivity : AppCompatActivity() {
             return assetLoader.shouldInterceptRequest(Uri.parse(url))
         }
     }
-
 
     override fun onBackPressed() {
         if (webView != null && webView.canGoBack()) {
