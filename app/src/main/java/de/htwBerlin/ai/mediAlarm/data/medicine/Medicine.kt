@@ -5,8 +5,9 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Medicine(
-    @PrimaryKey val id: Int,
     val name: String,
     val amount: Float,
     val rhythm: String?
-)
+) {
+    @PrimaryKey(autoGenerate = true) var id: Int = 0
+}

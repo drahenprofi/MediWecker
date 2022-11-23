@@ -6,6 +6,6 @@ import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
 
 @Database(entities = [Medicine::class], version = 1)
-abstract class AppDatabase : RoomDatabase() {
+public abstract class AppDatabase : RoomDatabase() {
     abstract fun medicineDao(): MedicineDao
 }

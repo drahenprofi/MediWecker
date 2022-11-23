@@ -21,7 +21,7 @@ class AlarmReceiver: BroadcastReceiver() {
         createNotificationChannel(context)
         Log.d("MedicineReminder", "Alarm received")
 
-        val medicine = Medicine(1, "Iboprofen", 800f, "TODO: rhythm")
+        val medicine = Medicine("Iboprofen", 800f, "TODO: rhythm")
 
         var builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.sym_def_app_icon)
