@@ -19,7 +19,7 @@ class AlarmReceiver: BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         createNotificationChannel(context)
-        Log.d("Medicine Reminder", "Alarm received")
+        Log.d("MedicineReminder", "Alarm received")
 
         val medicine = Medicine(1, "Iboprofen", 800f, "TODO: rhythm")
 
