@@ -11,6 +11,10 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0" PrivateAssets="all" />
     </ItemGroup>
     
+    <ItemGroup>
+      <Folder Include="wwwroot\assets\css\font-files" />
+    </ItemGroup>
+    
     <Target Name="RemoveCompressedFilesInPublishDir" AfterTargets="AfterPublish">
         <ItemGroup>
             <FilesToDelete Include="$(ProjectDir)../../app/src/main/assets/**/*.br;$(ProjectDir)../../app/src/main/assets/**/*.gz" />
