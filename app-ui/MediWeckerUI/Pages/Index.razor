@@ -1,35 +1,17 @@
 ﻿@page "/"
+@page "/assets"
 @page "/index_mobile.html"
 
-<PageTitle>Index</PageTitle>
-
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
-
-<button @onclick="OnClick">Send message to android</button>
-
-@Message
-
-<SurveyPrompt Title="How is Blazor working for you?"/>
-
 @code {
-    [Inject]
-    public IJSRuntime JS { get; set; }
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
 
-    public string Message { get; set; }    
-    
-    public async Task OnClick()
+    protected override void OnInitialized()
     {
-        try
-        {
-            Message = await JS.InvokeAsync<string>("Android.showToast", "Hello from Blazor inside WebView!");
-            
-            StateHasChanged();
-        }
-        catch
-        {
-            
-        }
+        Layout.UpdateTab(MainLayout.NavigationTab.Calendar);
     }
 }
+
+<div class="container mx-auto max-w-4xl p-4 animate-fade-move-in">
+    <div class="text-2xl">Kalender</div>
+</div>

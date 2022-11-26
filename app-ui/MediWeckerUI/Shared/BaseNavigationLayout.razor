@@ -1,0 +1,51 @@
+﻿@using Index = MediWeckerUI.Pages.Index
+@inherits LayoutComponentBase
+
+@if (RouteData != null)
+{
+    <CascadingValue Value="this">
+        <RouteView RouteData="@RouteData" DefaultLayout="@typeof(MainLayout)"/>
+    </CascadingValue>
+}
+
+@code {
+
+    [Parameter]
+    public RenderFragment PageRender { get; set; }
+
+    public RouteData RouteData { get; set; }
+
+    protected override void OnInitialized()
+    {
+        RouteData = new RouteData(typeof(Index), new Dictionary<string, object>());
+    }
+
+    public void Navigate<T>() where T : IComponent
+    {
+        RouteData = new RouteData(typeof(T), new Dictionary<string, object>());
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    public async Task Navigate<T>(Dictionary<string, object> parameters) where T : IComponent
+    {
+        RouteData = new RouteData(typeof(T), parameters);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task Navigate<T>(string routeParamKey1, object routeParamValue1) where T : IComponent
+    {
+        RouteData = new RouteData(typeof(T), new Dictionary<string, object> { [routeParamKey1] = routeParamValue1 });
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task Navigate<T>(string routeParamKey1, object routeParamValue1, string routeParamKey2, object routeParamValue2) where T : IComponent
+    {
+        RouteData = new RouteData(typeof(T), new Dictionary<string, object> { [routeParamKey1] = routeParamValue1, [routeParamKey2] = routeParamValue2 });
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+}

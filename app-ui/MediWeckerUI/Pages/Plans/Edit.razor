@@ -1,0 +1,47 @@
+﻿@page "/plans/edit/{Id}"
+@using MediWeckerUI.Application
+@using MediWeckerUI.Application.Features
+
+<div class="container mx-auto max-w-3xl p-4 animate-fade-move-in">
+    @if (Plan == null)
+    {
+    }
+    else
+    {
+        <div>
+            <div class="text-sm">Detailansicht</div>
+            <div class="text-xl">@Plan.Name</div>
+        </div>
+
+        <div class="mt-4 gap-4 flex flex-col">
+            <div>
+                <div>Anzeigename</div>
+                
+                @if (!IsEditingName)
+                {
+                    <div class="flex items-center">
+                        <div class="font-semibold">@Plan.Name</div>
+                        <button class="ml-3 flex items-center text-neutral-400" @onclick="OnClickEditNameAsync">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+
+                            Editieren..
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="mt-2">
+                        <EditNameComponent Name="@Plan.Name" OnNewName="OnNewNameAsync" />
+                    </div>
+                }
+            </div>
+
+            <div class="bg-red-50 px-3 py-2 rounded mt-8">
+                <button class="bg-red-500 text-white px-3 py-1.5 rounded text-sm" @onclick="OnClickDeleteAsync">Plan löschen</button>
+            </div>
+        </div>
+    }
+
+</div>

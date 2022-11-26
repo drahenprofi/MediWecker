@@ -1,0 +1,12 @@
+﻿@page "/settings"
+<h3>Settings</h3>
+
+@code {
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Layout.UpdateTab(MainLayout.NavigationTab.Settings);
+    }
+}

@@ -28,10 +28,11 @@ class MainActivity : AppCompatActivity() {
         webView.settings.javaScriptCanOpenWindowsAutomatically = true;
         webView.settings.builtInZoomControls = true;
         webView.settings.domStorageEnabled = true;
+        webView.settings.allowContentAccess = true;
+        webView.settings.safeBrowsingEnabled = false;
 
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
-            .addPathHandler("/res/", WebViewAssetLoader.ResourcesPathHandler(this))
             .build()
 
         webView.addJavascriptInterface(WebAppInterface(this), "Android");
@@ -84,6 +85,60 @@ class MainActivity : AppCompatActivity() {
         ): WebResourceResponse? {
             return assetLoader.shouldInterceptRequest(Uri.parse(url))
         }
+
+    /*@RequiresApi(21)
+        override fun shouldInterceptRequest(
+            view: WebView,
+            request: WebResourceRequest
+        ): WebResourceResponse? {
+            var urlString: String = request.url.toString()
+
+            if (urlString.startsWith("https://appassets.androidplatform.net/assets/wwwroot")) {
+                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets for " + urlString);
+
+                return assetLoader.shouldInterceptRequest(request.url)
+            }
+
+            if (urlString.startsWith("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html")) {
+                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets for " + urlString);
+
+                return assetLoader.shouldInterceptRequest(request.url)
+            }
+
+            Log.d("DEBUG", "shouldInterceptRequest: Returning NULL for " + urlString);
+            return null
+        }
+
+        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+            var urlString: String = request.url.toString()
+
+            return false;
+        }
+
+        // to support API < 21
+        override fun shouldInterceptRequest(
+            view: WebView,
+            url: String
+        ): WebResourceResponse? {
+            return assetLoader.shouldInterceptRequest(Uri.parse(url))
+
+            var urlString: String = url
+
+            if (urlString.startsWith("https://appassets.androidplatform.net/assets/assets")) {
+                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets");
+
+                return assetLoader.shouldInterceptRequest(Uri.parse(url))
+            }
+
+            if (urlString.startsWith("https://appassets.androidplatform.net/assets/index_mobile.html")) {
+                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets");
+
+                return assetLoader.shouldInterceptRequest(Uri.parse(url))
+            }
+
+            Log.d("DEBUG", "shouldInterceptRequest: Returning NULL");
+            return null
+        }*/
     }
 
     override fun onBackPressed() {

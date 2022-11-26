@@ -1,0 +1,71 @@
+﻿@page "/plans"
+@using MediWeckerUI.Application
+@using MediWeckerUI.Application.Features
+
+@if (Plans == null)
+{
+    
+}
+else
+{
+    <div class="container mx-auto max-w-3xl p-4 animate-fade-move-in">
+        <div class="text-xl ">Ihre Pläne</div>
+
+        <div class="flex flex-col gap-4 mt-4">
+            <button class="block group border-2 border-gray-200 border-dashed p-4 hover:border-blue-500 grid place-items-center rounded" @onclick="() => BaseLayout.Navigate<Rythm.Wizard>()">
+                <div class="flex items-center text-gray-300 group-hover:text-blue-500 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                
+                    <div>
+                        Neuen Plan hinzufügen
+                    </div>
+                </div>
+            </button>
+
+            @foreach (var plan in Plans)
+            {
+                <button class="block group border border-gray-200 shadow-md p-4 rounded" @onclick="() => BaseLayout.Navigate<Edit>(nameof(Edit.Id), plan.Id)" >
+                    <div class="flex items-center">
+                        <div class="grow">
+                            <div class="font-semibold text-lg">@plan.Name</div>
+
+                            <div class="flex gap-3 mt-2">
+                                <div class="bg-indigo-100 text-indigo-500 px-3 py-0.5 rounded-full text-sm ">@plan.Amount</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <svg class="w-6 h-6 text-gray-300 group-hover:translate-x-1 group-hover:text-gray-600 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+
+    [Inject]
+    public AppInterop Interop { get; set; }
+
+    public List<Medicine> Plans { get; set; }
+
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+    
+    [CascadingParameter]
+    public BaseNavigationLayout BaseLayout { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("Test!");
+        
+        Layout.UpdateTab(MainLayout.NavigationTab.Plans);
+        Plans = await Interop.GetAllPlansAsync();
+    }
+}

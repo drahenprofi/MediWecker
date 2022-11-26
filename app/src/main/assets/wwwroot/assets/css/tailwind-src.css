@@ -207,3 +207,17 @@ When using this, you will likely need to set font-variation-settings explicitly,
     font-display: swap;
     src: url("font-files/Inter-italic.var.woff2?v=3.19") format("woff2");
 }
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    textarea:focus, input:focus{
+        outline: none;
+    }
+    
+    .validation-message {
+        @apply block mt-1.5 text-red-500 text-sm;
+    }
+}

@@ -1,3 +1,5 @@
+@import '_content/Blazored.Modal/Blazored.Modal.bundle.scp.css';
+
 /* /Shared/MainLayout.razor.rz.scp.css */
 .page[b-p0dzsqmrcy] {
     position: relative;
@@ -78,74 +80,5 @@ main[b-p0dzsqmrcy] {
     .top-row[b-p0dzsqmrcy], article[b-p0dzsqmrcy] {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
-    }
-}
-/* /Shared/NavMenu.razor.rz.scp.css */
-.navbar-toggler[b-pnijwv11mu] {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.top-row[b-pnijwv11mu] {
-    height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
-}
-
-.navbar-brand[b-pnijwv11mu] {
-    font-size: 1.1rem;
-}
-
-.oi[b-pnijwv11mu] {
-    width: 2rem;
-    font-size: 1.1rem;
-    vertical-align: text-top;
-    top: -2px;
-}
-
-.nav-item[b-pnijwv11mu] {
-    font-size: 0.9rem;
-    padding-bottom: 0.5rem;
-}
-
-    .nav-item:first-of-type[b-pnijwv11mu] {
-        padding-top: 1rem;
-    }
-
-    .nav-item:last-of-type[b-pnijwv11mu] {
-        padding-bottom: 1rem;
-    }
-
-    .nav-item[b-pnijwv11mu]  a {
-        color: #d7d7d7;
-        border-radius: 4px;
-        height: 3rem;
-        display: flex;
-        align-items: center;
-        line-height: 3rem;
-    }
-
-.nav-item[b-pnijwv11mu]  a.active {
-    background-color: rgba(255,255,255,0.25);
-    color: white;
-}
-
-.nav-item[b-pnijwv11mu]  a:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-}
-
-@media (min-width: 641px) {
-    .navbar-toggler[b-pnijwv11mu] {
-        display: none;
-    }
-
-    .collapse[b-pnijwv11mu] {
-        /* Never collapse the sidebar for wide screens */
-        display: block;
-    }
-    
-    .nav-scrollable[b-pnijwv11mu] {
-        /* Allow sidebar to scroll for tall menus */
-        height: calc(100vh - 3.5rem);
-        overflow-y: auto;
     }
 }

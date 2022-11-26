@@ -1,17 +1,74 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+<CascadingValue Value="this">
+    <main class="h-full relative">
+        <div class="pb-20 h-full w-full">
+            <div class="h-full overflow-x-hidden w-full max-w-full">
+                @Body
+            </div>
         </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
+    
+        <div class="bg-gray-100 absolute origin-bottom-left bottom-0 h-20 w-full px-5 py-3">
+            <div class="grid grid-cols-3 place-items-center md:flex md:gap-8 md:justify-center">
+                <button class="flex flex-col items-center group" @onclick='() => { Navigation.Navigate<Pages.Index>(); }'>
+                    <div class="w-14 rounded-full py-1 @(CurrentTab == NavigationTab.Calendar ? "bg-lime-200 text-lime-700" : "") grid place-items-center">
+                        <svg class="w-5 h-5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+    
+                    <div class="mt-1.5 text-sm transition-all @(CurrentTab == NavigationTab.Calendar ? "font-semibold" : "")">
+                        Kalender
+                    </div>
+                </button>
+    
+                <button class="flex flex-col items-center group" @onclick='() => { Navigation.Navigate<Pages.Plans.Index>(); }'>
+                    <div class="w-14 rounded-full py-1 @(CurrentTab == NavigationTab.Plans ? "bg-lime-200 text-lime-700" : "") grid place-items-center">
+                        <svg class="w-5 h-5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                        </svg>
+                    </div>
+    
+                    <div class="mt-1.5 text-sm transition-all @(CurrentTab == NavigationTab.Plans ? "font-semibold" : "")">
+                        Pläne
+                    </div>
+                </button>
+    
+                <button class="flex flex-col items-center group" @onclick='() => { Navigation.Navigate<Pages.Settings.Index>(); }'>
+                    <div class="w-14 rounded-full py-1 @(CurrentTab == NavigationTab.Settings ? "bg-lime-200 text-lime-700" : "") grid place-items-center">
+                        <svg class="w-5 h-5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </div>
+    
+                    <div class="mt-1.5 text-sm transition-all @(CurrentTab == NavigationTab.Settings ? "font-semibold" : "")">
+                        Einstellungen
+                    </div>
+                </button>
+            </div>
+        </div>
     </main>
-</div>
+</CascadingValue>
+
+@code {
+
+    [CascadingParameter]
+    public BaseNavigationLayout Navigation { get; set; }
+
+    private NavigationTab CurrentTab { get; set; }
+
+    public void UpdateTab(NavigationTab tab)
+    {
+        CurrentTab = tab;
+        
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public enum NavigationTab
+    {
+        Calendar,
+        Plans,
+        Settings
+    }
+
+}
