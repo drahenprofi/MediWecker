@@ -1,5 +1,6 @@
 ﻿@using Index = MediWeckerUI.Pages.Index
 @inherits LayoutComponentBase
+@implements IDisposable
 
 @if (RouteData != null)
 {
@@ -15,9 +16,14 @@
 
     public RouteData RouteData { get; set; }
 
+    public string Id { get; set; }
+
     protected override void OnInitialized()
     {
+        Id = Guid.NewGuid().ToString();
         RouteData = new RouteData(typeof(Index), new Dictionary<string, object>());
+        
+        Console.WriteLine($"BaseNavigationLayout: Created {Id}");
     }
 
     public void Navigate<T>() where T : IComponent
@@ -48,4 +54,8 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    public void Dispose()
+    {
+        Console.WriteLine($"BaseNavigationLayout: Disposing {Id}");
+    }
 }

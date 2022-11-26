@@ -20,6 +20,9 @@ public partial class Edit
     [CascadingParameter]
     public IModalService ModalService { get; set; }
     
+    [CascadingParameter]
+    public BaseNavigationLayout BaseLayout { get; set; }
+    
     [Inject]
     public NavigationManager NavigationManager { get; set; }
 
@@ -50,8 +53,8 @@ public partial class Edit
 
         await Interop.DeletePlanAsync(Plan.Id);
         await Interop.ShowAlertAsync($"\"{Plan.Name}\" wurde gelöscht.");
-        
-        NavigationManager.NavigateTo("/plans");
+
+        BaseLayout.Navigate<Pages.Plans.Index>();
     }
 
     protected async Task OnClickEditNameAsync()

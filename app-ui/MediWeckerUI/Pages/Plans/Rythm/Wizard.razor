@@ -1,20 +1,22 @@
 ﻿@page "/plans/rythm/wizard"
 @using MediWeckerUI.Application.Features
 @using MediWeckerUI.Application
+@using Index = MediWeckerUI.Pages.Plans.Index
+@layout WizardLayout
 
 @code {
     private Medicine Plan { get; set; }
     private Step CurrentStep { get; set; }
-    
+
     [Inject]
     public AppInterop Interop { get; set; }
 
     [Inject]
     public NavigationManager NavigationManager { get; set; }
-    
+
     [CascadingParameter]
     public BaseNavigationLayout BaseLayout { get; set; }
-    
+
     protected override Task OnInitializedAsync()
     {
         Plan = new Medicine();
@@ -27,7 +29,7 @@
         await Interop.AddPlanAsync(Plan);
         await Interop.ShowAlertAsync("Medikationsplan wurde erfolgreich erstellt.");
 
-        BaseLayout.Navigate<Pages.Plans.Index>();
+        BaseLayout.Navigate<Index>();
     }
 
     private enum Step
@@ -44,7 +46,15 @@
 }
 
 <div class="container mx-auto max-w-3xl p-4 animate-fade-move-in">
-    <div class="text-xl ">Neuen Plan hinzufügen</div>
+    <button class="flex items-center text-blue-500 hover:font-semibold" @onclick="() => BaseLayout.Navigate<Pages.Plans.Index>()">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+
+        Abbrechen
+    </button>
+
+    <div class="text-xl mt-4">Neuen Plan hinzufügen</div>
 
     <div class="mt-4 flex flex-col gap-6">
         @if (CurrentStep == Step.Name)

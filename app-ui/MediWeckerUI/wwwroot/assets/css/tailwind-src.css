@@ -220,4 +220,8 @@ When using this, you will likely need to set font-variation-settings explicitly,
     .validation-message {
         @apply block mt-1.5 text-red-500 text-sm;
     }
+    
+    .button-primary {
+        @apply border-transparent ml-2 rounded px-3 text-sm bg-lime-200 text-lime-800 hover:bg-lime-300 transition-all;
+    }
 }
