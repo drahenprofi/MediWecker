@@ -5,7 +5,9 @@ import android.webkit.JavascriptInterface
 import android.widget.Toast
 import androidx.room.Room
 import com.google.gson.Gson
+import de.htwBerlin.ai.mediAlarm.alarm.AlarmScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
+import de.htwBerlin.ai.mediAlarm.data.alarm.Alarm
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
 
@@ -30,11 +32,11 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun showToast(msg: String): String {
-        //Toast.makeText(mContext, "$msg", Toast.LENGTH_SHORT).show()
+        //medicineDao.insertAll(Medicine("Iboprofen", 800f, ""))
 
-        //mContext.setAlarm()
+        val alarm = Alarm("TODO", 0)
+        AlarmScheduler(mContext).schedule(alarm)
 
-        medicineDao.insertAll(Medicine("Iboprofen", 800f, ""))
         return getMedicine()
     }
 

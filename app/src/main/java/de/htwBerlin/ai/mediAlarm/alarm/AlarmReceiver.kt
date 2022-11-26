@@ -1,4 +1,4 @@
-package de.htwBerlin.ai.mediAlarm
+package de.htwBerlin.ai.mediAlarm.alarm
 
 import android.R
 import android.app.NotificationChannel
@@ -14,7 +14,6 @@ import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 
 
 class AlarmReceiver: BroadcastReceiver() {
-    private var notificationManager: NotificationManagerCompat? = null
     private var CHANNEL_ID = "1"
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -28,7 +27,6 @@ class AlarmReceiver: BroadcastReceiver() {
             .setContentTitle("Medicine Reminder")
             .setContentText(medicine.name)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
 
         val mNotificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -54,5 +52,4 @@ class AlarmReceiver: BroadcastReceiver() {
             notificationManager.createNotificationChannel(channel)
         }
     }
-
 }

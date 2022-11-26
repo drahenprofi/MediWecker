@@ -8,11 +8,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.webkit.*
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
+import de.htwBerlin.ai.mediAlarm.alarm.AlarmReceiver
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView;
@@ -39,21 +39,6 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = LocalContentWebViewClient(assetLoader)
         webView.webChromeClient = LocalChromeClient();
         webView.loadUrl("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html");
-    }
-
-    fun setAlarm() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, AlarmReceiver::class.java)
-        val pendingIntent =
-            PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        alarmManager.setExact(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            100,
-            pendingIntent
-        )
-
-        Log.d("Medicine Reminder", "setAlarm")
     }
 
     private class LocalChromeClient : WebChromeClient() {
