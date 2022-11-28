@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MediWeckerUI.Application.Features;
+namespace MediWeckerUI.Application.Features.Planning;
 
 public class Medicine
 {
