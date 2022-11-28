@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class Medicine(
     val name: String,
-    val amount: Float,
+    val amount: String,
     val rhythm: String?
 ) {
     @PrimaryKey(autoGenerate = true) var id: Int = 0

@@ -75,7 +75,13 @@ class MainActivity : AppCompatActivity() {
         ): WebResourceResponse? {
             Log.d("DEBUG", request.url.toString());
 
-            return assetLoader.shouldInterceptRequest(request.url)
+            /*if (request.url.toString().startsWith("https://appassets.androidplatform.net/assets/wwwroot/")) {
+                return assetLoader.shouldInterceptRequest(request.url)
+            } else {
+                return assetLoader.shouldInterceptRequest(Uri.parse("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html"));
+            }*/
+
+            return return assetLoader.shouldInterceptRequest(request.url)
         }
 
         // to support API < 21

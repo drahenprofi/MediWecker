@@ -35,17 +35,21 @@ public class AppInterop
             {
                 new Medicine
                 {
-                    Id = "62467383-784D-4C3A-BB64-8FC412DBE8BB",
+                    Id = 1,
                     Name = "Test Plan",
                     Amount = "200mg",
                     Rythm = null
                 }
             };
 
-        return JsonSerializer.Deserialize<List<Medicine>>(await _js.InvokeAsync<string>("Android.getMedicine"));
+        var json = await _js.InvokeAsync<string>("Android.getMedicine");
+        
+        Console.WriteLine($"GetAllPlansAsync: {json}");
+        
+        return JsonSerializer.Deserialize<List<Medicine>>(json);
     }
 
-    public async Task DeletePlanAsync(string id)
+    public async Task DeletePlanAsync(int id)
     {
         if (!IsInApp()) return;
 

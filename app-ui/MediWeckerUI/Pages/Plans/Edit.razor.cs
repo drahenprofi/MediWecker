@@ -12,7 +12,7 @@ namespace MediWeckerUI.Pages.Plans;
 public partial class Edit
 {
     [Parameter]
-    public string Id { get; set; }
+    public int Id { get; set; }
 
     [Inject]
     public AppInterop Interop { get; set; }

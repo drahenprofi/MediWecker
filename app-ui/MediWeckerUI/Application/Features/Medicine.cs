@@ -5,7 +5,7 @@ namespace MediWeckerUI.Application.Features;
 public class Medicine
 {
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public int Id { get; set; }
     
     [JsonPropertyName("name")]
     public string Name { get; set; }
