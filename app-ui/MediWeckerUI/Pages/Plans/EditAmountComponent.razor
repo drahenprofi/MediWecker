@@ -1,0 +1,55 @@
+﻿@using FluentValidation
+<div>
+    <EditForm Model="EditModel" OnValidSubmit="OnSubmit">
+        <FluentValidationValidator></FluentValidationValidator>
+
+        <div>
+            <div class="flex items-stretch">
+                <InputText class="border-b border-gray-200 px-3 py-1 rounded-l grow min-w-0" @bind-Value="@EditModel.Name"></InputText>
+                <button class="button-primary">Speichern</button>
+            </div>
+            
+            <ValidationMessage For="() => EditModel.Name"></ValidationMessage>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+
+    [Parameter]
+    public string Amount { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnNewAmount { get; set; }
+
+    public EditViewModel EditModel { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        EditModel = new EditViewModel
+        {
+            Name = Amount
+        };
+    }
+
+    protected async Task OnSubmit()
+    {
+        await OnNewAmount.InvokeAsync(EditModel.Name);
+    }
+
+    public class EditViewModel
+    {
+        public string Name { get; set; }
+
+        public class Validator : AbstractValidator<EditViewModel>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.Name)
+                    .NotEmpty()
+                    .WithMessage("Menge ist ein Pflichtfeld.");
+            }
+        }
+    }
+
+}

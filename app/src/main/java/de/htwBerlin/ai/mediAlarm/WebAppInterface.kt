@@ -1,6 +1,7 @@
 package de.htwBerlin.ai.mediAlarm
 
 import android.content.Context
+import android.util.Log
 import android.webkit.JavascriptInterface
 import android.widget.Toast
 import androidx.room.Room
@@ -42,23 +43,31 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun getMedicine(): String {
+        Log.d("DEBUG", "getMedicine: Called!");
+
         val medicine = medicineDao.getAll()
         return gson.toJson(medicine)
     }
 
     @JavascriptInterface
     fun deleteMedicine(id: Int) {
+        Log.d("DEBUG", "medicineJson: " + id);
+
         medicineDao.deleteById(id)
     }
 
     @JavascriptInterface
     fun insertMedicine(medicineJson: String) {
+        Log.d("DEBUG", "insertMedicine: " + medicineJson);
+
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
         medicineDao.insertAll(medicine)
     }
 
     @JavascriptInterface
     fun updateMedicine(medicineJson: String) {
+        Log.d("DEBUG", "medicineJson: " + medicineJson);
+
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
         medicineDao.update(medicine)
     }
