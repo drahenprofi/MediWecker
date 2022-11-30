@@ -4,12 +4,9 @@ import android.content.Context
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.widget.Toast
-import androidx.room.Room
 import com.google.gson.Gson
-import de.htwBerlin.ai.mediAlarm.alarm.AlarmScheduler
 import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
-import de.htwBerlin.ai.mediAlarm.data.alarm.Alarm
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
 import de.htwBerlin.ai.mediAlarm.data.rhythm.IntervalDaysData
@@ -54,14 +51,13 @@ class WebAppInterface internal constructor(c: Context) {
             listOf(
                 TimePoint(
                     TimepointType.AbsoluteTime,
-                    (14 * 60 + 45) * 60 * 1000
+                    (14 * 60 + 56) * 60 * 1000
                 )
             )
         )
 
         medicine.rhythm = gson.toJson(rhythm)
-
-        medicineDao.insertAll(medicine)
+        medicine.id = medicineDao.insert(medicine)
 
         MedicineScheduler(mContext).schedule(medicine)
     }

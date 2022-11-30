@@ -1,8 +1,6 @@
 package de.htwBerlin.ai.mediAlarm.alarm
 
 import android.content.Context
-import android.os.SystemClock
-import android.util.Log
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.alarm.Alarm
@@ -16,32 +14,28 @@ class MedicineScheduler(private val context: Context) {
     private val gson = Gson()
 
     fun schedule(medicine: Medicine) {
-        Log.d("SCHEDULING", "Scheduling medicine reminder ${medicine.name}")
-
-        /*if (alarmDao.getByMedicineId(medicine.id).isNotEmpty()) {
+        if (alarmDao.getByMedicineId(medicine.id).isNotEmpty()) {
             return
-        }*/
+        }
 
         val targetTime = getNextTargetTime(medicine)
 
-        Log.d("SCHEDULING", "Scheduling ${medicine.name} for $targetTime")
-
         val alarm = Alarm(medicine.id, targetTime)
+        alarm.id = alarmDao.insert(alarm)
 
         AlarmScheduler(context).schedule(alarm)
-
-        alarmDao.insertAll(alarm)
     }
 
     private fun getNextTargetTime(medicine: Medicine): Long {
         val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
 
-        val now = SystemClock.elapsedRealtime()
-
         val calendar = Calendar.getInstance()
+
+        val now = calendar.timeInMillis
 
         val scheduledDayMillis = now - calendar[Calendar.HOUR_OF_DAY] * 60 * 60 * 1000 - calendar[Calendar.MINUTE] * 60 * 1000 - calendar[Calendar.SECOND] * 1000
 
+        // TODO: Schedule day (intervalDaysData/specificDaysData)
         /*if (rhythm.intervalDaysData != null) {
 
         } else if (rhythm.specificDaysData != null) {
@@ -58,6 +52,6 @@ class MedicineScheduler(private val context: Context) {
             }
         }
 
-        return SystemClock.elapsedRealtime()
+        return calendar.timeInMillis
     }
 }

@@ -9,5 +9,5 @@ data class Medicine(
     val amount: String,
     var rhythm: String?
 ) {
-    @PrimaryKey(autoGenerate = true) var id: Int = 0
+    @PrimaryKey(autoGenerate = true) var id: Long = 0
 }
