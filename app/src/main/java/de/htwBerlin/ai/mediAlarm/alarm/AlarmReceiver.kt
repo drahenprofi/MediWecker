@@ -33,7 +33,6 @@ class AlarmReceiver: BroadcastReceiver() {
         mNotificationManager.notify(medicine.id, builder.build())
 
         Log.d("Medicine Reminder", "sent notification")
-
     }
 
     private fun createNotificationChannel(context: Context) {

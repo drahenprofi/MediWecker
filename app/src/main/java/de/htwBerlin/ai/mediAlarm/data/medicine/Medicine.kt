@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class Medicine(
     val name: String,
     val amount: String,
-    val rhythm: String?
+    var rhythm: String?
 ) {
     @PrimaryKey(autoGenerate = true) var id: Int = 0
 }

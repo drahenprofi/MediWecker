@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.icu.util.Calendar
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -18,37 +19,37 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView;
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
         // Temporary webview setup
-        webView = findViewById(R.id.webView);
+        webView = findViewById(R.id.webView)
 
-        webView.settings.javaScriptEnabled = true;
-        webView.settings.javaScriptCanOpenWindowsAutomatically = true;
-        webView.settings.builtInZoomControls = true;
-        webView.settings.domStorageEnabled = true;
-        webView.settings.allowContentAccess = true;
-        webView.settings.safeBrowsingEnabled = false;
+        webView.settings.javaScriptEnabled = true
+        webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        webView.settings.builtInZoomControls = true
+        webView.settings.domStorageEnabled = true
+        webView.settings.allowContentAccess = true
+        webView.settings.safeBrowsingEnabled = false
 
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
 
-        webView.addJavascriptInterface(WebAppInterface(this), "Android");
+        webView.addJavascriptInterface(WebAppInterface(this), "Android")
 
         webView.webViewClient = LocalContentWebViewClient(assetLoader)
-        webView.webChromeClient = LocalChromeClient();
-        webView.loadUrl("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html");
+        webView.webChromeClient = LocalChromeClient()
+        webView.loadUrl("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html")
     }
 
     private class LocalChromeClient : WebChromeClient() {
         override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
             if (consoleMessage != null) {
                 Log.d("WebView", consoleMessage.message())
-            };
+            }
 
-            return true;
+            return true
         }
     }
 
@@ -134,9 +135,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         if (webView != null && webView.canGoBack()) {
-            webView.goBack();
+            webView.goBack()
         } else {
-            super.onBackPressed();
+            super.onBackPressed()
         }
     }
 }

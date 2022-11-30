@@ -7,38 +7,24 @@ import android.widget.Toast
 import androidx.room.Room
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.alarm.AlarmScheduler
+import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.alarm.Alarm
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
+import de.htwBerlin.ai.mediAlarm.data.rhythm.IntervalDaysData
+import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
+import de.htwBerlin.ai.mediAlarm.data.rhythm.TimePoint
+import de.htwBerlin.ai.mediAlarm.data.rhythm.TimepointType
 
 class WebAppInterface internal constructor(c: Context) {
-    private var mContext: MainActivity
-    private val medicineDao: MedicineDao
-    private val gson: Gson
-
-    init {
-        mContext = c as MainActivity
-
-        medicineDao = Room
-            .databaseBuilder(
-                mContext,
-                AppDatabase::class.java, "medi-wecker-database"
-            )
-            .build()
-            .medicineDao()
-
-        gson = Gson()
-    }
+    private var mContext: MainActivity = c as MainActivity
+    private val medicineDao: MedicineDao = AppDatabase.getDatabase(c).medicineDao()
+    private val gson: Gson = Gson()
 
     @JavascriptInterface
-    fun showToast(msg: String): String {
-        //medicineDao.insertAll(Medicine("Iboprofen", 800f, ""))
-
-        val alarm = Alarm("TODO", 0)
-        AlarmScheduler(mContext).schedule(alarm)
-
-        return getMedicine()
+    fun showToast(msg: String) {
+        Toast.makeText(mContext, "$msg", Toast.LENGTH_SHORT).show()
     }
 
     @JavascriptInterface
@@ -61,12 +47,28 @@ class WebAppInterface internal constructor(c: Context) {
         Log.d("DEBUG", "insertMedicine: " + medicineJson);
 
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
+
+        val rhythm = Rhythm(
+            IntervalDaysData(days = 1),
+            null,
+            listOf(
+                TimePoint(
+                    TimepointType.AbsoluteTime,
+                    (14 * 60 + 45) * 60 * 1000
+                )
+            )
+        )
+
+        medicine.rhythm = gson.toJson(rhythm)
+
         medicineDao.insertAll(medicine)
+
+        MedicineScheduler(mContext).schedule(medicine)
     }
 
     @JavascriptInterface
     fun updateMedicine(medicineJson: String) {
-        Log.d("DEBUG", "medicineJson: " + medicineJson);
+        Log.d("DEBUG", "medicineJson: $medicineJson");
 
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
         medicineDao.update(medicine)
