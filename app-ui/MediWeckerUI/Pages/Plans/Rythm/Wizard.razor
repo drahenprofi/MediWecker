@@ -30,7 +30,10 @@
         {
         };
 
-        Rythm = new Rythm();
+        Rythm = new Rythm
+        {
+            Timepoints = new List<Timepoint>()
+        };
 
         return base.OnInitializedAsync();
     }
@@ -70,13 +73,30 @@
         }
     }
 
-    protected async Task OnNewRythmAsync(Rythm rythm)
+    protected async Task OnRythmSubmit()
     {
-        Plan.Rythm = JsonSerializer.Serialize(rythm);
+        Plan.Rythm = JsonSerializer.Serialize(Rythm);
         CurrentStep = Step.Timepoints;
 
         StateHasChanged();
-        ;
+    }
+
+    protected async Task OnTimepointsSubmit()
+    {
+        Console.WriteLine("OnTimepointsSubmit");
+
+        Plan.Rythm = JsonSerializer.Serialize(Rythm);
+        CurrentStep = Step.Amount;
+
+        StateHasChanged();
+    }
+
+    protected async Task OnAmountSubmit(string amount)
+    {
+        Plan.Amount = amount;
+        CurrentStep = Step.Finished;
+
+        StateHasChanged();
     }
 
     private enum Step
@@ -93,7 +113,7 @@
 <CascadingValue Value="this">
     <div class="container mx-auto max-w-3xl h-full p-4 animate-fade-move-in">
         <div class="flex justify-between">
-            <button class="h-8 w-8 bg-gray-200 rounded-md flex justify-center items-center" @onclick="() => OnBackwardAsync(entireStep: false)">
+            <button class="h-8 w-8 bg-gray-100 rounded-md flex justify-center items-center" @onclick="() => OnBackwardAsync(entireStep: false)">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
@@ -110,10 +130,10 @@
                     </div>
 
                     <div class="mt-2">
-                        Bitte geben Sie an, mit welchem Namen der Medikationsplan angezeigt werden soll.
+                        Wie heißt das Medikament, dass Sie einnehmen werden?
                     </div>
                     <div class="mt-10">
-                        <EditNameComponent @ref="EditNameComponent" Name="" OnNewName="@(s => { Plan.Name = s; CurrentStep = Step.DayRythm; InvokeAsync(StateHasChanged); })"/>
+                        <EditNameComponent @ref="EditNameComponent" Name="@Plan.Name" OnNewName="@(s => { Plan.Name = s; CurrentStep = Step.DayRythm; InvokeAsync(StateHasChanged); })"/>
                     </div>
                 </div>
             }
@@ -126,8 +146,10 @@
                         <div class="text-xl font-semibold">Tagesrythmus</div>
                     </div>
 
+                    @* <div class="mt-2 p-2 bg-gray-100 text-gray-700 text-sm rounded">Der Tagesrythmus beschreibt, an welchen Tagen Sie das Medikament einnehmen.</div> *@
+
                     <div class="mt-2">
-                        <EditRythmComponent @ref="EditRythmComponent" Rythm="Rythm" OnBackward="async () => await OnBackwardAsync(entireStep: true)" OnNewRythm="OnNewRythmAsync"></EditRythmComponent>
+                        <EditRythmComponent @ref="EditRythmComponent" Rythm="Rythm" OnBackward="async () => await OnBackwardAsync(entireStep: true)" OnSubmit="OnRythmSubmit"></EditRythmComponent>
                     </div>
                 </div>
             }
@@ -141,8 +163,120 @@
                     </div>
 
                     <div class="mt-2">
-                        
+                        <EditTimepointsComponent Rythm="Rythm" OnSubmit="OnTimepointsSubmit"></EditTimepointsComponent>
                     </div>
+                </div>
+            }
+
+            @if (CurrentStep == Step.Amount)
+            {
+                <div class="flex flex-col justify-center text-center animate-fade-move-in">
+                    <div>
+                        <div class="text-sm text-gray-500">Schritt 4</div>
+                        <div class="text-xl font-semibold">Einnahmemenge</div>
+                    </div>
+
+                    <div class="mt-2">
+                        Bitte geben Sie an, wie viel Sie des Medikaments nehmen möchten.
+                    </div>
+
+                    <div class="mt-10">
+                        <EditAmountComponent Amount="@Plan.Amount" OnNewAmount="@(async amount => OnAmountSubmit(amount))"/>
+                    </div>
+                </div>
+            }
+
+            @if (CurrentStep == Step.Finished)
+            {
+                <div class="flex flex-col justify-center animate-fade-move-in text-left">
+                    <div class="text-center">
+                        <div class="text-sm text-gray-500">Fast fertig!</div>
+                        <div class="text-xl font-semibold">Stimmt alles?</div>
+                    </div>
+
+                    <div class="mt-10">
+                        <div class="text-sm text-gray-500">Name</div>
+                        <div class="text-lg font-medium">@Plan.Name</div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="text-sm text-gray-500">Einnahmemenge</div>
+                        <div class="text-lg font-medium">@Plan.Amount</div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="text-sm text-gray-500">Rythmus</div>
+                        <div class="text-lg font-medium">
+                            @if (Rythm.IntervalDaysDays?.Days == 1)
+                            {
+                                <span>Täglich</span>
+                            }
+                            else if (Rythm.IntervalDaysDays != null)
+                            {
+                                <span>Jeden @(Rythm.IntervalDaysDays.Days). Tag</span>
+                            }
+                            else if (Rythm.SpecificDays != null)
+                            {
+                                var dayNames = new List<string>();
+
+                                if (Rythm.SpecificDays.Monday) dayNames.Add("Montag");
+                                if (Rythm.SpecificDays.Tuesday) dayNames.Add("Dienstag");
+                                if (Rythm.SpecificDays.Wednesday) dayNames.Add("Mittwoch");
+                                if (Rythm.SpecificDays.Thursday) dayNames.Add("Donnerstag");
+                                if (Rythm.SpecificDays.Friday) dayNames.Add("Freitag");
+                                if (Rythm.SpecificDays.Saturday) dayNames.Add("Samstag");
+                                if (Rythm.SpecificDays.Sunday) dayNames.Add("Sonntag");
+
+                                <span>Jeden @string.Join(", ", dayNames)</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="text-sm text-gray-500">Uhrzeit</div>
+                        <div class="font-medium text-sm flex flex-wrap gap-2 mt-1">
+                            @foreach (var timepoint in Rythm.Timepoints.Where(x => x.Type == TimepointType.AbsoluteTime))
+                            {
+                                <div class="bg-lime-400 px-3 py-0.5 rounded-full">@TimeSpan.FromMinutes(timepoint.AbsoluteTimeFromMidnight.Value).ToString("hh\\:mm") Uhr</div>
+                            }
+
+                            @if (Rythm.Timepoints.Any(x => x.Type == TimepointType.Morning))
+                            {
+                                <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                    <div>Morgens</div>
+                                </div>
+                            }
+
+                            @if (Rythm.Timepoints.Any(x => x.Type == TimepointType.Midday))
+                            {
+                                <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                    <div>Tagsüber</div>
+                                </div>
+                            }
+
+                            @if (Rythm.Timepoints.Any(x => x.Type == TimepointType.Evening))
+                            {
+                                <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                    <div>Abends</div>
+                                </div>
+                            }
+
+                            @if (Rythm.Timepoints.Any(x => x.Type == TimepointType.Night))
+                            {
+                                <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                    <div>Nachts</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-10 text-sm">
+                        Stimmt etwas nicht? Nutzen Sie die Zurück-Taste oben links, um Ihre Eingaben zu bearbeiten.    
+                    </div>
+                    
+                    <button class="button-primary mt-4 py-2 w-full self-stretch text-center" @onclick="OnCompleted">
+                        Alles korrekt!
+                    </button>
                 </div>
             }
         </div>

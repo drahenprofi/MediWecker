@@ -1,0 +1,62 @@
+﻿@using MediWeckerUI.Application.Features.Planning
+<div class="mt-2">
+    Bitte geben Sie an, zu welchen Zeiten Sie das Medikament einnehmen möchten.
+</div>
+
+<div class="mt-6 flex flex-col gap-3">
+    @foreach (var timepoint in Rythm.Timepoints)
+    {
+        <div class="bg-gray-50 rounded-md px-3 py-4 pt-3 text-left" @key="timepoint">
+            <EditTimepointEntryComponent Timepoint="timepoint" OnDelete="() => Remove(timepoint)"></EditTimepointEntryComponent>
+        </div>
+    }
+    
+    <button class="border-2 border-dashed border-gray-200 rounded-md p-2 grid place-items-center text-gray-300" @onclick="AddTimepointAsync">
+        Zeit hinzufügen
+    </button>
+    
+    <button class="button-primary mt-3 py-2 w-full disabled:bg-gray-100 text-center" @onclick="Submit" disabled="@(!Rythm.Timepoints.Any() ? "" : null)" >
+        @if (Rythm.Timepoints.Any())
+        {
+            <span>Speichern</span>
+        }
+        else
+        {
+            <span>Bitte mindestens einen Zeitpunkt erstellen</span>
+        }
+    </button>
+</div>
+
+@code {
+
+    [Parameter]
+    public Application.Features.Planning.Rythm Rythm { get; set; }
+    
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+    
+    protected async Task AddTimepointAsync()
+    {
+        Rythm.Timepoints.Add(new Timepoint
+        {
+            Type = TimepointType.Morning,
+            AbsoluteTimeFromMidnight = 0
+        });
+        
+        StateHasChanged();
+    }
+
+    protected void Remove(Timepoint timepoint)
+    {
+        Rythm.Timepoints.Remove(timepoint);
+
+        InvokeAsync(StateHasChanged);
+    }
+    
+    protected async Task Submit()
+    {
+        Console.WriteLine("Submit");
+        
+        await OnSubmit.InvokeAsync();
+    }
+}

@@ -8,9 +8,9 @@
     </div>
 
     <div class="text-center flex flex-col gap-2 mt-4">
-        <button class="border px-4 py-2 rounded hover:bg-gray-50 transition-all w-full" @onclick="async () => await CompleteAs(CompletionTypeEnum.EveryDay)">Einnahme an jedem Tag</button>
-        <button class="border px-4 py-2 rounded hover:bg-gray-50 transition-all w-full" @onclick="() => { State = ComponentStateEnum.IntervalSelection; StateHasChanged(); }">Einnahme in regelmäßigen Intervallen</button>
-        <button class="border px-4 py-2 rounded hover:bg-gray-50 transition-all w-full" @onclick="() => { State = ComponentStateEnum.SpecificDaysSelection; StateHasChanged(); }">Einnahme an bestimmten Wochentagen</button>
+        <button class="button-primary py-2 w-full" @onclick="async () => await CompleteAs(CompletionTypeEnum.EveryDay)">Einnahme an jedem Tag</button>
+        <button class="button-primary py-2 w-full" @onclick="() => { State = ComponentStateEnum.IntervalSelection; StateHasChanged(); }">Einnahme in regelmäßigen Intervallen</button>
+        <button class="button-primary py-2 w-full" @onclick="() => { State = ComponentStateEnum.SpecificDaysSelection; StateHasChanged(); }">Einnahme an bestimmten Wochentagen</button>
     </div>
 }
 
@@ -26,7 +26,7 @@
                 <FluentValidationValidator></FluentValidationValidator>
 
                 <div>
-                    <div class="flex items-stretch">
+                    <div class="flex items-stretch gap-1">
                         <InputNumber class="border border-gray-200 px-3 py-1 rounded grow min-w-0" @bind-Value="@IntervalViewModelData.Data.Days"></InputNumber>
                         <button class="button-primary">Speichern</button>
                     </div>
@@ -100,17 +100,17 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    @if (ShowErrorAtleastOneWeekdayMissing)
-                    {
-                        <div class="mt-4 text-red-500 text-sm">
-                            Es muss mindestens ein Wochentag ausgewählt werden.
-                        </div>
-                    }
-
-                    <div class="mt-8 shrink-0">
-                        <button class="button-primary py-2 px-6" type="submit">Speichern</button>
+                @if (ShowErrorAtleastOneWeekdayMissing)
+                {
+                    <div class="mt-4 text-red-500 text-sm text-center">
+                        Es muss mindestens ein Wochentag ausgewählt werden.
                     </div>
+                }
+
+                <div class="mt-5 shrink-0">
+                    <button class="button-primary mt-3 py-2 w-full text-center" type="submit">Speichern</button>
                 </div>
             </EditForm>
         </div>
@@ -123,7 +123,7 @@
     public Application.Features.Planning.Rythm Rythm { get; set; }
 
     [Parameter]
-    public EventCallback<Application.Features.Planning.Rythm> OnNewRythm { get; set; }
+    public EventCallback OnSubmit { get; set; }
 
     [Parameter]
     public EventCallback OnBackward { get; set; }
@@ -204,7 +204,7 @@
             };
         }
 
-        await OnNewRythm.InvokeAsync(Rythm);
+        await OnSubmit.InvokeAsync();
     }
 
     protected async Task OnIntervalSubmitAsync()
@@ -221,7 +221,7 @@
         {
             ShowErrorAtleastOneWeekdayMissing = true;
             StateHasChanged();
-            
+
             return;
         }
         else
@@ -254,9 +254,9 @@
     {
         public SpecificDaysData Data { get; set; }
 
-        // public class Validator : AbstractValidator<SpecificDaysData>
-        // {
-        // }
+    // public class Validator : AbstractValidator<SpecificDaysData>
+    // {
+    // }
     }
 
     public enum ComponentStateEnum
