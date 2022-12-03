@@ -1,11 +1,11 @@
 ﻿@using FluentValidation
 <div>
-    <EditForm Model="EditModel" OnValidSubmit="OnSubmit">
+    <EditForm Model="EditModel" OnValidSubmit="OnSubmit" @ref="EditForm">
         <FluentValidationValidator></FluentValidationValidator>
 
         <div>
-            <div class="flex items-stretch">
-                <InputText class="border-b border-gray-200 px-3 py-1 rounded-l grow min-w-0" @bind-Value="@EditModel.Name"></InputText>
+            <div class="flex items-stretch gap-1">
+                <InputText class="border border-gray-200 px-3 py-1 rounded grow min-w-0" @bind-Value="@EditModel.Name"></InputText>
                 <button class="button-primary">Speichern</button>
             </div>
             
@@ -21,8 +21,13 @@
 
     [Parameter]
     public EventCallback<string> OnNewName { get; set; }
+    
+    [Inject]
+    public EditViewModel.Validator Validator { get; set; }
 
     public EditViewModel EditModel { get; set; }
+
+    public EditForm EditForm { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -30,6 +35,13 @@
         {
             Name = Name
         };
+    }
+
+    public Task SubmitAsync()
+    {
+        EditForm.EditContext.Validate();
+
+        return Task.CompletedTask;
     }
 
     protected async Task OnSubmit()

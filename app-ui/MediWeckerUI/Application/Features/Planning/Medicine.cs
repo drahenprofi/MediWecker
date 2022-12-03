@@ -13,6 +13,9 @@ public class Medicine
     [JsonPropertyName("amount")]
     public string Amount { get; set; }
     
+    [JsonPropertyName("intakeModifierFlag")]
+    public IntakeModifierFlag Flags { get; set; }
+    
     [JsonPropertyName("rythm")]
     public string Rythm { get; set; }
 }

@@ -1,6 +1,6 @@
 ﻿namespace MediWeckerUI.Application.Features.Planning;
 
-public enum TimepointModifierFlag
+public enum IntakeModifierFlag
 {
     None = 0,
     BeforeEating = 1,
