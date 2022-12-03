@@ -85,6 +85,33 @@
     {
         Console.WriteLine("OnTimepointsSubmit");
 
+        // Prune data to remove redudant timepoints (e.g. 2 times morning, or 2 timepoints at the same time).
+        void RemoveDuplicates(Func<Timepoint, bool> selector, Func<Timepoint, object> keySelector)
+        {
+            List<object> keys = new List<object>();
+            
+            foreach (var timepoint in Rythm.Timepoints.ToArray())
+            {
+                if (!selector(timepoint))
+                    continue;
+
+                if (!keys.Contains(keySelector(timepoint)))
+                {
+                    keys.Add(keySelector(timepoint));
+                }
+                else
+                {
+                    Rythm.Timepoints.Remove(timepoint); // Duplicate according to selector
+                }
+            }
+        }
+        
+        RemoveDuplicates(x => x.Type == TimepointType.Morning, x => x.Type);
+        RemoveDuplicates(x => x.Type == TimepointType.Midday, x => x.Type);
+        RemoveDuplicates(x => x.Type == TimepointType.Evening, x => x.Type);
+        RemoveDuplicates(x => x.Type == TimepointType.Night, x => x.Type);
+        RemoveDuplicates(x => x.Type == TimepointType.AbsoluteTime, x => x.AbsoluteTimeFromMidnight);
+        
         Plan.Rythm = JsonSerializer.Serialize(Rythm);
         CurrentStep = Step.Amount;
 
