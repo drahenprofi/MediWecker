@@ -77,7 +77,12 @@ public class AppInterop
 
     public async Task UpdatePlanAsync(Medicine medicine)
     {
-        if (!IsInApp()) return;
+        if (!IsInApp())
+        {
+            Console.WriteLine($"UpdatePlanAsync: Not in app.");
+            
+            return;
+        }
 
         await _js.InvokeVoidAsync("Android.updateMedicine", JsonSerializer.Serialize(medicine));
     }

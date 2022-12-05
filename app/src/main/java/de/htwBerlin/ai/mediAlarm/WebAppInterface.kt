@@ -30,14 +30,12 @@ class WebAppInterface internal constructor(c: Context) {
     }
 
     @JavascriptInterface
-    fun showToast(msg: String): String {
-        //Toast.makeText(mContext, "$msg", Toast.LENGTH_SHORT).show()
+    fun showToast(msg: String) {
+        Toast.makeText(mContext, "$msg", Toast.LENGTH_SHORT).show()
 
         //mContext.setAlarm()
 
         //medicineDao.insertAll(Medicine("Iboprofen", 800f, ""))
-
-        return getMedicine()
     }
 
     @JavascriptInterface
