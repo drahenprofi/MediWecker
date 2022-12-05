@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using MediWeckerUI.Application.Features;
 using MediWeckerUI.Application.Features.Planning;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -25,28 +24,40 @@ public class AppInterop
     public async Task ShowAlertAsync(string message)
     {
         if (!IsInApp()) return;
-        
+
         await _js.InvokeVoidAsync("Android.showToast", message);
     }
 
     public async Task<List<Medicine>> GetAllPlansAsync()
     {
         if (!IsInApp())
+        {
             return new List<Medicine>
             {
-                new Medicine
+                new()
                 {
                     Id = 1,
                     Name = "Test Plan",
                     Amount = "200mg",
-                    Rythm = null
+                    Rythm = JsonSerializer.Serialize(new Rythm
+                    {
+                        IntervalDays = new IntervalDaysData { Days = 1 },
+                        Timepoints = new List<Timepoint>
+                        {
+                            new()
+                            {
+                                Type = TimepointType.Morning
+                            }
+                        }
+                    })
                 }
             };
+        }
 
         var json = await _js.InvokeAsync<string>("Android.getMedicine");
-        
+
         Console.WriteLine($"GetAllPlansAsync: {json}");
-        
+
         return JsonSerializer.Deserialize<List<Medicine>>(json);
     }
 
@@ -60,14 +71,14 @@ public class AppInterop
     public async Task AddPlanAsync(Medicine medicine)
     {
         if (!IsInApp()) return;
-        
+
         await _js.InvokeVoidAsync("Android.insertMedicine", JsonSerializer.Serialize(medicine));
     }
 
     public async Task UpdatePlanAsync(Medicine medicine)
     {
         if (!IsInApp()) return;
-        
+
         await _js.InvokeVoidAsync("Android.updateMedicine", JsonSerializer.Serialize(medicine));
     }
 }

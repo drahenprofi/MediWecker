@@ -128,6 +128,9 @@
     [Parameter]
     public EventCallback OnBackward { get; set; }
 
+    [Parameter]
+    public bool EditingMode { get; set; }
+
     public ComponentStateEnum State { get; set; }
 
     public IntervalViewModel IntervalViewModelData { get; set; }
@@ -136,11 +139,11 @@
 
     protected override Task OnInitializedAsync()
     {
-        if (Rythm.IntervalDaysDays != null)
+        if (Rythm.IntervalDays != null)
         {
             IntervalViewModelData = new IntervalViewModel
             {
-                Data = Rythm.IntervalDaysDays
+                Data = Rythm.IntervalDays
             };
         }
         else
@@ -169,7 +172,7 @@
             };
         }
 
-        if (Rythm.IntervalDaysDays != null)
+        if (Rythm.IntervalDays != null)
         {
             State = ComponentStateEnum.IntervalSelection;
         }
@@ -198,7 +201,7 @@
         if (type == CompletionTypeEnum.EveryDay)
         {
             Rythm.SpecificDays = null;
-            Rythm.IntervalDaysDays = new IntervalDaysData
+            Rythm.IntervalDays = new IntervalDaysData
             {
                 Days = 1
             };
@@ -210,7 +213,7 @@
     protected async Task OnIntervalSubmitAsync()
     {
         Rythm.SpecificDays = null;
-        Rythm.IntervalDaysDays = IntervalViewModelData.Data;
+        Rythm.IntervalDays = IntervalViewModelData.Data;
 
         await CompleteAs(CompletionTypeEnum.Interval);
     }
@@ -229,7 +232,7 @@
             ShowErrorAtleastOneWeekdayMissing = false;
         }
 
-        Rythm.IntervalDaysDays = null;
+        Rythm.IntervalDays = null;
         Rythm.SpecificDays = SpecificDaysViewModelData.Data;
 
         await CompleteAs(CompletionTypeEnum.SpecificDays);

@@ -1,9 +1,15 @@
-﻿namespace MediWeckerUI.Application.Features.Planning;
+﻿using System.Text.Json.Serialization;
+
+namespace MediWeckerUI.Application.Features.Planning;
 
 public class Rythm
 {
-    public IntervalDaysData IntervalDaysDays { get; set; }
+    [JsonPropertyName("intervalDays")]
+    public IntervalDaysData IntervalDays { get; set; }
+    
+    [JsonPropertyName("specificDays")]
     public SpecificDaysData SpecificDays { get; set; }
 
-    public List<Timepoint> Timepoints { get; set; }
+    [JsonPropertyName("timepoints")]
+    public List<Timepoint> Timepoints { get; set; } = new List<Timepoint>();
 }

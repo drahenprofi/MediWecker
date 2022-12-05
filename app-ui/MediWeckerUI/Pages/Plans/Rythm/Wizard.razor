@@ -172,9 +172,7 @@
                         <div class="text-sm text-gray-500">Schritt 2</div>
                         <div class="text-xl font-semibold">Tagesrythmus</div>
                     </div>
-
-                    @* <div class="mt-2 p-2 bg-gray-100 text-gray-700 text-sm rounded">Der Tagesrythmus beschreibt, an welchen Tagen Sie das Medikament einnehmen.</div> *@
-
+                    
                     <div class="mt-2">
                         <EditRythmComponent @ref="EditRythmComponent" Rythm="Rythm" OnBackward="async () => await OnBackwardAsync(entireStep: true)" OnSubmit="OnRythmSubmit"></EditRythmComponent>
                     </div>
@@ -234,13 +232,13 @@
                     <div class="mt-2">
                         <div class="text-sm text-gray-500">Rythmus</div>
                         <div class="text-lg font-medium">
-                            @if (Rythm.IntervalDaysDays?.Days == 1)
+                            @if (Rythm.IntervalDays?.Days == 1)
                             {
                                 <span>Täglich</span>
                             }
-                            else if (Rythm.IntervalDaysDays != null)
+                            else if (Rythm.IntervalDays != null)
                             {
-                                <span>Jeden @(Rythm.IntervalDaysDays.Days). Tag</span>
+                                <span>Jeden @(Rythm.IntervalDays.Days). Tag</span>
                             }
                             else if (Rythm.SpecificDays != null)
                             {
@@ -264,7 +262,7 @@
                         <div class="font-medium text-sm flex flex-wrap gap-2 mt-1">
                             @foreach (var timepoint in Rythm.Timepoints.Where(x => x.Type == TimepointType.AbsoluteTime))
                             {
-                                <div class="bg-lime-400 px-3 py-0.5 rounded-full">@TimeSpan.FromMinutes(timepoint.AbsoluteTimeFromMidnight.Value).ToString("hh\\:mm") Uhr</div>
+                                <div class="bg-lime-400 px-3 py-0.5 rounded-full flex items-center">@TimeSpan.FromMinutes(timepoint.AbsoluteTimeFromMidnight.Value).ToString("hh\\:mm") Uhr</div>
                             }
 
                             @if (Rythm.Timepoints.Any(x => x.Type == TimepointType.Morning))
