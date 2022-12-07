@@ -71,6 +71,10 @@
         {
             CurrentStep = Step.Timepoints;
         }
+        else if (CurrentStep == Step.Finished)
+        {
+            CurrentStep = Step.Amount;
+        }
     }
 
     protected async Task OnRythmSubmit()
