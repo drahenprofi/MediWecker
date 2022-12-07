@@ -10,6 +10,6 @@ public class Rythm
     [JsonPropertyName("specificDays")]
     public SpecificDaysData SpecificDays { get; set; }
 
-    [JsonPropertyName("timepoints")]
+    [JsonPropertyName("timePoints")]
     public List<Timepoint> Timepoints { get; set; } = new List<Timepoint>();
 }
