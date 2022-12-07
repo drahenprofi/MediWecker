@@ -16,6 +16,6 @@ public class Medicine
     [JsonPropertyName("intakeModifierFlag")]
     public IntakeModifierFlag Flags { get; set; }
 
-    [JsonPropertyName("rythm")]
+    [JsonPropertyName("rhythm")]
     public string Rythm { get; set; } = "{}";
 }
