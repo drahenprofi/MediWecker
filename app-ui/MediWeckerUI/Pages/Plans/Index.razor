@@ -1,10 +1,11 @@
 ﻿@page "/plans"
 @using MediWeckerUI.Application
 @using MediWeckerUI.Application.Features
+@using MediWeckerUI.Application.Features.Planning
+@using System.Text.Json
 
 @if (Plans == null)
 {
-    
 }
 else
 {
@@ -17,7 +18,7 @@ else
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
-                
+
                     <div>
                         Neuen Plan hinzufügen
                     </div>
@@ -26,13 +27,80 @@ else
 
             @foreach (var plan in Plans)
             {
-                <button class="block group border border-gray-200 shadow-md p-4 rounded" @onclick="() => BaseLayout.Navigate<Edit>(nameof(Edit.Id), plan.Id)" >
+                var rythm = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(plan.Rythm);
+
+                <button class="block group border border-gray-200 shadow-md p-4 rounded" @onclick="() => BaseLayout.Navigate<Edit>(nameof(Edit.Id), plan.Id)">
                     <div class="flex items-center">
-                        <div class="grow">
+                        <div class="grow text-left">
                             <div class="font-semibold text-lg">@plan.Name</div>
 
-                            <div class="flex gap-3 mt-2">
-                                <div class="bg-indigo-100 text-indigo-500 px-3 py-0.5 rounded-full text-sm ">@plan.Amount</div>
+                            <div class="flex gap-2 mt-2 text-sm">
+                                <div class="bg-gray-100 px-3 py-0.5 rounded-full flex items-center">@plan.Amount</div>
+                                <div class="bg-lime-400 px-3 py-0.5 rounded-full flex items-center">
+                                    @if (rythm.IntervalDays?.Days == 1)
+                                    {
+                                        <span>Täglich</span>
+                                    }
+                                    else if (rythm.IntervalDays != null)
+                                    {
+                                        <span>Jeden @(rythm.IntervalDays.Days). Tag</span>
+                                    }
+                                    else if (rythm.SpecificDays != null)
+                                    {
+                                        var dayNames = new List<string>();
+
+                                        if (rythm.SpecificDays.Monday)
+                                            dayNames.Add("Mo");
+                                        if (rythm.SpecificDays.Tuesday)
+                                            dayNames.Add("Di");
+                                        if (rythm.SpecificDays.Wednesday)
+                                            dayNames.Add("Mi");
+                                        if (rythm.SpecificDays.Thursday)
+                                            dayNames.Add("Do");
+                                        if (rythm.SpecificDays.Friday)
+                                            dayNames.Add("Fr");
+                                        if (rythm.SpecificDays.Saturday)
+                                            dayNames.Add("Sa");
+                                        if (rythm.SpecificDays.Sunday)
+                                            dayNames.Add("So");
+
+                                        <span>Jeden @string.Join(", ", dayNames)</span>
+                                    }
+                                </div>
+                                <div>
+                                    @foreach (var timepoint in rythm.Timepoints.Where(x => x.Type == TimepointType.AbsoluteTime))
+                                    {
+                                        <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">@TimeSpan.FromMinutes(timepoint.AbsoluteTimeFromMidnight.Value).ToString("hh\\:mm") Uhr</div>
+                                    }
+
+                                    @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Morning))
+                                    {
+                                        <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                            <div>Morgens</div>
+                                        </div>
+                                    }
+
+                                    @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Midday))
+                                    {
+                                        <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                            <div>Tagsüber</div>
+                                        </div>
+                                    }
+
+                                    @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Evening))
+                                    {
+                                        <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                            <div>Abends</div>
+                                        </div>
+                                    }
+
+                                    @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Night))
+                                    {
+                                        <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                            <div>Nachts</div>
+                                        </div>
+                                    }
+                                </div>
                             </div>
                         </div>
 
@@ -57,15 +125,16 @@ else
 
     [CascadingParameter]
     public MainLayout Layout { get; set; }
-    
+
     [CascadingParameter]
     public BaseNavigationLayout BaseLayout { get; set; }
-    
+
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine("Test!");
-        
+
         Layout.UpdateTab(MainLayout.NavigationTab.Plans);
         Plans = await Interop.GetAllPlansAsync();
     }
+
 }

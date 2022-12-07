@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="Blazored.FluentValidation" Version="2.1.0-preview.2" />
         <PackageReference Include="Blazored.Modal" Version="7.1.0" />
+        <PackageReference Include="BytexDigital.Blazor.Components.FormValidators" Version="1.0.5-development.1656952156" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0" PrivateAssets="all" />
     </ItemGroup>
