@@ -1,11 +1,14 @@
 ﻿@page "/plans/rythm/wizard"
 @using MediWeckerUI.Application.Features
 @using MediWeckerUI.Application
+@using MediWeckerUI.Application.Features.Planning
 @using Index = MediWeckerUI.Pages.Plans.Index
+@using System.Text.Json
 @layout WizardLayout
 
 @code {
     private Medicine Plan { get; set; }
+    private Rythm Rythm { get; set; }
     private Step CurrentStep { get; set; }
 
     [Inject]
@@ -17,9 +20,20 @@
     [CascadingParameter]
     public BaseNavigationLayout BaseLayout { get; set; }
 
+    public EditNameComponent EditNameComponent { get; set; }
+    public EditRythmComponent EditRythmComponent { get; set; }
+    public EditAmountComponent EditAmountComponent { get; set; }
+
     protected override Task OnInitializedAsync()
     {
-        Plan = new Medicine();
+        Plan = new Medicine
+        {
+        };
+
+        Rythm = new Rythm
+        {
+            Timepoints = new List<Timepoint>()
+        };
 
         return base.OnInitializedAsync();
     }
@@ -32,227 +46,268 @@
         BaseLayout.Navigate<Index>();
     }
 
+    public async Task OnBackwardAsync(bool entireStep = false)
+    {
+        if (CurrentStep == Step.Name)
+        {
+            BaseLayout.Navigate<Index>();
+        }
+        else if (CurrentStep == Step.DayRythm)
+        {
+            if (!entireStep)
+            {
+                await EditRythmComponent.GoBackwardAsync();
+            }
+            else
+            {
+                CurrentStep = Step.Name;
+            }
+        }
+        else if (CurrentStep == Step.Timepoints)
+        {
+            CurrentStep = Step.DayRythm;
+        }
+        else if (CurrentStep == Step.Amount)
+        {
+            CurrentStep = Step.Timepoints;
+        }
+        else if (CurrentStep == Step.Finished)
+        {
+            CurrentStep = Step.Amount;
+        }
+    }
+
+    protected async Task OnRythmSubmit()
+    {
+        Plan.Rythm = JsonSerializer.Serialize(Rythm);
+        CurrentStep = Step.Timepoints;
+
+        StateHasChanged();
+    }
+
+    protected async Task OnTimepointsSubmit()
+    {
+        Console.WriteLine("OnTimepointsSubmit");
+
+        // Prune data to remove redudant timepoints (e.g. 2 times morning, or 2 timepoints at the same time).
+        void RemoveDuplicates(Func<Timepoint, bool> selector, Func<Timepoint, object> keySelector)
+        {
+            List<object> keys = new List<object>();
+            
+            foreach (var timepoint in Rythm.Timepoints.ToArray())
+            {
+                if (!selector(timepoint))
+                    continue;
+
+                if (!keys.Contains(keySelector(timepoint)))
+                {
+                    keys.Add(keySelector(timepoint));
+                }
+                else
+                {
+                    Rythm.Timepoints.Remove(timepoint); // Duplicate according to selector
+                }
+            }
+        }
+        
+        RemoveDuplicates(x => x.Type == TimepointType.Morning, x => x.Type);
+        RemoveDuplicates(x => x.Type == TimepointType.Midday, x => x.Type);
+        RemoveDuplicates(x => x.Type == TimepointType.Evening, x => x.Type);
+        RemoveDuplicates(x => x.Type == TimepointType.Night, x => x.Type);
+        RemoveDuplicates(x => x.Type == TimepointType.AbsoluteTime, x => x.AbsoluteTimeFromMidnight);
+        
+        Plan.Rythm = JsonSerializer.Serialize(Rythm);
+        CurrentStep = Step.Amount;
+
+        StateHasChanged();
+    }
+
+    protected async Task OnAmountSubmit(string amount)
+    {
+        Plan.Amount = amount;
+        CurrentStep = Step.Finished;
+
+        StateHasChanged();
+    }
+
     private enum Step
     {
         Name,
         DayRythm,
-        PickDaysRythm,
-        PickDaysIntervalRythm,
-        Times,
+        Timepoints,
         Amount,
         Finished
     }
 
 }
 
-<div class="container mx-auto max-w-3xl p-4 animate-fade-move-in">
-    <button class="flex items-center text-blue-500 hover:font-semibold" @onclick="() => BaseLayout.Navigate<Pages.Plans.Index>()">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-        </svg>
+<CascadingValue Value="this">
+    <div class="container mx-auto max-w-3xl h-full p-4 animate-fade-move-in">
+        <div class="flex justify-between">
+            <button class="h-8 w-8 bg-gray-100 rounded-md flex justify-center items-center" @onclick="() => OnBackwardAsync(entireStep: false)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+        </div>
 
-        Abbrechen
-    </button>
-
-    <div class="text-xl mt-4 font-semibold">Neuen Plan hinzufügen</div>
-    <div>
-        Alle Einstellungen, die Sie hier vornehmen, können Sie nachträglich verändern.
-    </div>
-
-    <div class="mt-4 flex flex-col gap-6">
-        @if (CurrentStep == Step.Name)
-        {
-            <div class="flex items-stretch">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <div class="h-full border-l-2 mt-1 border-dashed border-blue-500"></div>
-                </div>
-                <div class="ml-3 shrink min-w-0">
-                    <div class="font-semibold">Schritt 1: Name</div>
+        <div class="mt-8">
+            @if (CurrentStep == Step.Name)
+            {
+                <div class="flex flex-col justify-center text-center animate-fade-move-in">
                     <div>
-                        Bitte geben Sie an, mit welchem Namen der Medikationsplan angezeigt werden soll.
+                        <div class="text-sm text-gray-500">Schritt 1</div>
+                        <div class="text-xl font-semibold">Name</div>
                     </div>
-                    <div class="mt-4">
-                        <EditNameComponent Name="" OnNewName="@(s => { Plan.Name = s; CurrentStep = Step.Amount; InvokeAsync(StateHasChanged); })"/>
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="flex items-center text-green-600">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <div class="text-sm">Gewählter Name</div>
-                    <div class="font-semibold">@Plan.Name</div>
-                </div>
-            </div>
-        }
 
-        @if (CurrentStep == Step.DayRythm)
-        {
-            <div class="flex items-stretch">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <div class="h-full border-l-2 mt-1 border-dashed border-blue-500"></div>
-                </div>
-                <div class="ml-3">
-                    <div class="font-semibold">Schritt 2: Tagesrythmus</div>
-                    <div>
-                        Nun möchten wir einstellen, in welchem Tagesrythmus Sie das Medikament einnehmen möchten.
-                    </div>
                     <div class="mt-2">
-                        Bitte wählen Sie dafür aus den folgenden Optionen.
+                        Wie heißt das Medikament, dass Sie einnehmen werden?
                     </div>
-                    <div class="flex flex-col gap-2 mt-5">
-                        <button type="button" class="border px-4 py-1 rounded hover:bg-gray-50 transition-all">Jeden Tag</button>
-                        <button type="button" class="border px-4 py-1 rounded hover:bg-gray-50 transition-all">In einem selbst bestimmten Tagesintervall</button>
-                        <button type="button" class="border px-4 py-1 rounded hover:bg-gray-50 transition-all">Ich möchte die Wochentage selbst festlegen</button>
+                    <div class="mt-10">
+                        <EditNameComponent @ref="EditNameComponent" Name="@Plan.Name" OnNewName="@(s => { Plan.Name = s; CurrentStep = Step.DayRythm; InvokeAsync(StateHasChanged); })"/>
                     </div>
                 </div>
-            </div>
-        }
-        else if (CurrentStep < Step.DayRythm)
-        {
-            <div class="flex items-center text-gray-300">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    Schritt 2: Tagesrythmus
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="flex items-center text-green-600">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    Schritt 2: Tagesrythmus
-                </div>
-            </div>
-        }
+            }
 
-
-        @if (CurrentStep == Step.Times)
-        {
-            <div class="flex items-stretch">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <div class="h-full border-l-2 mt-1 border-dashed border-blue-500"></div>
-                </div>
-                <div class="ml-3">
-
-                </div>
-            </div>
-        }
-        else if (CurrentStep < Step.Times)
-        {
-            <div class="flex items-center text-gray-300">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    Schritt 3: Einnahmezeitpunkte
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="flex items-center text-green-600">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    Schritt 3: Einnahmezeitpunkte
-                </div>
-            </div>
-        }
-
-
-        @if (CurrentStep == Step.Amount)
-        {
-            <div class="flex items-stretch">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <div class="h-full border-l-2 mt-1 border-dashed border-blue-500"></div>
-                </div>
-                <div class="ml-3 shrink min-w-0">
-                    <div class="font-semibold">Schritt 4: Einnahmemenge</div>
+            @if (CurrentStep == Step.DayRythm)
+            {
+                <div class="flex flex-col justify-center text-center animate-fade-move-in">
                     <div>
-                        Legen wir nun fest, in welcher Menge Sie das Medikament einnehmen müssen.
+                        <div class="text-sm text-gray-500">Schritt 2</div>
+                        <div class="text-xl font-semibold">Tagesrythmus</div>
                     </div>
-
-                    <div class="bg-indigo-500 text-white rounded p-3 my-3">
-                        <div>
-                            Die Eingabe ist ein Freitextfeld. Sie können die Menge also ganz individuell angeben.
-                        </div>
-                        <div class="mt-2">
-                            Beispiele:
-                        </div>
-                        <div class="flex flex-col gap-2 mt-2">
-                            <div class="bg-white rounded-full px-4 py-0.5 text-indigo-900 text-sm">1 Dragee</div>
-                            <div class="text-sm">oder</div>
-                            <div class="bg-white rounded-full px-4 py-0.5 text-indigo-900 text-sm">1/2 Tablette</div>
-                        </div>
-                    </div>
-
-                    <div class="">
-                        Menge
-                    </div>
+                    
                     <div class="mt-2">
-                        <EditAmountComponent Amount="" OnNewAmount="async s => { Plan.Amount = s; CurrentStep = Step.Finished; await OnCompleted(); }"/>
+                        <EditRythmComponent @ref="EditRythmComponent" Rythm="Rythm" OnBackward="async () => await OnBackwardAsync(entireStep: true)" OnSubmit="OnRythmSubmit"></EditRythmComponent>
                     </div>
                 </div>
-            </div>
-        }
-        else if (CurrentStep < Step.Amount)
-        {
-            <div class="flex items-center text-gray-300">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+            }
+
+            @if (CurrentStep == Step.Timepoints)
+            {
+                <div class="flex flex-col justify-center text-center animate-fade-move-in">
+                    <div>
+                        <div class="text-sm text-gray-500">Schritt 3</div>
+                        <div class="text-xl font-semibold">Zeitpunkte</div>
+                    </div>
+
+                    <div class="mt-2">
+                        <EditTimepointsComponent Rythm="Rythm" OnSubmit="OnTimepointsSubmit"></EditTimepointsComponent>
+                    </div>
                 </div>
-                <div class="ml-3">
-                    Schritt 4: Einnahmemenge
+            }
+
+            @if (CurrentStep == Step.Amount)
+            {
+                <div class="flex flex-col justify-center text-center animate-fade-move-in">
+                    <div>
+                        <div class="text-sm text-gray-500">Schritt 4</div>
+                        <div class="text-xl font-semibold">Einnahmemenge</div>
+                    </div>
+
+                    <div class="mt-2">
+                        Bitte geben Sie an, wie viel Sie des Medikaments nehmen möchten.
+                    </div>
+
+                    <div class="mt-10">
+                        <EditAmountComponent Amount="@Plan.Amount" OnNewAmount="@(async amount => OnAmountSubmit(amount))"/>
+                    </div>
                 </div>
-            </div>
-        }
-        else
-        {
-            <div class="flex items-center text-green-600">
-                <div class="w-10 shrink-0 flex flex-col items-center">
-                    <svg class="w-8 h-8 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+            }
+
+            @if (CurrentStep == Step.Finished)
+            {
+                <div class="flex flex-col justify-center animate-fade-move-in text-left">
+                    <div class="text-center">
+                        <div class="text-sm text-gray-500">Fast fertig!</div>
+                        <div class="text-xl font-semibold">Stimmt alles?</div>
+                    </div>
+
+                    <div class="mt-10">
+                        <div class="text-sm text-gray-500">Name</div>
+                        <div class="text-lg font-medium">@Plan.Name</div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="text-sm text-gray-500">Einnahmemenge</div>
+                        <div class="text-lg font-medium">@Plan.Amount</div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="text-sm text-gray-500">Rythmus</div>
+                        <div class="text-lg font-medium">
+                            @if (Rythm.IntervalDays?.Days == 1)
+                            {
+                                <span>Täglich</span>
+                            }
+                            else if (Rythm.IntervalDays != null)
+                            {
+                                <span>Jeden @(Rythm.IntervalDays.Days). Tag</span>
+                            }
+                            else if (Rythm.SpecificDays != null)
+                            {
+                                var dayNames = new List<string>();
+
+                                if (Rythm.SpecificDays.Monday) dayNames.Add("Montag");
+                                if (Rythm.SpecificDays.Tuesday) dayNames.Add("Dienstag");
+                                if (Rythm.SpecificDays.Wednesday) dayNames.Add("Mittwoch");
+                                if (Rythm.SpecificDays.Thursday) dayNames.Add("Donnerstag");
+                                if (Rythm.SpecificDays.Friday) dayNames.Add("Freitag");
+                                if (Rythm.SpecificDays.Saturday) dayNames.Add("Samstag");
+                                if (Rythm.SpecificDays.Sunday) dayNames.Add("Sonntag");
+
+                                <span>Jeden @string.Join(", ", dayNames)</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="text-sm text-gray-500">Uhrzeit</div>
+                        <div class="font-medium text-sm flex flex-wrap gap-2 mt-1">
+                            @foreach (var timepoint in Rythm.Timepoints.Where(x => x.Type == TimepointType.AbsoluteTime))
+                            {
+                                <div class="bg-lime-400 px-3 py-0.5 rounded-full flex items-center">@TimeSpan.FromMinutes(timepoint.AbsoluteTimeFromMidnight.Value).ToString("hh\\:mm") Uhr</div>
+                            }
+
+                            @if (Rythm.Timepoints.Any(x => x.Type == TimepointType.Morning))
+                            {
+                                <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                    <div>Morgens</div>
+                                </div>
+                            }
+
+                            @if (Rythm.Timepoints.Any(x => x.Type == TimepointType.Midday))
+                            {
+                                <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                    <div>Tagsüber</div>
+                                </div>
+                            }
+
+                            @if (Rythm.Timepoints.Any(x => x.Type == TimepointType.Evening))
+                            {
+                                <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                    <div>Abends</div>
+                                </div>
+                            }
+
+                            @if (Rythm.Timepoints.Any(x => x.Type == TimepointType.Night))
+                            {
+                                <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                    <div>Nachts</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-10 text-sm">
+                        Stimmt etwas nicht? Nutzen Sie die Zurück-Taste oben links, um Ihre Eingaben zu bearbeiten.    
+                    </div>
+                    
+                    <button class="button-primary mt-4 py-2 w-full self-stretch text-center" @onclick="OnCompleted">
+                        Alles korrekt!
+                    </button>
                 </div>
-                <div class="ml-3">
-                    Schritt 4: Einnahmemenge
-                </div>
-            </div>
-        }
+            }
+        </div>
     </div>
-</div>
+</CascadingValue>

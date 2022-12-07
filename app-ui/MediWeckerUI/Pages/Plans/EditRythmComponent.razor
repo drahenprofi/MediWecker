@@ -1,5 +1,279 @@
-﻿<h3>EditRythmComponent</h3>
+﻿@using FluentValidation
+@using MediWeckerUI.Application.Features.Planning
+@using BytexDigital.Blazor.Components.FormValidators
+@if (State == ComponentStateEnum.InitialSelection)
+{
+    <div class="mt-2 font-semibold">
+        Bitte wählen Sie aus.
+    </div>
+
+    <div class="text-center flex flex-col gap-2 mt-4">
+        <button class="button-primary py-2 w-full" @onclick="async () => await CompleteAs(CompletionTypeEnum.EveryDay)">Einnahme an jedem Tag</button>
+        <button class="button-primary py-2 w-full" @onclick="() => { State = ComponentStateEnum.IntervalSelection; StateHasChanged(); }">Einnahme in regelmäßigen Intervallen</button>
+        <button class="button-primary py-2 w-full" @onclick="() => { State = ComponentStateEnum.SpecificDaysSelection; StateHasChanged(); }">Einnahme an bestimmten Wochentagen</button>
+    </div>
+}
+
+@if (State == ComponentStateEnum.IntervalSelection)
+{
+    <div class="">
+        <div class="mt-2">
+            Bitte geben Sie an, jeden wievielten Tag Sie das Medikament einnehmen möchten.
+        </div>
+
+        <div class="mt-4">
+            <EditForm Model="IntervalViewModelData" OnValidSubmit="OnIntervalSubmitAsync">
+                <FluentValidationValidator></FluentValidationValidator>
+
+                <div>
+                    <div class="flex items-stretch gap-1">
+                        <InputNumber class="border border-gray-200 px-3 py-1 rounded grow min-w-0" @bind-Value="@IntervalViewModelData.Data.Days"></InputNumber>
+                        <button class="button-primary">Speichern</button>
+                    </div>
+
+                    <ValidationMessage For="() => IntervalViewModelData.Data.Days"></ValidationMessage>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@if (State == ComponentStateEnum.SpecificDaysSelection)
+{
+    <div class="">
+        <div class="mt-2">
+            Bitte wählen Sie die Wochentage aus, an denen Sie das Medikament einnehmen möchten.
+        </div>
+
+        <div class="mt-4">
+            <EditForm Model="SpecificDaysViewModelData" OnValidSubmit="OnSpecificDaysSubmitAsync">
+                <FluentValidationValidator></FluentValidationValidator>
+
+                <div class="flex flex-col items-center">
+                    <div class="flex flex-col gap-5">
+                        <div>
+                            <div class="flex items-center">
+                                <InputCheckbox @bind-Value="@SpecificDaysViewModelData.Data.Monday" class="w-5 h-5 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 focus:ring-2"/>
+                                <label class="ml-3 font-medium text-gray-900">Montag</label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center">
+                                <InputCheckbox @bind-Value="@SpecificDaysViewModelData.Data.Tuesday" class="w-5 h-5 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 focus:ring-2"/>
+                                <label class="ml-3 font-medium text-gray-900">Dienstag</label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center">
+                                <InputCheckbox @bind-Value="@SpecificDaysViewModelData.Data.Wednesday" class="w-5 h-5 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 focus:ring-2"/>
+                                <label class="ml-3 font-medium text-gray-900">Mittwoch</label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center">
+                                <InputCheckbox @bind-Value="@SpecificDaysViewModelData.Data.Thursday" class="w-5 h-5 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 focus:ring-2"/>
+                                <label class="ml-3 font-medium text-gray-900">Donnerstag</label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center">
+                                <InputCheckbox @bind-Value="@SpecificDaysViewModelData.Data.Friday" class="w-5 h-5 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 focus:ring-2"/>
+                                <label class="ml-3 font-medium text-gray-900">Freitag</label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center">
+                                <InputCheckbox @bind-Value="@SpecificDaysViewModelData.Data.Saturday" class="w-5 h-5 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 focus:ring-2"/>
+                                <label class="ml-3 font-medium text-gray-900">Samstag</label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center">
+                                <InputCheckbox @bind-Value="@SpecificDaysViewModelData.Data.Sunday" class="w-5 h-5 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 focus:ring-2"/>
+                                <label class="ml-3 font-medium text-gray-900">Sonntag</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (ShowErrorAtleastOneWeekdayMissing)
+                {
+                    <div class="mt-4 text-red-500 text-sm text-center">
+                        Es muss mindestens ein Wochentag ausgewählt werden.
+                    </div>
+                }
+
+                <div class="mt-5 shrink-0">
+                    <button class="button-primary mt-3 py-2 w-full text-center" type="submit">Speichern</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
 
 @code {
-    
+
+    [Parameter]
+    public Application.Features.Planning.Rythm Rythm { get; set; }
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnBackward { get; set; }
+
+    [Parameter]
+    public bool EditingMode { get; set; }
+
+    public ComponentStateEnum State { get; set; }
+
+    public IntervalViewModel IntervalViewModelData { get; set; }
+    public SpecificDaysViewModel SpecificDaysViewModelData { get; set; }
+    public bool ShowErrorAtleastOneWeekdayMissing { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        if (Rythm.IntervalDays != null)
+        {
+            IntervalViewModelData = new IntervalViewModel
+            {
+                Data = Rythm.IntervalDays
+            };
+        }
+        else
+        {
+            IntervalViewModelData = new IntervalViewModel
+            {
+                Data = new IntervalDaysData
+                {
+                    Days = 3
+                }
+            };
+        }
+
+        if (Rythm.SpecificDays != null)
+        {
+            SpecificDaysViewModelData = new SpecificDaysViewModel
+            {
+                Data = Rythm.SpecificDays
+            };
+        }
+        else
+        {
+            SpecificDaysViewModelData = new SpecificDaysViewModel
+            {
+                Data = new SpecificDaysData()
+            };
+        }
+
+        if (Rythm.IntervalDays != null)
+        {
+            State = ComponentStateEnum.IntervalSelection;
+        }
+        else if (Rythm.SpecificDays != null)
+        {
+            State = ComponentStateEnum.SpecificDaysSelection;
+        }
+
+        return base.OnInitializedAsync();
+    }
+
+    public async Task GoBackwardAsync()
+    {
+        if (State == ComponentStateEnum.InitialSelection)
+        {
+            await OnBackward.InvokeAsync();
+        }
+        else
+        {
+            State = ComponentStateEnum.InitialSelection;
+        }
+    }
+
+    protected async Task CompleteAs(CompletionTypeEnum type)
+    {
+        if (type == CompletionTypeEnum.EveryDay)
+        {
+            Rythm.SpecificDays = null;
+            Rythm.IntervalDays = new IntervalDaysData
+            {
+                Days = 1
+            };
+        }
+
+        await OnSubmit.InvokeAsync();
+    }
+
+    protected async Task OnIntervalSubmitAsync()
+    {
+        Rythm.SpecificDays = null;
+        Rythm.IntervalDays = IntervalViewModelData.Data;
+
+        await CompleteAs(CompletionTypeEnum.Interval);
+    }
+
+    protected async Task OnSpecificDaysSubmitAsync()
+    {
+        if (SpecificDaysViewModelData.Data is { Monday: false, Tuesday: false, Wednesday: false, Thursday: false, Friday: false, Saturday: false,Sunday: false })
+        {
+            ShowErrorAtleastOneWeekdayMissing = true;
+            StateHasChanged();
+
+            return;
+        }
+        else
+        {
+            ShowErrorAtleastOneWeekdayMissing = false;
+        }
+
+        Rythm.IntervalDays = null;
+        Rythm.SpecificDays = SpecificDaysViewModelData.Data;
+
+        await CompleteAs(CompletionTypeEnum.SpecificDays);
+    }
+
+    public class IntervalViewModel
+    {
+        public IntervalDaysData Data { get; set; }
+
+        public class Validator : AbstractValidator<IntervalViewModel>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.Data.Days)
+                    .GreaterThanOrEqualTo(1)
+                    .WithMessage("Das Tagesintervall muss mindestens 1 sein.");
+            }
+        }
+    }
+
+    public class SpecificDaysViewModel
+    {
+        public SpecificDaysData Data { get; set; }
+
+    // public class Validator : AbstractValidator<SpecificDaysData>
+    // {
+    // }
+    }
+
+    public enum ComponentStateEnum
+    {
+        InitialSelection,
+        IntervalSelection,
+        SpecificDaysSelection
+    }
+
+    public enum CompletionTypeEnum
+    {
+        EveryDay,
+        Interval,
+        SpecificDays
+    }
+
 }
