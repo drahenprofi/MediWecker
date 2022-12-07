@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+    <head>
+        <base href="/"/>
+
+        <meta charset="utf-8"/>
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+        <title>MediWeckerUI</title>
+
+        <link href="css/app.css" rel="stylesheet"/>
+        <link href="favicon.png" rel="icon" type="image/png"/>
+        <link href="MediWeckerUI.styles.css" rel="stylesheet"/>
+        
+        <link href="assets/css/tailwind.css" rel="stylesheet">
+    </head>
+
+    <body class="h-full font-sans text-gray-700">
+        <div id="app" class="h-full">
+            <div class="h-full flex justify-center items-center">
+                <div class="w-60 h-48 relative -mt-20">
+                    <div class="font-semibold tracking-tight text-gray-500 text-center text-lg">
+                        <span class="font-bold bg-red-600 text-white pl-2 pr-1 py-0.5 rounded-l-full z-10 relative">Medi</span><span class="font-bold pr-2 pl-1 py-0.5 rounded-r-full border-t border-r border-b">Wecker</span>
+                    </div>
+
+                    <div class="relative h-2 mt-2">
+                        <div class="mt-1 bg-gray-100 h-full w-full rounded-full text-sm z-0 absolute"></div>
+                        <div class="mt-1 bg-lime-200 h-full rounded-full text-sm z-10 absolute" style="width: var(--blazor-load-percentage, 0%)"></div>
+                    </div>
+
+                    <div class="h-1"></div>
+
+                    <div class="mt-4">
+                        <div class="grid grid-cols-7">
+                            <div class="h-full w-full flex justify-center items-center text-xs font-bold text-gray-400">
+                                MO
+                            </div>
+
+                            <div class="h-full w-full flex justify-center items-center text-xs font-bold text-gray-400">
+                                DI
+                            </div>
+
+                            <div class="h-full w-full flex justify-center items-center text-xs font-bold text-gray-400">
+                                MI
+                            </div>
+
+                            <div class="h-full w-full flex justify-center items-center text-xs font-bold text-gray-400">
+                                DO
+                            </div>
+
+                            <div class="h-full w-full flex justify-center items-center text-xs font-bold text-gray-400">
+                                FR
+                            </div>
+
+                            <div class="h-full w-full flex justify-center items-center text-xs font-bold text-gray-400">
+                                SA
+                            </div>
+
+                            <div class="h-full w-full flex justify-center items-center text-xs font-bold text-gray-400">
+                                SO
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-0 bg-gray-50 h-full rounded-md overflow-hidden grid grid-cols-7 grid-rows-5 shadow-md">
+                        <div class="row-start-1 row-end-2 col-start-1 col-end-8 border-b"></div>
+                        <div class="row-start-2 row-end-3 col-start-1 col-end-8 border-b"></div>
+                        <div class="row-start-3 row-end-4 col-start-1 col-end-8 border-b"></div>
+                        <div class="row-start-4 row-end-5 col-start-1 col-end-8 border-b"></div>
+                        <div class="row-start-5 row-end-6 col-start-1 col-end-8 border-b"></div>
+
+                        <div class="row-start-1 row-end-6 col-start-1 col-end-2 border-r"></div>
+                        <div class="row-start-1 row-end-6 col-start-2 col-end-3 border-r"></div>
+                        <div class="row-start-1 row-end-6 col-start-3 col-end-4 border-r"></div>
+                        <div class="row-start-1 row-end-6 col-start-4 col-end-5 border-r"></div>
+                        <div class="row-start-1 row-end-6 col-start-5 col-end-6 border-r"></div>
+                        <div class="row-start-1 row-end-6 col-start-6 col-end-7 border-r"></div>
+                        
+                        <div class="row-start-5 row-end-6 col-start-4 col-end-8 bg-gray-100"></div>
+                        
+                        <div class="row-start-1 row-end-2 col-start-3 col-end-4 h-full w-full flex justify-center items-center">
+                            <div class="h-4 w-4 bg-gray-200/50/50 rounded-full flex justify-center items-center"></div>
+                        </div>
+
+                        <div class="row-start-2 row-end-3 col-start-1 col-end-2 h-full w-full flex justify-center items-center">
+                            <div class="h-4 w-4 bg-gray-200/50 rounded-full flex justify-center items-center"></div>
+                        </div>
+
+                        <div class="row-start-2 row-end-3 col-start-6 col-end-7 h-full w-full flex justify-center items-center">
+                            <div class="h-4 w-4 bg-gray-200/50 rounded-full flex justify-center items-center"></div>
+                        </div>
+
+                        <div class="row-start-3 row-end-4 col-start-4 col-end-5 h-full w-full flex justify-center items-center">
+                            <div class="h-4 w-4 bg-gray-200/50 rounded-full flex justify-center items-center"></div>
+                        </div>
+
+                        <div class="row-start-4 row-end-5 col-start-7 col-end-8 h-full w-full flex justify-center items-center">
+                            <div class="h-4 w-4 bg-gray-200/50 rounded-full flex justify-center items-center"></div>
+                        </div>
+
+                        <div class="row-start-1 row-end-2 col-start-7 col-end-8 h-full w-full flex justify-center items-center">
+                            <div class="h-4 w-4 bg-gray-200/50 rounded-full flex justify-center items-center"></div>
+                        </div>
+
+                        <div class="row-start-3 row-end-4 col-start-2 col-end-3 h-full w-full flex justify-center items-center">
+                            <div class="h-4 w-4 bg-gray-200/50 rounded-full flex justify-center items-center"></div>
+                        </div>
+                        
+                        <div class="row-start-5 row-end-6 col-start-1 col-end-2 h-full w-full flex justify-center items-center">
+                            <div class="h-4 w-4 bg-gray-200/50 rounded-full flex justify-center items-center"></div>
+                        </div>
+
+                        <div class="row-start-4 row-end-5 col-start-6 col-end-7 h-full w-full flex justify-center items-center">
+                            <div class="h-4 w-4 bg-gray-200/50 rounded-full flex justify-center items-center"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="blazor-error-ui">
+            An unhandled error has occurred.
+            <a class="reload" href="">Reload</a>
+            <a class="dismiss">🗙</a>
+        </div>
+        
+        <script src="_framework/blazor.webassembly.js"></script>
+    </body>
+</html>
