@@ -4,7 +4,9 @@
 @using MediWeckerUI.Application.Features.Planning
 @using Index = MediWeckerUI.Pages.Plans.Index
 @using System.Text.Json
+@using MediWeckerUI.Application.Features.Navigation
 @layout WizardLayout
+@implements IDisposable
 
 @code {
     private Medicine Plan { get; set; }
@@ -16,6 +18,9 @@
 
     [Inject]
     public NavigationManager NavigationManager { get; set; }
+    
+    [Inject]
+    public WebViewNavigationHistory NavigationHistory { get; set; }
 
     [CascadingParameter]
     public BaseNavigationLayout BaseLayout { get; set; }
@@ -24,8 +29,14 @@
     public EditRythmComponent EditRythmComponent { get; set; }
     public EditAmountComponent EditAmountComponent { get; set; }
 
+    private string Guid = System.Guid.NewGuid().ToString();
+    
     protected override Task OnInitializedAsync()
     {
+        Console.WriteLine($"Wizard: OnInitializedAsync witwh instance id = {Guid}");
+        
+        NavigationHistory.BackEvent += BackEvent;
+        
         Plan = new Medicine
         {
         };
@@ -38,6 +49,11 @@
         return base.OnInitializedAsync();
     }
 
+    private async void BackEvent(object? sender, EventArgs e)
+    {
+        await OnBackwardAsync();
+    }
+
     private async Task OnCompleted()
     {
         await Interop.AddPlanAsync(Plan);
@@ -48,6 +64,8 @@
 
     public async Task OnBackwardAsync(bool entireStep = false)
     {
+        Console.WriteLine($"Wizard: OnBackwardAsync called, current step = {CurrentStep}");
+        
         if (CurrentStep == Step.Name)
         {
             BaseLayout.Navigate<Index>();
@@ -75,6 +93,8 @@
         {
             CurrentStep = Step.Amount;
         }
+
+        InvokeAsync(StateHasChanged);
     }
 
     protected async Task OnRythmSubmit()
@@ -137,6 +157,13 @@
         Timepoints,
         Amount,
         Finished
+    }
+
+    public void Dispose()
+    {
+        Console.WriteLine($"Wizard: Disposing instance id = {Guid}");
+        
+        NavigationHistory.BackEvent -= BackEvent;
     }
 
 }

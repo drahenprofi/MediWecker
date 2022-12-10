@@ -2,13 +2,14 @@
 using Blazored.Modal;
 using Blazored.Modal.Services;
 using MediWeckerUI.Application;
+using MediWeckerUI.Application.Features.Navigation;
 using MediWeckerUI.Application.Features.Planning;
 using MediWeckerUI.Shared;
 using Microsoft.AspNetCore.Components;
 
 namespace MediWeckerUI.Pages.Plans;
 
-public partial class Edit
+public partial class Edit : IDisposable
 {
     [Parameter]
     public int Id { get; set; }
@@ -25,6 +26,9 @@ public partial class Edit
     [Inject]
     public NavigationManager NavigationManager { get; set; }
 
+    [Inject]
+    public WebViewNavigationHistory NavigationHistory { get; set; }
+    
     public bool IsEditingName { get; set; }
     public bool IsEditingAmount { get; set; }
     public bool IsEditingRythm { get; set; }
@@ -35,6 +39,18 @@ public partial class Edit
     public Medicine Plan { get; set; }
     public Application.Features.Planning.Rythm Rythm { get; set; }
     public Application.Features.Planning.Rythm RythmEditCopy { get; set; }
+
+    protected override void OnInitialized()
+    {
+        NavigationHistory.BackEvent += BackEvent;
+        
+        base.OnInitialized();
+    }
+
+    private async void BackEvent(object? sender, EventArgs e)
+    {
+        await OnBackwardAsync();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -119,8 +135,24 @@ public partial class Edit
         InvokeAsync(StateHasChanged);
     }
 
-    protected async Task OnBackwardAsync()
+    protected async Task OnBackwardAsync(bool closeComponents = false)
     {
+        if (!IsEditingRythm && !IsEditingTimepoints)
+        {
+            BaseLayout.Navigate<Plans.Index>();
+            
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+        
+        if (EditRythmComponent != default && !closeComponents)
+        {
+            await EditRythmComponent.GoBackwardAsync();
+            
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+
         IsEditingRythm = false;
         IsEditingTimepoints = false;
 
@@ -157,5 +189,10 @@ public partial class Edit
         IsEditingTimepoints = false;
         
         StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationHistory.BackEvent -= BackEvent;
     }
 }

@@ -1109,16 +1109,12 @@ textarea:focus, input:focus{
   margin-top: 0px;
 }
 
-.ml-3 {
-  margin-left: 0.75rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
-}
-
 .mt-8 {
   margin-top: 2rem;
+}
+
+.ml-3 {
+  margin-left: 0.75rem;
 }
 
 .mt-5 {
@@ -1181,16 +1177,16 @@ textarea:focus, input:focus{
   height: 1rem;
 }
 
+.h-8 {
+  height: 2rem;
+}
+
 .h-6 {
   height: 1.5rem;
 }
 
 .h-24 {
   height: 6rem;
-}
-
-.h-8 {
-  height: 2rem;
 }
 
 .w-full {
@@ -1213,12 +1209,12 @@ textarea:focus, input:focus{
   width: 1rem;
 }
 
-.w-6 {
-  width: 1.5rem;
-}
-
 .w-8 {
   width: 2rem;
+}
+
+.w-6 {
+  width: 1.5rem;
 }
 
 .min-w-0 {
@@ -1346,12 +1342,12 @@ textarea:focus, input:focus{
   gap: 1rem;
 }
 
-.gap-1 {
-  gap: 0.25rem;
-}
-
 .gap-2 {
   gap: 0.5rem;
+}
+
+.gap-1 {
+  gap: 0.25rem;
 }
 
 .gap-5 {
@@ -1491,23 +1487,9 @@ textarea:focus, input:focus{
   background-color: rgb(229 231 235 / 0.5);
 }
 
-.bg-red-50 {
+.bg-white {
   --tw-bg-opacity: 1;
-  background-color: rgb(254 242 242 / var(--tw-bg-opacity));
-}
-
-.bg-gray-200\/75 {
-  background-color: rgb(229 231 235 / 0.75);
-}
-
-.bg-indigo-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(224 231 255 / var(--tw-bg-opacity));
-}
-
-.bg-gray-200 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(229 231 235 / var(--tw-bg-opacity));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
 .bg-lime-400 {
@@ -1520,13 +1502,26 @@ textarea:focus, input:focus{
   background-color: rgb(253 230 138 / var(--tw-bg-opacity));
 }
 
-.bg-white {
+.bg-red-50 {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  background-color: rgb(254 242 242 / var(--tw-bg-opacity));
+}
+
+.bg-gray-200\/75 {
+  background-color: rgb(229 231 235 / 0.75);
+}
+
+.bg-gray-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(229 231 235 / var(--tw-bg-opacity));
 }
 
 .p-4 {
   padding: 1rem;
+}
+
+.p-2 {
+  padding: 0.5rem;
 }
 
 .p-1\.5 {
@@ -1539,10 +1534,6 @@ textarea:focus, input:focus{
 
 .p-2\.5 {
   padding: 0.625rem;
-}
-
-.p-2 {
-  padding: 0.5rem;
 }
 
 .px-4 {
@@ -1737,11 +1728,6 @@ textarea:focus, input:focus{
   color: rgb(156 163 175 / var(--tw-text-opacity));
 }
 
-.text-neutral-400 {
-  --tw-text-opacity: 1;
-  color: rgb(163 163 163 / var(--tw-text-opacity));
-}
-
 .text-blue-600 {
   --tw-text-opacity: 1;
   color: rgb(37 99 235 / var(--tw-text-opacity));
@@ -1765,11 +1751,6 @@ textarea:focus, input:focus{
 .text-gray-300 {
   --tw-text-opacity: 1;
   color: rgb(209 213 219 / var(--tw-text-opacity));
-}
-
-.text-indigo-500 {
-  --tw-text-opacity: 1;
-  color: rgb(99 102 241 / var(--tw-text-opacity));
 }
 
 .text-indigo-600 {
@@ -2126,6 +2107,24 @@ When using this, you will likely need to set font-variation-settings explicitly,
   font-display: swap;
 
   src: url("font-files/Inter-italic.var.woff2?v=3.19") format("woff2");
+}
+
+.placeholder\:italic::-moz-placeholder {
+  font-style: italic;
+}
+
+.placeholder\:italic::placeholder {
+  font-style: italic;
+}
+
+.placeholder\:text-slate-200::-moz-placeholder {
+  --tw-text-opacity: 1;
+  color: rgb(226 232 240 / var(--tw-text-opacity));
+}
+
+.placeholder\:text-slate-200::placeholder {
+  --tw-text-opacity: 1;
+  color: rgb(226 232 240 / var(--tw-text-opacity));
 }
 
 .hover\:border-blue-500:hover {

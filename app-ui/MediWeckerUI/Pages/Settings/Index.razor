@@ -1,12 +1,36 @@
 ﻿@page "/settings"
+@using MediWeckerUI.Application.Features.Navigation
+@implements IDisposable
 <h3>Settings</h3>
 
 @code {
     [CascadingParameter]
     public MainLayout Layout { get; set; }
+    
+    [CascadingParameter]
+    public BaseNavigationLayout BaseLayout { get; set; }
+    
+    [Inject]
+    public WebViewNavigationHistory NavigationHistory { get; set; }
 
     protected override void OnInitialized()
     {
         Layout.UpdateTab(MainLayout.NavigationTab.Settings);
+        
+        Console.WriteLine($"Settings: Instance created");
+        
+        NavigationHistory.BackEvent += BackEvent;
+    }
+
+    private void BackEvent(object? sender, EventArgs e)
+    {
+        Console.WriteLine($"Settings: Back, navigating to Index");
+        
+        BaseLayout.Navigate<Pages.Index>();
+    }
+
+    public void Dispose()
+    {
+        NavigationHistory.BackEvent -= BackEvent;
     }
 }

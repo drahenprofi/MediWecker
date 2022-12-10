@@ -3,6 +3,8 @@
 @using MediWeckerUI.Application.Features
 @using MediWeckerUI.Application.Features.Planning
 @using System.Text.Json
+@using MediWeckerUI.Application.Features.Navigation
+@implements IDisposable
 
 @if (Plans == null)
 {
@@ -120,6 +122,9 @@ else
 
     [Inject]
     public AppInterop Interop { get; set; }
+    
+    [Inject]
+    public WebViewNavigationHistory NavigationHistory { get; set; }
 
     public List<Medicine> Plans { get; set; }
 
@@ -131,10 +136,20 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("Test!");
-
         Layout.UpdateTab(MainLayout.NavigationTab.Plans);
         Plans = await Interop.GetAllPlansAsync();
+        
+        NavigationHistory.BackEvent += BackEvent;
+    }
+
+    private void BackEvent(object? sender, EventArgs e)
+    {
+        BaseLayout.Navigate<Pages.Index>();
+    }
+
+    public void Dispose()
+    {
+        NavigationHistory.BackEvent -= BackEvent;
     }
 
 }
