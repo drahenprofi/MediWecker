@@ -187,10 +187,10 @@
                         <div class="text-xl font-semibold">Name</div>
                     </div>
 
-                    <div class="mt-2">
+                    <div class="mt-4">
                         Wie heißt das Medikament, dass Sie einnehmen werden?
                     </div>
-                    <div class="mt-10">
+                    <div class="mt-4">
                         <EditNameComponent @ref="EditNameComponent" Name="@Plan.Name" OnNewName="@(s => { Plan.Name = s; CurrentStep = Step.DayRythm; InvokeAsync(StateHasChanged); })"/>
                     </div>
                 </div>
@@ -204,7 +204,7 @@
                         <div class="text-xl font-semibold">Tagesrythmus</div>
                     </div>
                     
-                    <div class="mt-2">
+                    <div class="mt-4">
                         <EditRythmComponent @ref="EditRythmComponent" Rythm="Rythm" OnBackward="async () => await OnBackwardAsync(entireStep: true)" OnSubmit="OnRythmSubmit"></EditRythmComponent>
                     </div>
                 </div>
@@ -218,7 +218,7 @@
                         <div class="text-xl font-semibold">Zeitpunkte</div>
                     </div>
 
-                    <div class="mt-2">
+                    <div class="mt-4">
                         <EditTimepointsComponent Rythm="Rythm" OnSubmit="OnTimepointsSubmit"></EditTimepointsComponent>
                     </div>
                 </div>
@@ -232,11 +232,15 @@
                         <div class="text-xl font-semibold">Einnahmemenge</div>
                     </div>
 
-                    <div class="mt-2">
+                    <div class="mt-4">
                         Bitte geben Sie an, wie viel Sie des Medikaments nehmen möchten.
                     </div>
+                    
+                    <div class="mt-4 bg-slate-50 p-3 text-sm text-slate-500">
+                        In diesem Feld können Sie jede beliebige Angabe eingeben (zum Beispiel "1/2 Tabletten" oder "1 Dragee").
+                    </div>
 
-                    <div class="mt-10">
+                    <div class="mt-4">
                         <EditAmountComponent Amount="@Plan.Amount" OnNewAmount="@(async amount => OnAmountSubmit(amount))"/>
                     </div>
                 </div>
@@ -244,7 +248,7 @@
 
             @if (CurrentStep == Step.Finished)
             {
-                <div class="flex flex-col justify-center animate-fade-move-in text-left">
+                <div class="flex flex-col justify-center items-center animate-fade-move-in text-center">
                     <div class="text-center">
                         <div class="text-sm text-gray-500">Fast fertig!</div>
                         <div class="text-xl font-semibold">Stimmt alles?</div>
