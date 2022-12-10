@@ -11,14 +11,13 @@ import java.util.*
 class MedicineScheduler(private val context: Context) {
 
     private val alarmDao = AppDatabase.getDatabase(context).alarmDao()
-    private val gson = Gson()
 
     fun schedule(medicine: Medicine) {
         if (alarmDao.getByMedicineId(medicine.id).isNotEmpty()) {
             return
         }
 
-        val targetTime = getNextTargetTime(medicine)
+        val targetTime = TargetTimeCalculator().calculate(medicine)
 
         val alarm = Alarm(medicine.id, targetTime)
         alarm.id = alarmDao.insert(alarm)
@@ -26,7 +25,7 @@ class MedicineScheduler(private val context: Context) {
         AlarmScheduler(context).schedule(alarm)
     }
 
-    private fun getNextTargetTime(medicine: Medicine): Long {
+    /*private fun getNextTargetTime(medicine: Medicine): Long {
         val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
 
         val calendar = Calendar.getInstance()
@@ -46,6 +45,7 @@ class MedicineScheduler(private val context: Context) {
 
         val currentTimeFromMidnight = (calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)) * 60 * 1000
 
+        // TODO: this will crash for all timePointTypes except TimePointType.AbsoluteTime
         for (timePoint in rhythm.timePoints) {
             val scheduledTimeFromMidnight = timePoint.absoluteTimeFromMidnight!! * 60 * 1000
             if (scheduledTimeFromMidnight > currentTimeFromMidnight) {
@@ -60,5 +60,5 @@ class MedicineScheduler(private val context: Context) {
             .absoluteTimeFromMidnight!!
 
         return scheduledDayMillis + 1000 * 60 * 60 * 24 + firstTimePointNextDay * 60 * 1000
-    }
+    }*/
 }
