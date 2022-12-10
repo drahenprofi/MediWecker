@@ -11,7 +11,7 @@ interface MedicineDao {
     @Query("SELECT * FROM medicine")
     fun getAll(): List<Medicine>
 
-    @Query("SELECT * FROM medicine WHERE id =:id")
+    @Query("SELECT * FROM medicine WHERE id = :id")
     fun get(id: Long): Medicine
 
     @Query("SELECT * FROM medicine WHERE id IN (:medicineIds)")

@@ -5,11 +5,15 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.AsyncTask
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
+import java.util.concurrent.Executors
 
 
 class AlarmReceiver: BroadcastReceiver() {
@@ -22,14 +26,20 @@ class AlarmReceiver: BroadcastReceiver() {
         val alarmDao = database.alarmDao()
         val medicineDao = database.medicineDao()
 
-        val alarmId = intent.getLongExtra("alarmId", 0)
-        val alarm = alarmDao.get(alarmId)
-        val medicine = medicineDao.get(alarm.medicineId)
+        val alarmId = intent.getStringExtra("ALARM_ID")
 
-        sendNotification(context, medicine)
+        val executor = Executors.newSingleThreadExecutor()
+        val handler = Handler(Looper.getMainLooper())
 
-        alarmDao.delete(alarm)
-        MedicineScheduler(context).schedule(medicine)
+        executor.execute {
+            val alarm = alarmDao.get(alarmId!!.toLong())
+            val medicine = medicineDao.get(alarm.medicineId)
+
+            sendNotification(context, medicine)
+
+            alarmDao.delete(alarm)
+            MedicineScheduler(context).schedule(medicine)
+        }
     }
 
     private fun createNotificationChannel(context: Context) {

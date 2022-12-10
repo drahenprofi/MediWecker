@@ -45,18 +45,6 @@ class WebAppInterface internal constructor(c: Context) {
 
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
 
-        val rhythm = Rhythm(
-            IntervalDaysData(days = 1),
-            null,
-            listOf(
-                TimePoint(
-                    TimepointType.AbsoluteTime,
-                    (14 * 60 + 56) * 60 * 1000
-                )
-            )
-        )
-
-        medicine.rhythm = gson.toJson(rhythm)
         medicine.id = medicineDao.insert(medicine)
 
         MedicineScheduler(mContext).schedule(medicine)

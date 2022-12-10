@@ -47,11 +47,18 @@ class MedicineScheduler(private val context: Context) {
         val currentTimeFromMidnight = (calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)) * 60 * 1000
 
         for (timePoint in rhythm.timePoints) {
-            if (timePoint.absoluteTimeFromMidnight!! >= currentTimeFromMidnight) {
-                return scheduledDayMillis + timePoint.absoluteTimeFromMidnight
+            val scheduledTimeFromMidnight = timePoint.absoluteTimeFromMidnight!! * 60 * 1000
+            if (scheduledTimeFromMidnight > currentTimeFromMidnight) {
+                return scheduledDayMillis + scheduledTimeFromMidnight
             }
         }
 
-        return calendar.timeInMillis
+        // all time points for current day expired
+        // schedule earliest time point for next day
+        val firstTimePointNextDay = rhythm.timePoints
+            .minByOrNull { x -> x.absoluteTimeFromMidnight!! }!!
+            .absoluteTimeFromMidnight!!
+
+        return scheduledDayMillis + 1000 * 60 * 60 * 24 + firstTimePointNextDay * 60 * 1000
     }
 }
