@@ -14,10 +14,9 @@ class AlarmScheduler(private val context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val intent = Intent(context, AlarmReceiver::class.java)
-        intent.putExtra("ALARM_ID", alarm.id.toString())
+        intent.putExtra("ALARM_ID", alarm.id)
 
-        val pendingIntent =
-            PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent = PendingIntent.getBroadcast(context, alarm.id.toInt(), intent, PendingIntent.FLAG_IMMUTABLE)
 
         val triggerAtMillis = getTriggerAtMillisFromTargetTime(alarm.targetTime)
 

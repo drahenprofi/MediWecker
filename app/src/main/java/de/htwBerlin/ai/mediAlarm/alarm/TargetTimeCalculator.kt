@@ -22,12 +22,12 @@ class TargetTimeCalculator {
         val currentDay = now - calendar[Calendar.HOUR_OF_DAY] * 60 * 60 * 1000 - calendar[Calendar.MINUTE] * 60 * 1000 - calendar[Calendar.SECOND] * 1000
         val currentTimeFromMidnight = (calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)) * 60 * 1000
 
-        var scheduledDayDifference = 0
-
-        if (rhythm.intervalDays != null) {
-            scheduledDayDifference = rhythm.intervalDays.days * 24 * 60 * 60 * 1000
+        val scheduledDayDifference = if (rhythm.intervalDays != null) {
+            rhythm.intervalDays.days * 24 * 60 * 60 * 1000
         } else if (rhythm.specificDays != null) {
-            scheduledDayDifference = getDayDifferenceBySpecificDaysData(rhythm, calendar, currentTimeFromMidnight)
+            getDayDifferenceBySpecificDaysData(rhythm, calendar, currentTimeFromMidnight)
+        } else {
+            0
         }
 
         // schedule next alarm for today

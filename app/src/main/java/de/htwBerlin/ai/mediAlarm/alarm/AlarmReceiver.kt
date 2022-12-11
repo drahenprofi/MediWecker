@@ -26,19 +26,21 @@ class AlarmReceiver: BroadcastReceiver() {
         val alarmDao = database.alarmDao()
         val medicineDao = database.medicineDao()
 
-        val alarmId = intent.getStringExtra("ALARM_ID")
+        val alarmId = intent.getLongExtra("ALARM_ID", 0)
 
         val executor = Executors.newSingleThreadExecutor()
-        val handler = Handler(Looper.getMainLooper())
 
         executor.execute {
-            val alarm = alarmDao.get(alarmId!!.toLong())
-            val medicine = medicineDao.get(alarm.medicineId)
+            val alarm = alarmDao.get(alarmId)
 
-            sendNotification(context, medicine)
+            if (alarm != null) {
+                val medicine = medicineDao.get(alarm.medicineId)
 
-            alarmDao.delete(alarm)
-            MedicineScheduler(context).schedule(medicine)
+                sendNotification(context, medicine)
+
+                alarmDao.delete(alarm)
+                MedicineScheduler(context).schedule(medicine)
+            }
         }
     }
 
