@@ -1,16 +1,16 @@
 package de.htwBerlin.ai.mediAlarm.alarm
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import de.htwBerlin.ai.mediAlarm.R
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import java.util.concurrent.Executors
@@ -62,16 +62,31 @@ class AlarmReceiver: BroadcastReceiver() {
     }
 
     private fun sendNotification(context: Context, medicine: Medicine) {
-        val builder = NotificationCompat.Builder(context, channelId)
+        val snoozePendingIntent = getSnoozePendingIntent(context, medicine)
+
+        val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.sym_def_app_icon)
             .setContentTitle("Medicine Reminder")
             .setContentText(medicine.name)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .addAction(R.drawable.ic_launcher_foreground, "Schlummern", snoozePendingIntent)
+            .build()
+
+        notification.flags = Notification.FLAG_AUTO_CANCEL
 
         val mNotificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        mNotificationManager.notify(medicine.id.toInt(), builder.build())
+        mNotificationManager.notify(medicine.id.toInt(), notification)
         Log.d("Medicine Reminder", "Sent notification for medicine ${medicine.name}")
+    }
+
+    private fun getSnoozePendingIntent(context: Context, medicine: Medicine): PendingIntent {
+        val snoozeIntent = Intent(context, SnoozeReceiver::class.java).apply {
+            putExtra("MEDICINE_ID", medicine.id)
+        }
+
+        return PendingIntent.getBroadcast(context, medicine.id.toInt(), snoozeIntent, 0)
     }
 }
