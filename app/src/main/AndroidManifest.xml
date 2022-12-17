@@ -31,7 +31,8 @@
         </activity>
 
         <receiver android:name=".alarm.AlarmReceiver"/>
-        <receiver android:name=".alarm.SnoozeReceiver"/>
+        <receiver android:name=".alarm.snooze.SnoozeButtonReceiver"/>
+        <receiver android:name=".alarm.snooze.SnoozeAlarmReceiver"/>
 
         <receiver android:name=".alarm.RebootBroadcastReceiver"
             android:enabled="true"
