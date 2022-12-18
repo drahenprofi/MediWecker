@@ -1,23 +1,32 @@
 package de.htwBerlin.ai.mediAlarm
 
+import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.webkit.*
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var webView: WebView;
+
+class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
+    lateinit var preferences: SharedPreferences
+
+    private lateinit var webView: WebView
+    private var permissionRequestcode: Int = 200
+    private var permissionRequestCompleted: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState);
@@ -29,6 +38,8 @@ class MainActivity : AppCompatActivity() {
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
             window.statusBarColor = this.resources.getColor(R.color.lime_500)
         }
+
+        preferences = getSharedPreferences("MediWecker.Preferences", Context.MODE_PRIVATE);
 
         // Temporary webview setup
         webView = findViewById(R.id.webView);
@@ -49,6 +60,45 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = LocalContentWebViewClient(assetLoader)
         webView.webChromeClient = LocalChromeClient();
         webView.loadUrl("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html");
+    }
+
+    fun getIfNotificationsPermissionGiven() : Boolean {
+        return ContextCompat.checkSelfPermission(this,
+            Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun getIfInternetPermissionGiven() : Boolean {
+        return ContextCompat.checkSelfPermission(this,
+            Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun attemptRequestPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.INTERNET, Manifest.permission.SCHEDULE_EXACT_ALARM),
+            permissionRequestcode
+        )
+    }
+
+    fun onRequestPermissionResult(
+        requestCode: Int,
+        permissions: Array<String?>?,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            permissionRequestcode -> {
+                permissionRequestCompleted = true
+            }
+        }
+    }
+
+    fun getAndResetPermissionsRequestCompleted() : Boolean {
+        if (permissionRequestCompleted) {
+            permissionRequestCompleted = false;
+            return true;
+        }
+
+        return false;
     }
 
     fun setAlarm() {
@@ -154,6 +204,10 @@ class MainActivity : AppCompatActivity() {
             Log.d("DEBUG", "shouldInterceptRequest: Returning NULL");
             return null
         }*/
+    }
+
+    fun onBackPressedBypassWebView() {
+        super.onBackPressed();
     }
 
     override fun onBackPressed() {

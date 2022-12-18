@@ -12,11 +12,27 @@
                 </svg>
             </button>
         </div>
-        <InputSelect @bind-Value="ViewModelData.Type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-            <option value="@TimepointType.Morning.ToString()">am Morgen</option>
-            <option value="@TimepointType.Midday.ToString()">am Tag</option>
-            <option value="@TimepointType.Evening.ToString()">am Abend</option>
-            <option value="@TimepointType.Night.ToString()">in der Nacht</option>
+        <InputSelect @bind-Value="ViewModelData.Type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5">
+            @if (Rythm.Timepoints.Except(new[] { Timepoint }).All(x => x.Type != TimepointType.Morning))
+            {
+                <option value="@TimepointType.Morning.ToString()">am Morgen</option>
+            }
+
+            @if (Rythm.Timepoints.Except(new[] { Timepoint }).All(x => x.Type != TimepointType.Midday))
+            {
+                <option value="@TimepointType.Midday.ToString()">am Tag</option>
+            }
+
+            @if (Rythm.Timepoints.Except(new[] { Timepoint }).All(x => x.Type != TimepointType.Evening))
+            {
+                <option value="@TimepointType.Evening.ToString()">am Abend</option>
+            }
+
+            @if (Rythm.Timepoints.Except(new[] { Timepoint }).All(x => x.Type != TimepointType.Night))
+            {
+                <option value="@TimepointType.Night.ToString()">in der Nacht</option>
+            }
+
             <option value="@TimepointType.AbsoluteTime.ToString()">zu einer festen Uhrzeit</option>
         </InputSelect>
     </div>
@@ -25,7 +41,7 @@
     {
         <div class="mt-4">
             <label class="block mb-2 text-sm font-medium text-gray-900">Uhrzeit</label>
-            <InputText type="time" @bind-Value="ViewModelData.TimeString" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"></InputText>
+            <InputText type="time" @bind-Value="ViewModelData.TimeString" @bind-Value:after="TypeUpdatedAsync" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5"></InputText>
         </div>
     }
 </EditForm>
@@ -33,10 +49,16 @@
 @code {
 
     [Parameter]
+    public Application.Features.Planning.Rythm Rythm { get; set; }
+
+    [Parameter]
     public Timepoint Timepoint { get; set; }
 
     [Parameter]
     public EventCallback OnDelete { get; set; }
+    
+    [CascadingParameter]
+    public EditTimepointsComponent Parent { get; set; }
 
     public ViewModel ViewModelData { get; set; }
 
@@ -49,11 +71,24 @@
             Type = Timepoint.Type,
             TimeString = Timepoint.AbsoluteTimeFromMidnight != null ? TimeSpan.FromMinutes(Timepoint.AbsoluteTimeFromMidnight.Value).ToString("hh\\:mm\\:ss") : "00:00:00"
         };
+        
+        Parent.UpdateChildren += UpdateChildren;
 
         base.OnInitialized();
     }
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    private void UpdateChildren(object? sender, EventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    private async Task TypeUpdatedAsync()
+    {
+        Console.WriteLine("TimepointEntry updated type. Notifying parent.");
+        await Parent.UpdateAllChildrenAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (ViewModelData.Type == TimepointType.AbsoluteTime)
         {
@@ -69,9 +104,15 @@
             Timepoint.AbsoluteTimeFromMidnight = null;
         }
 
+        if (Timepoint.Type != ViewModelData.Type)
+        {
+            // Type updated, notify parent so other timepoints refresh their available type options
+            await Parent.UpdateAllChildrenAsync();
+        }
+
         Timepoint.Type = ViewModelData.Type;
 
-        return base.OnAfterRenderAsync(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     public class ViewModel

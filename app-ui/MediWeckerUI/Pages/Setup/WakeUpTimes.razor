@@ -1,0 +1,58 @@
+﻿@page "/setup/wakeuptimes"
+@using MediWeckerUI.Application.Features.Planning
+@using MediWeckerUI.Application
+@layout EmptyLayout
+
+@code {
+
+    [Inject]
+    public AppInterop AppInterop { get; set; }
+    
+    [CascadingParameter]
+    public BaseNavigationLayout BaseLayout { get; set; }
+    
+    public WakeUpTimeData WakeUpTimeData { get; set; } = new WakeUpTimeData
+    {
+        Monday = 420, // 420 Minutes = 7:00
+        Tuesday = 420,
+        Wednesday = 420,
+        Thursday = 420,
+        Friday = 420,
+        Saturday = 420,
+        Sunday = 420
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!await AppInterop.GetWakeUpTimesSetupRequiredAsync())
+        {
+            NavigateToNextStep();
+        }
+    }
+
+    protected async Task OnSubmitAsync()
+    {
+        await AppInterop.UpdateWakeUpTimeDataAsync(WakeUpTimeData);
+        NavigateToNextStep();
+    }
+
+    protected void NavigateToNextStep()
+    {
+        BaseLayout.Navigate<Exit>();
+    }
+
+}
+
+<div class="container mx-auto max-w-3xl h-min-full p-4 animate-fade-move-in">
+    <div class="flex justify-center mt-5">
+        <svg class="w-16 h-16 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    </div>
+
+    <div class="mt-4 text-center">
+        Bitte stellen Sie ein, zu welchen Uhrzeiten Sie aufstehen.
+    </div>
+
+    <div class="mt-6">
+        <MediWeckerUI.Pages.Settings.EditWakeUpTimesComponent OnSubmit="OnSubmitAsync" Data="WakeUpTimeData" />
+    </div>
+</div>

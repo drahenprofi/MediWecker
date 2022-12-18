@@ -9,7 +9,8 @@ public class AppInterop
 {
     private readonly IJSRuntime _js;
     private readonly NavigationManager _navigationManager;
-
+    private bool _mockPermissionsGiven = false;
+    
     public AppInterop(IJSRuntime js, NavigationManager navigationManager)
     {
         _js = js;
@@ -28,6 +29,71 @@ public class AppInterop
         await _js.InvokeVoidAsync("Android.showToast", message);
     }
 
+    public async Task<bool> GetIfNotificationsPermissionGivenAsync()
+    {
+        if (!IsInApp()) return _mockPermissionsGiven;
+
+        return await _js.InvokeAsync<bool>("Android.getIfNotificationsPermissionGiven");
+    }
+    
+    public async Task<bool> GetIfInternetPermissionGivenAsync()
+    {
+        if (!IsInApp()) return _mockPermissionsGiven;
+
+        return await _js.InvokeAsync<bool>("Android.getIfInternetPermissionGiven");
+    }
+    
+    public async Task AttemptRequestPermissionsAsync()
+    {
+        if (!IsInApp())
+        {
+            _mockPermissionsGiven = true;
+            return;
+        }
+
+        await _js.InvokeVoidAsync("Android.attemptRequestPermissions");
+    }
+
+    public async Task<bool> GetAndResetPermissionsRequestCompletedFlagAsync()
+    {
+        if (!IsInApp()) return true;
+
+        return await _js.InvokeAsync<bool>("Android.getAndResetPermissionsRequestCompleted");
+    }
+
+    public async Task<bool> GetWakeUpTimesSetupRequiredAsync()
+    {
+        if (!IsInApp()) return false;
+
+        return !await _js.InvokeAsync<bool>("Android.getWakeUpTimesInitialized");
+    }
+
+    public async Task<WakeUpTimeData> GetWakeUpTimeDataAsync()
+    {
+        if (!IsInApp())
+            return new WakeUpTimeData
+            {
+                Monday = 480,
+                Tuesday = 420,
+                Wednesday = 420,
+                Thursday = 420,
+                Friday = 420,
+                Saturday = 420,
+                Sunday = 420
+            };
+        
+        var json = await _js.InvokeAsync<string>("Android.getWakeUpTimeData");
+        
+        return JsonSerializer.Deserialize<WakeUpTimeData>(json);
+    }
+
+    public async Task UpdateWakeUpTimeDataAsync(WakeUpTimeData data)
+    {
+        if (!IsInApp()) return;
+        
+        await _js.InvokeVoidAsync("Android.updateWakeUpTimes", JsonSerializer.Serialize(data));
+    }
+    
     public async Task<List<Medicine>> GetAllPlansAsync()
     {
         if (!IsInApp())
@@ -85,5 +151,12 @@ public class AppInterop
         }
 
         await _js.InvokeVoidAsync("Android.updateMedicine", JsonSerializer.Serialize(medicine));
+    }
+
+    public async Task BackEventAsync()
+    {
+        if (!IsInApp()) return;
+
+        await _js.InvokeVoidAsync("Android.navigateBackInApp");
     }
 }

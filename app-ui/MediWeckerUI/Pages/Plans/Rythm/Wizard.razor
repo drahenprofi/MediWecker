@@ -169,7 +169,7 @@
 }
 
 <CascadingValue Value="this">
-    <div class="container mx-auto max-w-3xl h-full p-4 animate-fade-move-in">
+    <div class="container mx-auto max-w-3xl h-min-full p-4 animate-fade-move-in">
         <div class="flex justify-between">
             <button class="h-8 w-8 bg-gray-100 rounded-md flex justify-center items-center" @onclick="() => OnBackwardAsync(entireStep: false)">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -259,12 +259,12 @@
                         <div class="text-lg font-medium">@Plan.Name</div>
                     </div>
 
-                    <div class="mt-2">
+                    <div class="mt-4">
                         <div class="text-sm text-gray-500">Einnahmemenge</div>
                         <div class="text-lg font-medium">@Plan.Amount</div>
                     </div>
 
-                    <div class="mt-2">
+                    <div class="mt-4">
                         <div class="text-sm text-gray-500">Rythmus</div>
                         <div class="text-lg font-medium">
                             @if (Rythm.IntervalDays?.Days == 1)
@@ -292,7 +292,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-2">
+                    <div class="mt-4">
                         <div class="text-sm text-gray-500">Uhrzeit</div>
                         <div class="font-medium text-sm flex flex-wrap gap-2 mt-1">
                             @foreach (var timepoint in Rythm.Timepoints.Where(x => x.Type == TimepointType.AbsoluteTime))
