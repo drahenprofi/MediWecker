@@ -1,15 +1,32 @@
 ﻿@page "/"
 @page "/assets"
 @page "/index_mobile.html"
+@using MediWeckerUI.Application
 
 @code {
+
     [CascadingParameter]
     public MainLayout Layout { get; set; }
 
-    protected override void OnInitialized()
+    [CascadingParameter]
+    public BaseNavigationLayout BaseLayout { get; set; }
+    
+    [Inject]
+    public AppInterop AppInterop { get; set; }
+
+    protected override async Task OnInitializedAsync()
     {
         Layout.UpdateTab(MainLayout.NavigationTab.Calendar);
+
+        var setupRequired = await AppInterop.GetWakeUpTimesSetupRequiredAsync();
+        var anyPermissionRequired = !await AppInterop.GetIfInternetPermissionGivenAsync() || !await AppInterop.GetIfNotificationsPermissionGivenAsync();
+
+        if (setupRequired || anyPermissionRequired)
+        {
+            BaseLayout.Navigate<Setup.Welcome>();
+        }
     }
+
 }
 
 <div class="container mx-auto max-w-4xl p-4 animate-fade-move-in">

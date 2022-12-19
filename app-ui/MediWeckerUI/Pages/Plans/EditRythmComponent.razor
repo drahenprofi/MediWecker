@@ -194,6 +194,8 @@
         {
             State = ComponentStateEnum.InitialSelection;
         }
+        
+        InvokeAsync(StateHasChanged);
     }
 
     protected async Task CompleteAs(CompletionTypeEnum type)

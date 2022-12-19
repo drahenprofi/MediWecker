@@ -1,0 +1,131 @@
+﻿@using MediWeckerUI.Application.Features.Planning
+@using System.Globalization
+@code {
+
+    [Parameter]
+    public WakeUpTimeData Data { get; set; }
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    public SelectedType Type { get; set; }
+
+    public string SingleTime { get; set; } = "00:00:00";
+
+    public string MondayTime { get; set; }
+    public string TuesdayTime { get; set; }
+    public string WednesdayTime { get; set; }
+    public string ThursdayTime { get; set; }
+    public string FridayTime { get; set; }
+    public string SaturdayTime { get; set; }
+    public string SundayTime { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Data.IsSingleTime())
+        {
+            Type = SelectedType.SingleTime;
+        }
+        else
+        {
+            Type = SelectedType.IndividualTime;
+        }
+
+        SingleTime = TimeSpan.FromMinutes(Data.Monday).ToString("hh\\:mm\\:ss");
+        MondayTime = TimeSpan.FromMinutes(Data.Monday).ToString("hh\\:mm\\:ss");
+        TuesdayTime = TimeSpan.FromMinutes(Data.Tuesday).ToString("hh\\:mm\\:ss");
+        WednesdayTime = TimeSpan.FromMinutes(Data.Wednesday).ToString("hh\\:mm\\:ss");
+        ThursdayTime = TimeSpan.FromMinutes(Data.Thursday).ToString("hh\\:mm\\:ss");
+        FridayTime = TimeSpan.FromMinutes(Data.Friday).ToString("hh\\:mm\\:ss");
+        SaturdayTime = TimeSpan.FromMinutes(Data.Saturday).ToString("hh\\:mm\\:ss");
+        SundayTime = TimeSpan.FromMinutes(Data.Sunday).ToString("hh\\:mm\\:ss");
+    }
+
+    protected async Task OnSubmitAsync()
+    {
+        if (Type == SelectedType.SingleTime)
+        {
+            Data.Monday = (int) TimeSpan.ParseExact(SingleTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.Sunday = Data.Saturday = Data.Friday = Data.Thursday = Data.Wednesday = Data.Tuesday = Data.Monday;
+        }
+        else
+        {
+            Data.Monday = (int) TimeSpan.ParseExact(MondayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.Tuesday = (int) TimeSpan.ParseExact(TuesdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.Wednesday = (int) TimeSpan.ParseExact(WednesdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.Thursday = (int) TimeSpan.ParseExact(ThursdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.Friday = (int) TimeSpan.ParseExact(FridayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.Saturday = (int) TimeSpan.ParseExact(SaturdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.Sunday = (int) TimeSpan.ParseExact(SundayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+        }
+
+        await OnSubmit.InvokeAsync();
+    }
+
+    public enum SelectedType
+    {
+        SingleTime,
+        IndividualTime
+    }
+
+}
+
+<div class="rounded-md bg-gray-50">
+    <InputSelect @bind-Value="@Type" class="bg-gray-100 border-b border-white text-gray-900 text-sm rounded-t-md block w-full p-2.5">
+        <option value="@SelectedType.SingleTime">Jeden Tag die gleiche Uhrzeit</option>
+        <option value="@SelectedType.IndividualTime">Jeden Tag eine eigene Uhrzeit</option>
+    </InputSelect>
+
+    <div class="p-4">
+        <div class="flex flex-col gap-4">
+            @if (Type == SelectedType.SingleTime)
+            {
+                <div class="flex flex-col gap-1">
+                    <label>Uhrzeit</label>
+                    <InputText type="time" @bind-Value="SingleTime" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5"/>
+                </div>
+            }
+            else
+            {
+                <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md w-full block flex items-center justify-between overflow-hidden">
+                    <label class="p-2.5 ">Montag</label>
+                    <InputText type="time" @bind-Value="MondayTime" class="p-2.5 bg-gray-50 border-0 text-gray-900"/>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md w-full block flex items-center justify-between overflow-hidden">
+                    <label class="p-2.5 ">Dienstag</label>
+                    <InputText type="time" @bind-Value="TuesdayTime" class="p-2.5 bg-gray-50 border-0 text-gray-900"/>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md w-full block flex items-center justify-between overflow-hidden">
+                    <label class="p-2.5 ">Mittwoch</label>
+                    <InputText type="time" @bind-Value="WednesdayTime" class="p-2.5 bg-gray-50 border-0 text-gray-900"/>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md w-full block flex items-center justify-between overflow-hidden">
+                    <label class="p-2.5 ">Donnerstag</label>
+                    <InputText type="time" @bind-Value="ThursdayTime" class="p-2.5 bg-gray-50 border-0 text-gray-900"/>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md w-full block flex items-center justify-between overflow-hidden">
+                    <label class="p-2.5 ">Freitag</label>
+                    <InputText type="time" @bind-Value="FridayTime" class="p-2.5 bg-gray-50 border-0 text-gray-900"/>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md w-full block flex items-center justify-between overflow-hidden">
+                    <label class="p-2.5 ">Samstag</label>
+                    <InputText type="time" @bind-Value="SaturdayTime" class="p-2.5 bg-gray-50 border-0 text-gray-900"/>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md w-full block flex items-center justify-between overflow-hidden">
+                    <label class="p-2.5 ">Sonntag</label>
+                    <InputText type="time" @bind-Value="SundayTime" class="p-2.5 bg-gray-50 border-0 text-gray-900"/>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="mt-6">
+    <button class="button-primary w-full" @onclick="OnSubmitAsync">Speichern</button>
+</div>
