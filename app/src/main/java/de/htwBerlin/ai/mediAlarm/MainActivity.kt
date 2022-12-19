@@ -6,7 +6,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -16,9 +15,9 @@ import android.webkit.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
+import de.htwBerlin.ai.mediAlarm.alarm.AlarmReceiver
 
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
@@ -29,8 +28,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     private var permissionRequestCompleted: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
         if (Build.VERSION.SDK_INT >= 21) {
             val window = this.window
@@ -42,20 +41,20 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         preferences = getSharedPreferences("MediWecker.Preferences", Context.MODE_PRIVATE);
 
         // Temporary webview setup
-        webView = findViewById(R.id.webView);
+        webView = findViewById(R.id.webView)
 
-        webView.settings.javaScriptEnabled = true;
-        webView.settings.javaScriptCanOpenWindowsAutomatically = true;
-        webView.settings.builtInZoomControls = true;
-        webView.settings.domStorageEnabled = true;
-        webView.settings.allowContentAccess = true;
-        webView.settings.safeBrowsingEnabled = false;
+        webView.settings.javaScriptEnabled = true
+        webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        webView.settings.builtInZoomControls = true
+        webView.settings.domStorageEnabled = true
+        webView.settings.allowContentAccess = true
+        webView.settings.safeBrowsingEnabled = false
 
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
 
-        webView.addJavascriptInterface(WebAppInterface(this), "Android");
+        webView.addJavascriptInterface(WebAppInterface(this), "Android")
 
         webView.webViewClient = LocalContentWebViewClient(assetLoader)
         webView.webChromeClient = LocalChromeClient();
@@ -122,9 +121,9 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
             if (consoleMessage != null) {
                 Log.d("WebView", consoleMessage.message())
-            };
+            }
 
-            return true;
+            return true
         }
     }
 
@@ -214,9 +213,9 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
     override fun onBackPressed() {
         if (webView != null && webView.canGoBack()) {
-            webView.goBack();
+            webView.goBack()
         } else {
-            super.onBackPressed();
+            super.onBackPressed()
         }
     }
 }
