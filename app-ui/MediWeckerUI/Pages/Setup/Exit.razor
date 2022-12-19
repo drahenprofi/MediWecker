@@ -1,0 +1,35 @@
+﻿@page "/setup/exit"
+@using Index = MediWeckerUI.Pages.Index
+@layout EmptyLayout
+
+@code {
+
+    [CascadingParameter]
+    public BaseNavigationLayout BaseLayout { get; set; }
+
+    protected void OnClickNext()
+    {
+        BaseLayout.Navigate<Index>();
+    }
+
+}
+
+<div class="container mx-auto max-w-3xl h-min-full p-4 animate-fade-move-in">
+    <div class="flex justify-center mt-5">
+        <svg class="w-28 h-28 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+        </svg>
+    </div>
+
+    <div class="mt-4 text-xl text-center font-semibold">
+        Sie sind startklar!
+    </div>
+
+    <div class="mt-4 text-center">
+        Sie haben alle Schritte zur Einrichtung der App abgeschlossen.
+    </div>
+
+    <div class="mt-8">
+        <button class="button-primary w-full" @onclick="OnClickNext">Weiter zur App</button>
+    </div>
+</div>

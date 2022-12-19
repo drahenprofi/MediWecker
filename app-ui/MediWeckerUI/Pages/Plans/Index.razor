@@ -3,6 +3,8 @@
 @using MediWeckerUI.Application.Features
 @using MediWeckerUI.Application.Features.Planning
 @using System.Text.Json
+@using MediWeckerUI.Application.Features.Navigation
+@implements IDisposable
 
 @if (Plans == null)
 {
@@ -10,7 +12,7 @@
 else
 {
     <div class="container mx-auto max-w-3xl p-4 animate-fade-move-in">
-        <div class="text-xl ">Ihre Pläne</div>
+        <div class="text-2xl">Ihre Pläne</div>
 
         <div class="flex flex-col gap-4 mt-4">
             <button class="block group border-2 border-gray-200 border-dashed p-4 hover:border-blue-500 grid place-items-center rounded" @onclick="() => BaseLayout.Navigate<Rythm.Wizard>()">
@@ -34,73 +36,74 @@ else
                         <div class="grow text-left">
                             <div class="font-semibold text-lg">@plan.Name</div>
 
-                            <div class="flex gap-2 mt-2 text-sm">
-                                <div class="bg-gray-100 px-3 py-0.5 rounded-full flex items-center">@plan.Amount</div>
-                                <div class="bg-lime-400 px-3 py-0.5 rounded-full flex items-center">
-                                    @if (rythm.IntervalDays?.Days == 1)
-                                    {
-                                        <span>Täglich</span>
-                                    }
-                                    else if (rythm.IntervalDays != null)
-                                    {
-                                        <span>Jeden @(rythm.IntervalDays.Days). Tag</span>
-                                    }
-                                    else if (rythm.SpecificDays != null)
-                                    {
-                                        var dayNames = new List<string>();
+                            <div class="flex gap-2 mt-2 text-sm flex-wrap">
+                                <div class="bg-gray-100 px-3 py-0.5 rounded-full flex items-center shrink-0">@plan.Amount</div>
 
-                                        if (rythm.SpecificDays.Monday)
-                                            dayNames.Add("Mo");
-                                        if (rythm.SpecificDays.Tuesday)
-                                            dayNames.Add("Di");
-                                        if (rythm.SpecificDays.Wednesday)
-                                            dayNames.Add("Mi");
-                                        if (rythm.SpecificDays.Thursday)
-                                            dayNames.Add("Do");
-                                        if (rythm.SpecificDays.Friday)
-                                            dayNames.Add("Fr");
-                                        if (rythm.SpecificDays.Saturday)
-                                            dayNames.Add("Sa");
-                                        if (rythm.SpecificDays.Sunday)
-                                            dayNames.Add("So");
+                                @if (rythm.IntervalDays?.Days == 1)
+                                {
+                                    <div class="bg-lime-400 px-3 py-0.5 rounded-full flex items-center shrink-0">Täglich</div>
+                                }
+                                else if (rythm.IntervalDays != null)
+                                {
+                                    <div class="bg-lime-400 px-3 py-0.5 rounded-full flex items-center shrink-0">Jeden @(rythm.IntervalDays.Days). Tag</div>
+                                }
+                                else if (rythm.SpecificDays != null)
+                                {
+                                    var dayNames = new List<string>();
 
-                                        <span>Jeden @string.Join(", ", dayNames)</span>
-                                    }
-                                </div>
-                                <div>
-                                    @foreach (var timepoint in rythm.Timepoints.Where(x => x.Type == TimepointType.AbsoluteTime))
-                                    {
-                                        <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">@TimeSpan.FromMinutes(timepoint.AbsoluteTimeFromMidnight.Value).ToString("hh\\:mm") Uhr</div>
-                                    }
+                                    if (rythm.SpecificDays.Monday)
+                                        dayNames.Add("Mo");
+                                    if (rythm.SpecificDays.Tuesday)
+                                        dayNames.Add("Di");
+                                    if (rythm.SpecificDays.Wednesday)
+                                        dayNames.Add("Mi");
+                                    if (rythm.SpecificDays.Thursday)
+                                        dayNames.Add("Do");
+                                    if (rythm.SpecificDays.Friday)
+                                        dayNames.Add("Fr");
+                                    if (rythm.SpecificDays.Saturday)
+                                        dayNames.Add("Sa");
+                                    if (rythm.SpecificDays.Sunday)
+                                        dayNames.Add("So");
 
-                                    @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Morning))
+                                    foreach (var day in dayNames)
                                     {
-                                        <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
-                                            <div>Morgens</div>
-                                        </div>
+                                        <div class="bg-lime-400 px-3 py-0.5 rounded-full flex items-center shrink-0">@day</div>
                                     }
+                                }
 
-                                    @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Midday))
-                                    {
-                                        <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
-                                            <div>Tagsüber</div>
-                                        </div>
-                                    }
+                                @foreach (var timepoint in rythm.Timepoints.Where(x => x.Type == TimepointType.AbsoluteTime))
+                                {
+                                    <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">@TimeSpan.FromMinutes(timepoint.AbsoluteTimeFromMidnight.Value).ToString("hh\\:mm") Uhr</div>
+                                }
 
-                                    @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Evening))
-                                    {
-                                        <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
-                                            <div>Abends</div>
-                                        </div>
-                                    }
+                                @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Morning))
+                                {
+                                    <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                        <div>Morgens</div>
+                                    </div>
+                                }
 
-                                    @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Night))
-                                    {
-                                        <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
-                                            <div>Nachts</div>
-                                        </div>
-                                    }
-                                </div>
+                                @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Midday))
+                                {
+                                    <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                        <div>Tagsüber</div>
+                                    </div>
+                                }
+
+                                @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Evening))
+                                {
+                                    <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                        <div>Abends</div>
+                                    </div>
+                                }
+
+                                @if (rythm.Timepoints.Any(x => x.Type == TimepointType.Night))
+                                {
+                                    <div class="bg-amber-200 px-3 py-0.5 rounded-full flex items-center">
+                                        <div>Nachts</div>
+                                    </div>
+                                }
                             </div>
                         </div>
 
@@ -121,6 +124,9 @@ else
     [Inject]
     public AppInterop Interop { get; set; }
 
+    [Inject]
+    public WebViewNavigationHistory NavigationHistory { get; set; }
+
     public List<Medicine> Plans { get; set; }
 
     [CascadingParameter]
@@ -131,10 +137,20 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("Test!");
-
         Layout.UpdateTab(MainLayout.NavigationTab.Plans);
         Plans = await Interop.GetAllPlansAsync();
+
+        NavigationHistory.BackEvent += BackEvent;
+    }
+
+    private void BackEvent(object? sender, EventArgs e)
+    {
+        BaseLayout.Navigate<Pages.Index>();
+    }
+
+    public void Dispose()
+    {
+        NavigationHistory.BackEvent -= BackEvent;
     }
 
 }
