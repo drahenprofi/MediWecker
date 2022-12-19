@@ -63,13 +63,15 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
 
     fun getIfNotificationsPermissionGiven() : Boolean {
-        return ContextCompat.checkSelfPermission(this,
-            Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED
+        //return ContextCompat.checkSelfPermission(this,
+        //    Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED
+        return true;
     }
 
     fun getIfInternetPermissionGiven() : Boolean {
-        return ContextCompat.checkSelfPermission(this,
-            Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
+        //return ContextCompat.checkSelfPermission(this,
+        //    Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
+        return true;
     }
 
     fun attemptRequestPermissions() {
