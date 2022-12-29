@@ -9,11 +9,15 @@ import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
+import de.htwBerlin.ai.mediAlarm.data.wakeUpTime.WakeUpTime
+import de.htwBerlin.ai.mediAlarm.data.wakeUpTime.WakeUpTimePreferences
 
 class WebAppInterface internal constructor(c: Context) {
     private var mContext: MainActivity = c as MainActivity
-    private val medicineDao: MedicineDao = AppDatabase.getDatabase(c).medicineDao()
     private val gson: Gson = Gson()
+
+    private val medicineDao: MedicineDao = AppDatabase.getDatabase(c).medicineDao()
+    private val wakeUpTimePreferences = WakeUpTimePreferences(c)
 
     @JavascriptInterface
     fun showToast(msg: String) {
@@ -26,12 +30,12 @@ class WebAppInterface internal constructor(c: Context) {
     }
 
     @JavascriptInterface
-    fun getIfNotificationsPermissionGiven() : Boolean {
+    fun getIfNotificationsPermissionGiven(): Boolean {
         return mContext.getIfNotificationsPermissionGiven()
     }
 
     @JavascriptInterface
-    fun getIfInternetPermissionGiven() : Boolean {
+    fun getIfInternetPermissionGiven(): Boolean {
         return mContext.getIfInternetPermissionGiven()
     }
 
@@ -41,67 +45,40 @@ class WebAppInterface internal constructor(c: Context) {
     }
 
     @JavascriptInterface
-    fun getAndResetPermissionsRequestCompleted() : Boolean {
+    fun getAndResetPermissionsRequestCompleted(): Boolean {
         return mContext.getAndResetPermissionsRequestCompleted()
     }
 
-    /*@JavascriptInterface
-    fun getInitialSetupDone() : Boolean {
-        return mContext.preferences.getBoolean("Setup.Done", false);
-    }
-
-    @JavascriptInterface()
-    fun markInitialSetupAsDone() : Boolean {
-        var editor = mContext.preferences.edit()
-        editor.putBoolean("Setup.Done", true);
-        editor.apply()
-    }*/
-
-    /**
-     * Returns whether WakeUpTimeData was atleast once provided by the user and contains
-     * user dictated values. If false, the user should be prompted to set them up.
-     */
     @JavascriptInterface
-    fun getWakeUpTimesInitialized() : Boolean {
-        return mContext.preferences.getBoolean("WakeUpTimes.Initialized", false);
+    fun getWakeUpTimesInitialized(): Boolean {
+        return wakeUpTimePreferences.isInitialized()
     }
 
     @JavascriptInterface
-    fun getWakeUpTimeData() : String {
-        return "{}";
+    fun getWakeUpTimeData(): String {
+        return gson.toJson(wakeUpTimePreferences.get())
     }
 
     @JavascriptInterface
     fun updateWakeUpTimes(wakeUpTimeDataJson: String) {
-        Log.d("DEBUG", "updateWakeUpTimes: JSON = " + wakeUpTimeDataJson);
-
-        // Save that we setup wake up times
-        var editor = mContext.preferences.edit()
-        editor.putBoolean("WakeUpTimes.Initialized", true);
-        editor.apply()
+        val wakeUpTimeData = gson.fromJson(wakeUpTimeDataJson, WakeUpTime::class.java)
+        wakeUpTimePreferences.set(wakeUpTimeData)
     }
 
     @JavascriptInterface
     fun getMedicine(): String {
-        Log.d("DEBUG", "getMedicine: Called!");
-
         val medicine = medicineDao.getAll()
         return gson.toJson(medicine)
     }
 
     @JavascriptInterface
     fun deleteMedicine(id: Int) {
-        Log.d("DEBUG", "medicineJson: " + id);
-
         medicineDao.deleteById(id)
     }
 
     @JavascriptInterface
     fun insertMedicine(medicineJson: String) {
-        Log.d("DEBUG", "insertMedicine: " + medicineJson);
-
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
-
         medicine.id = medicineDao.insert(medicine)
 
         MedicineScheduler(mContext).schedule(medicine)
@@ -109,8 +86,6 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun updateMedicine(medicineJson: String) {
-        Log.d("DEBUG", "medicineJson: $medicineJson");
-
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
         medicineDao.update(medicine)
     }
