@@ -11,13 +11,13 @@ class WakeUpTimePreferences(context: Context) {
     }
 
     fun get(): WakeUpTime {
-        val monday = preferences.getInt("WakeUpTime.Monday", 420)
-        val tuesday = preferences.getInt("WakeUpTime.Tuesday", 420)
-        val wednesday = preferences.getInt("WakeUpTime.Wednesday", 420)
-        val thursday = preferences.getInt("WakeUpTime.Thursday", 420)
-        val friday = preferences.getInt("WakeUpTime.Friday", 420)
-        val saturday = preferences.getInt("WakeUpTime.Saturday", 420)
-        val sunday = preferences.getInt("WakeUpTime.Sunday", 420)
+        val monday = preferences.getLong("WakeUpTime.Monday", 420)
+        val tuesday = preferences.getLong("WakeUpTime.Tuesday", 420)
+        val wednesday = preferences.getLong("WakeUpTime.Wednesday", 420)
+        val thursday = preferences.getLong("WakeUpTime.Thursday", 420)
+        val friday = preferences.getLong("WakeUpTime.Friday", 420)
+        val saturday = preferences.getLong("WakeUpTime.Saturday", 420)
+        val sunday = preferences.getLong("WakeUpTime.Sunday", 420)
 
         return WakeUpTime(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
     }
@@ -25,13 +25,13 @@ class WakeUpTimePreferences(context: Context) {
     fun set(wakeUpTime: WakeUpTime) {
         val preferencesEditor = preferences.edit()
 
-        preferencesEditor.putInt("WakeUpTime.Monday", wakeUpTime.monday)
-        preferencesEditor.putInt("WakeUpTime.Tuesday", wakeUpTime.tuesday)
-        preferencesEditor.putInt("WakeUpTime.Wednesday", wakeUpTime.wednesday)
-        preferencesEditor.putInt("WakeUpTime.Thursday", wakeUpTime.thursday)
-        preferencesEditor.putInt("WakeUpTime.Friday", wakeUpTime.friday)
-        preferencesEditor.putInt("WakeUpTime.Saturday", wakeUpTime.saturday)
-        preferencesEditor.putInt("WakeUpTime.Sunday", wakeUpTime.sunday)
+        preferencesEditor.putLong("WakeUpTime.Monday", wakeUpTime.monday)
+        preferencesEditor.putLong("WakeUpTime.Tuesday", wakeUpTime.tuesday)
+        preferencesEditor.putLong("WakeUpTime.Wednesday", wakeUpTime.wednesday)
+        preferencesEditor.putLong("WakeUpTime.Thursday", wakeUpTime.thursday)
+        preferencesEditor.putLong("WakeUpTime.Friday", wakeUpTime.friday)
+        preferencesEditor.putLong("WakeUpTime.Saturday", wakeUpTime.saturday)
+        preferencesEditor.putLong("WakeUpTime.Sunday", wakeUpTime.sunday)
 
         preferencesEditor.putBoolean("WakeUpTime.Initialized", true)
 

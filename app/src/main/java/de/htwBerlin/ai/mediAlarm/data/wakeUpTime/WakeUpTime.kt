@@ -7,19 +7,19 @@ import com.google.gson.annotations.SerializedName
 @Entity
 data class WakeUpTime(
     @SerializedName("Monday")
-    val monday: Int,
+    val monday: Long,
     @SerializedName("Tuesday")
-    val tuesday: Int,
+    val tuesday: Long,
     @SerializedName("Wednesday")
-    val wednesday: Int,
+    val wednesday: Long,
     @SerializedName("Thursday")
-    val thursday: Int,
+    val thursday: Long,
     @SerializedName("Friday")
-    val friday: Int,
+    val friday: Long,
     @SerializedName("Saturday")
-    val saturday: Int,
+    val saturday: Long,
     @SerializedName("Sunday")
-    val sunday: Int
+    val sunday: Long
 ) {
     @PrimaryKey(autoGenerate = true) var id: Long = 0
 }
