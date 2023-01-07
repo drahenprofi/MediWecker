@@ -11,8 +11,8 @@ interface MedicineDao {
     @Query("SELECT * FROM medicine")
     fun getAll(): List<Medicine>
 
-    @Query("SELECT * FROM medicine WHERE id =:id")
-    fun get(id: Int): Medicine
+    @Query("SELECT * FROM medicine WHERE id = :id")
+    fun get(id: Long): Medicine
 
     @Query("SELECT * FROM medicine WHERE id IN (:medicineIds)")
     fun loadAllByIds(medicineIds: IntArray): List<Medicine>
@@ -22,6 +22,9 @@ interface MedicineDao {
 
     @Insert
     fun insertAll(vararg medicines: Medicine)
+
+    @Insert
+    fun insert(medicine: Medicine): Long
 
     @Delete
     fun delete(medicine: Medicine)

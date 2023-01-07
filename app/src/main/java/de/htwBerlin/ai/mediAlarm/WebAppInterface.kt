@@ -1,46 +1,27 @@
 package de.htwBerlin.ai.mediAlarm
 
-import android.Manifest
 import android.content.Context
-import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.room.Room
 import com.google.gson.Gson
+import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
+import de.htwBerlin.ai.mediAlarm.data.wakeUpTime.WakeUpTime
+import de.htwBerlin.ai.mediAlarm.data.wakeUpTime.WakeUpTimePreferences
 
 class WebAppInterface internal constructor(c: Context) {
-    private var mContext: MainActivity
-    private val medicineDao: MedicineDao
-    private val gson: Gson
+    private var mContext: MainActivity = c as MainActivity
+    private val gson: Gson = Gson()
 
-    init {
-        mContext = c as MainActivity
-
-        medicineDao = Room
-            .databaseBuilder(
-                mContext,
-                AppDatabase::class.java, "medi-wecker-database"
-            )
-            .build()
-            .medicineDao()
-
-        gson = Gson()
-    }
+    private val medicineDao: MedicineDao = AppDatabase.getDatabase(c).medicineDao()
+    private val wakeUpTimePreferences = WakeUpTimePreferences(c)
 
     @JavascriptInterface
     fun showToast(msg: String) {
         Toast.makeText(mContext, "$msg", Toast.LENGTH_SHORT).show()
-
-        //mContext.setAlarm()
-
-        //medicineDao.insertAll(Medicine("Iboprofen", 800f, ""))
     }
 
     @JavascriptInterface
@@ -49,12 +30,12 @@ class WebAppInterface internal constructor(c: Context) {
     }
 
     @JavascriptInterface
-    fun getIfNotificationsPermissionGiven() : Boolean {
+    fun getIfNotificationsPermissionGiven(): Boolean {
         return mContext.getIfNotificationsPermissionGiven()
     }
 
     @JavascriptInterface
-    fun getIfInternetPermissionGiven() : Boolean {
+    fun getIfInternetPermissionGiven(): Boolean {
         return mContext.getIfInternetPermissionGiven()
     }
 
@@ -64,38 +45,24 @@ class WebAppInterface internal constructor(c: Context) {
     }
 
     @JavascriptInterface
-    fun getAndResetPermissionsRequestCompleted() : Boolean {
+    fun getAndResetPermissionsRequestCompleted(): Boolean {
         return mContext.getAndResetPermissionsRequestCompleted()
     }
 
-    /*@JavascriptInterface
-    fun getInitialSetupDone() : Boolean {
-        return mContext.preferences.getBoolean("Setup.Done", false);
-    }
-
-    @JavascriptInterface()
-    fun markInitialSetupAsDone() : Boolean {
-        var editor = mContext.preferences.edit()
-        editor.putBoolean("Setup.Done", true);
-        editor.apply()
-    }*/
-
-    /**
-     * Returns whether WakeUpTimeData was atleast once provided by the user and contains
-     * user dictated values. If false, the user should be prompted to set them up.
-     */
     @JavascriptInterface
-    fun getWakeUpTimesInitialized() : Boolean {
-        return mContext.preferences.getBoolean("WakeUpTimes.Initialized", false);
+    fun getWakeUpTimesInitialized(): Boolean {
+        return wakeUpTimePreferences.isInitialized()
     }
 
     @JavascriptInterface
-    fun getWakeUpTimeData() : String {
-        return "{}";
+    fun getWakeUpTimeData(): String {
+        return gson.toJson(wakeUpTimePreferences.get())
     }
 
     @JavascriptInterface
     fun updateWakeUpTimes(wakeUpTimeDataJson: String) {
+        val wakeUpTimeData = gson.fromJson(wakeUpTimeDataJson, WakeUpTime::class.java)
+        wakeUpTimePreferences.set(wakeUpTimeData)
         Log.d("DEBUG", "updateWakeUpTimes: JSON = " + wakeUpTimeDataJson);
     }
 
@@ -109,31 +76,25 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun getMedicine(): String {
-        Log.d("DEBUG", "getMedicine: Called!");
-
         val medicine = medicineDao.getAll()
         return gson.toJson(medicine)
     }
 
     @JavascriptInterface
     fun deleteMedicine(id: Int) {
-        Log.d("DEBUG", "medicineJson: " + id);
-
         medicineDao.deleteById(id)
     }
 
     @JavascriptInterface
     fun insertMedicine(medicineJson: String) {
-        Log.d("DEBUG", "insertMedicine: " + medicineJson);
-
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
-        medicineDao.insertAll(medicine)
+        medicine.id = medicineDao.insert(medicine)
+
+        MedicineScheduler(mContext).schedule(medicine)
     }
 
     @JavascriptInterface
     fun updateMedicine(medicineJson: String) {
-        Log.d("DEBUG", "medicineJson: " + medicineJson);
-
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
         medicineDao.update(medicine)
     }
