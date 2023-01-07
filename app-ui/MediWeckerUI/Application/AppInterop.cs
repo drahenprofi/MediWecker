@@ -65,7 +65,7 @@ public class AppInterop
     {
         if (!IsInApp()) return true;
 
-        return !await _js.InvokeAsync<bool>("Android.getWakeUpTimesInitialized");
+        return !await _js.InvokeAsync<bool>("Android.getUserTimesInitialized");
     }
 
     public async Task<UserTimeData> GetUserTimesDataAsync()
@@ -90,7 +90,7 @@ public class AppInterop
                 SleepSunday = 1320
             };
         
-        var json = await _js.InvokeAsync<string>("Android.getWakeUpTimeData");
+        var json = await _js.InvokeAsync<string>("Android.getUserTimesData");
         
         return JsonSerializer.Deserialize<UserTimeData>(json);
     }
@@ -99,14 +99,14 @@ public class AppInterop
     {
         if (!IsInApp()) return;
         
-        await _js.InvokeVoidAsync("Android.updateWakeUpTimes", JsonSerializer.Serialize(data));
+        await _js.InvokeVoidAsync("Android.updateUserTimesData", JsonSerializer.Serialize(data));
     }
 
     public async Task MarkUserTimesSetupCompletedAsync()
     {
         if (!IsInApp()) return;
         
-        await _js.InvokeVoidAsync("Android.userTimesSetupInitialized");
+        await _js.InvokeVoidAsync("Android.userTimesInitialized");
     }
     
     public async Task<List<Medicine>> GetAllPlansAsync()

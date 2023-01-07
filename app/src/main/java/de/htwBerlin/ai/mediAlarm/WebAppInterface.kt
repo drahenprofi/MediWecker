@@ -50,24 +50,24 @@ class WebAppInterface internal constructor(c: Context) {
     }
 
     @JavascriptInterface
-    fun getWakeUpTimesInitialized(): Boolean {
+    fun getUserTimesInitialized(): Boolean {
         return wakeUpTimePreferences.isInitialized()
     }
 
     @JavascriptInterface
-    fun getWakeUpTimeData(): String {
+    fun getUserTimesData(): String {
         return gson.toJson(wakeUpTimePreferences.get())
     }
 
     @JavascriptInterface
-    fun updateWakeUpTimes(wakeUpTimeDataJson: String) {
+    fun updateUserTimesData(wakeUpTimeDataJson: String) {
         val wakeUpTimeData = gson.fromJson(wakeUpTimeDataJson, WakeUpTime::class.java)
         wakeUpTimePreferences.set(wakeUpTimeData)
         Log.d("DEBUG", "updateWakeUpTimes: JSON = " + wakeUpTimeDataJson);
     }
 
     @JavascriptInterface
-    fun userTimesSetupInitialized() {
+    fun userTimesInitialized() {
         // Save that we setup wake up times
         var editor = mContext.preferences.edit()
         editor.putBoolean("WakeUpTimes.Initialized", true);
