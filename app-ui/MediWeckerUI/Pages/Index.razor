@@ -18,7 +18,7 @@
     {
         Layout.UpdateTab(MainLayout.NavigationTab.Calendar);
 
-        var setupRequired = await AppInterop.GetWakeUpTimesSetupRequiredAsync();
+        var setupRequired = await AppInterop.GetUserTimesDataSetupRequiredAsync();
         var anyPermissionRequired = !await AppInterop.GetIfInternetPermissionGivenAsync() || !await AppInterop.GetIfNotificationsPermissionGivenAsync();
 
         if (setupRequired || anyPermissionRequired)

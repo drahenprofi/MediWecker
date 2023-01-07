@@ -97,7 +97,10 @@ class WebAppInterface internal constructor(c: Context) {
     @JavascriptInterface
     fun updateWakeUpTimes(wakeUpTimeDataJson: String) {
         Log.d("DEBUG", "updateWakeUpTimes: JSON = " + wakeUpTimeDataJson);
+    }
 
+    @JavascriptInterface
+    fun userTimesSetupInitialized() {
         // Save that we setup wake up times
         var editor = mContext.preferences.edit()
         editor.putBoolean("WakeUpTimes.Initialized", true);

@@ -18,8 +18,9 @@
     [Inject]
     public AppInterop AppInterop { get; set; }
 
-    public WakeUpTimeData WakeUpTimeData { get; set; }
+    public UserTimeData UserTimeData { get; set; }
     public bool IsEditingWakeUpTimeData { get; set; }
+    public bool IsEditingSleepTimeData { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -28,12 +29,18 @@
 
         NavigationHistory.BackEvent += BackEvent;
 
-        WakeUpTimeData = await AppInterop.GetWakeUpTimeDataAsync();
+        UserTimeData = await AppInterop.GetUserTimesDataAsync();
     }
 
     protected async Task OnClickEditWakeUpTimeDataAsync()
     {
         IsEditingWakeUpTimeData = true;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    protected async Task OnClickEditSleepTimeDataAsync()
+    {
+        IsEditingSleepTimeData = true;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -48,19 +55,36 @@
         {
             IsEditingWakeUpTimeData = false;
             StateHasChanged();
+
+            return;
         }
-        else
+        
+        if (IsEditingSleepTimeData)
         {
-            BaseLayout.Navigate<Pages.Index>();
+            IsEditingSleepTimeData = false;
+            StateHasChanged();
+
+            return;
         }
+        
+        BaseLayout.Navigate<Pages.Index>();
     }
 
     protected async Task OnSubmitWakeUpTimeDataAsync()
     {
-        await AppInterop.UpdateWakeUpTimeDataAsync(WakeUpTimeData);
+        await AppInterop.UpdateUserTimesDataAsync(UserTimeData);
         await AppInterop.ShowAlertAsync("Ihre Aufsteh-Uhrzeiten wurden aktualisiert.");
 
         IsEditingWakeUpTimeData = false;
+        StateHasChanged();
+    }
+    
+    protected async Task OnSubmitSleepTimeDataAsync()
+    {
+        await AppInterop.UpdateUserTimesDataAsync(UserTimeData);
+        await AppInterop.ShowAlertAsync("Ihre Schlaf-Uhrzeiten wurden aktualisiert.");
+
+        IsEditingSleepTimeData = false;
         StateHasChanged();
     }
 
@@ -75,7 +99,7 @@
     <div class="text-2xl">Einstellungen</div>
 
     <div class="mt-8 flex flex-col gap-4">
-        @if (WakeUpTimeData != null)
+        @if (UserTimeData != null)
         {
             <div class="flex justify-between gap-2">
                 <div>
@@ -83,45 +107,45 @@
 
                     <div class="flex justify-between gap-2 mt-1">
                         <div class="flex flex-col gap-1.5">
-                            @if (WakeUpTimeData.IsSingleTime())
+                            @if (UserTimeData.IsWakeupSingleTime())
                             {
-                                <div>Jeden Tag um @TimeSpan.FromMinutes(WakeUpTimeData.Monday).ToString("hh\\:mm") Uhr</div>
+                                <div>Jeden Tag um @TimeSpan.FromMinutes(UserTimeData.WakeupMonday).ToString("hh\\:mm") Uhr</div>
                             }
                             else
                             {
                                 <div class="flex items-center mt-1">
                                     <div class="shrink-0 w-10">Mo</div>
-                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(WakeUpTimeData.Monday).ToString("hh\\:mm") Uhr</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.WakeupMonday).ToString("hh\\:mm") Uhr</div>
                                 </div>
 
                                 <div class="flex">
                                     <div class="shrink-0 w-10">Di</div>
-                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(WakeUpTimeData.Tuesday).ToString("hh\\:mm") Uhr</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.WakeupTuesday).ToString("hh\\:mm") Uhr</div>
                                 </div>
 
                                 <div class="flex">
                                     <div class="shrink-0 w-10">Mi</div>
-                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(WakeUpTimeData.Wednesday).ToString("hh\\:mm") Uhr</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.WakeupWednesday).ToString("hh\\:mm") Uhr</div>
                                 </div>
 
                                 <div class="flex">
                                     <div class="shrink-0 w-10">Do</div>
-                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(WakeUpTimeData.Thursday).ToString("hh\\:mm") Uhr</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.WakeupThursday).ToString("hh\\:mm") Uhr</div>
                                 </div>
 
                                 <div class="flex">
                                     <div class="shrink-0 w-10">Fr</div>
-                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(WakeUpTimeData.Friday).ToString("hh\\:mm") Uhr</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.WakeupFriday).ToString("hh\\:mm") Uhr</div>
                                 </div>
 
                                 <div class="flex">
                                     <div class="shrink-0 w-10">Sa</div>
-                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(WakeUpTimeData.Saturday).ToString("hh\\:mm") Uhr</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.WakeupSaturday).ToString("hh\\:mm") Uhr</div>
                                 </div>
 
                                 <div class="flex">
                                     <div class="shrink-0 w-10">So</div>
-                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(WakeUpTimeData.Sunday).ToString("hh\\:mm") Uhr</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.WakeupSunday).ToString("hh\\:mm") Uhr</div>
                                 </div>
                             }
                         </div>
@@ -159,7 +183,97 @@
                             </div>
 
                             <div class="mt-6">
-                                <MediWeckerUI.Pages.Settings.EditWakeUpTimesComponent OnSubmit="OnSubmitWakeUpTimeDataAsync" Data="WakeUpTimeData"/>
+                                <MediWeckerUI.Pages.Settings.EditWakeUpTimesComponent OnSubmit="OnSubmitWakeUpTimeDataAsync" Data="UserTimeData"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            
+            <div class="flex justify-between gap-2">
+                <div>
+                    <div class="text-sm text-gray-500">Schlaf-Uhrzeiten</div>
+
+                    <div class="flex justify-between gap-2 mt-1">
+                        <div class="flex flex-col gap-1.5">
+                            @if (UserTimeData.IsSleepSingleTime())
+                            {
+                                <div>Jeden Tag um @TimeSpan.FromMinutes(UserTimeData.SleepMonday).ToString("hh\\:mm") Uhr</div>
+                            }
+                            else
+                            {
+                                <div class="flex items-center mt-1">
+                                    <div class="shrink-0 w-10">Mo</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.SleepMonday).ToString("hh\\:mm") Uhr</div>
+                                </div>
+
+                                <div class="flex">
+                                    <div class="shrink-0 w-10">Di</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.SleepTuesday).ToString("hh\\:mm") Uhr</div>
+                                </div>
+
+                                <div class="flex">
+                                    <div class="shrink-0 w-10">Mi</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.SleepWednesday).ToString("hh\\:mm") Uhr</div>
+                                </div>
+
+                                <div class="flex">
+                                    <div class="shrink-0 w-10">Do</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.SleepThursday).ToString("hh\\:mm") Uhr</div>
+                                </div>
+
+                                <div class="flex">
+                                    <div class="shrink-0 w-10">Fr</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.SleepFriday).ToString("hh\\:mm") Uhr</div>
+                                </div>
+
+                                <div class="flex">
+                                    <div class="shrink-0 w-10">Sa</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.SleepSaturday).ToString("hh\\:mm") Uhr</div>
+                                </div>
+
+                                <div class="flex">
+                                    <div class="shrink-0 w-10">So</div>
+                                    <div class="px-3 py-0.5 bg-gray-50 text-sm rounded-full font-medium">@TimeSpan.FromMinutes(UserTimeData.SleepSunday).ToString("hh\\:mm") Uhr</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <button class="bg-gray-100 text-gray-400 p-2 rounded-md self-start" @onclick="OnClickEditSleepTimeDataAsync">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            if (IsEditingSleepTimeData)
+            {
+                <div class="fixed inset-0 bg-white pb-20">
+                    <div class="overflow-auto h-full">
+                        <div class="container mx-auto max-w-3xl h-min-full p-4 animate-fade-move-in">
+                            <div class="relative">
+                                <button class="h-8 w-8 bg-gray-100 rounded-md flex justify-center items-center top-0 left-0 absolute" @onclick="OnBackwardAsync">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="flex justify-center mt-5">
+                                <svg class="w-16 h-16 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+
+                            <div class="mt-4 text-center">
+                                Bitte stellen Sie ein, zu welchen Uhrzeiten Sie schlafen gehen.
+                            </div>
+
+                            <div class="mt-6">
+                                <MediWeckerUI.Pages.Settings.EditSleepTimesComponent OnSubmit="OnSubmitSleepTimeDataAsync" Data="UserTimeData"/>
                             </div>
                         </div>
                     </div>

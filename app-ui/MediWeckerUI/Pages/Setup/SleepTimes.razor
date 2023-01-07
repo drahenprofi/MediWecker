@@ -1,4 +1,4 @@
-﻿@page "/setup/wakeuptimes"
+﻿@page "/setup/sleeptimes"
 @using MediWeckerUI.Application.Features.Planning
 @using MediWeckerUI.Application
 @layout EmptyLayout
@@ -10,28 +10,13 @@
     
     [CascadingParameter]
     public BaseNavigationLayout BaseLayout { get; set; }
-    
-    public UserTimeData UserTimeData { get; set; } = new UserTimeData
-    {
-        WakeupMonday = 420, // 420 Minutes = 7:00
-        WakeupTuesday = 420,
-        WakeupWednesday = 420,
-        WakeupThursday = 420,
-        WakeupFriday = 420,
-        WakeupSaturday = 420,
-        WakeupSunday = 420,
-        
-        SleepMonday = 1320, // 1320 Minutes = 22:00
-        SleepTuesday = 1320,
-        SleepWednesday = 1320,
-        SleepThursday = 1320,
-        SleepFriday = 1320,
-        SleepSaturday = 1320,
-        SleepSunday = 1320
-    };
 
+    public UserTimeData UserTimeData { get; set; }
+    
     protected override async Task OnInitializedAsync()
     {
+        UserTimeData = await AppInterop.GetUserTimesDataAsync();
+        
         if (!await AppInterop.GetUserTimesDataSetupRequiredAsync())
         {
             NavigateToNextStep();
@@ -41,12 +26,13 @@
     protected async Task OnSubmitAsync()
     {
         await AppInterop.UpdateUserTimesDataAsync(UserTimeData);
+        await AppInterop.MarkUserTimesSetupCompletedAsync();
         NavigateToNextStep();
     }
 
     protected void NavigateToNextStep()
     {
-        BaseLayout.Navigate<SleepTimes>();
+        BaseLayout.Navigate<Exit>();
     }
 
 }
@@ -57,10 +43,10 @@
     </div>
 
     <div class="mt-4 text-center">
-        Bitte stellen Sie ein, zu welchen Uhrzeiten Sie aufstehen.
+        Bitte stellen Sie ein, zu welchen Uhrzeiten Sie schlafen gehen.
     </div>
 
     <div class="mt-6">
-        <MediWeckerUI.Pages.Settings.EditWakeUpTimesComponent OnSubmit="OnSubmitAsync" Data="UserTimeData" />
+        <MediWeckerUI.Pages.Settings.EditSleepTimesComponent OnSubmit="OnSubmitAsync" Data="UserTimeData" />
     </div>
 </div>
