@@ -47,6 +47,9 @@
     </div>
 
     <div class="mt-6">
-        <MediWeckerUI.Pages.Settings.EditSleepTimesComponent OnSubmit="OnSubmitAsync" Data="UserTimeData" />
+        @if (UserTimeData != null)
+        {
+            <MediWeckerUI.Pages.Settings.EditSleepTimesComponent OnSubmit="OnSubmitAsync" Data="UserTimeData" />
+        }
     </div>
 </div>
