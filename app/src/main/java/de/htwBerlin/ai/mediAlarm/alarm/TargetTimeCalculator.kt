@@ -12,7 +12,7 @@ import java.util.*
 class TargetTimeCalculator(val context: Context) {
 
     private val gson = Gson()
-    private val wakeUpTime = UserTimePreferences(context).get()
+    private val userTimes = UserTimePreferences(context).get()
 
     fun calculate(medicine: Medicine): Long {
         val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
@@ -67,17 +67,41 @@ class TargetTimeCalculator(val context: Context) {
             when(timePoint.type) {
                 TimepointType.AbsoluteTime -> result.add(timePoint.absoluteTimeFromMidnight!!)
                 TimepointType.Morning -> when (weekDay) {
-                    Calendar.MONDAY -> result.add(wakeUpTime.wakeupMonday)
-                    Calendar.TUESDAY -> result.add(wakeUpTime.wakeupTuesday)
-                    Calendar.WEDNESDAY -> result.add(wakeUpTime.wakeupWednesday)
-                    Calendar.THURSDAY -> result.add(wakeUpTime.wakeupThursday)
-                    Calendar.FRIDAY -> result.add(wakeUpTime.wakeupFriday)
-                    Calendar.SATURDAY -> result.add(wakeUpTime.wakeupSaturday)
-                    Calendar.SUNDAY -> result.add(wakeUpTime.wakeupSunday)
+                    Calendar.MONDAY -> result.add(userTimes.wakeupMonday)
+                    Calendar.TUESDAY -> result.add(userTimes.wakeupTuesday)
+                    Calendar.WEDNESDAY -> result.add(userTimes.wakeupWednesday)
+                    Calendar.THURSDAY -> result.add(userTimes.wakeupThursday)
+                    Calendar.FRIDAY -> result.add(userTimes.wakeupFriday)
+                    Calendar.SATURDAY -> result.add(userTimes.wakeupSaturday)
+                    Calendar.SUNDAY -> result.add(userTimes.wakeupSunday)
                 }
-                TimepointType.Midday -> TODO()
-                TimepointType.Evening -> TODO()
-                TimepointType.Night -> TODO()
+                TimepointType.Midday -> when (weekDay) {
+                    Calendar.MONDAY -> result.add((userTimes.wakeupMonday + userTimes.sleepMonday) / 2)
+                    Calendar.TUESDAY -> result.add((userTimes.wakeupTuesday + userTimes.sleepTuesday) / 2)
+                    Calendar.WEDNESDAY -> result.add((userTimes.wakeupWednesday + userTimes.sleepWednesday) / 2)
+                    Calendar.THURSDAY -> result.add((userTimes.wakeupThursday + userTimes.sleepThursday) / 2)
+                    Calendar.FRIDAY -> result.add((userTimes.wakeupFriday + userTimes.sleepFriday) / 2)
+                    Calendar.SATURDAY -> result.add((userTimes.wakeupSaturday + userTimes.sleepSaturday) / 2)
+                    Calendar.SUNDAY -> result.add((userTimes.wakeupSunday + userTimes.sleepSunday) / 2)
+                }
+                TimepointType.Evening -> when (weekDay) {
+                    Calendar.MONDAY -> result.add(userTimes.sleepMonday)
+                    Calendar.TUESDAY -> result.add(userTimes.sleepTuesday)
+                    Calendar.WEDNESDAY -> result.add(userTimes.sleepWednesday)
+                    Calendar.THURSDAY -> result.add(userTimes.sleepThursday)
+                    Calendar.FRIDAY -> result.add(userTimes.sleepFriday)
+                    Calendar.SATURDAY -> result.add(userTimes.sleepSaturday)
+                    Calendar.SUNDAY -> result.add(userTimes.sleepSunday)
+                }
+                TimepointType.Night -> when (weekDay) {
+                    Calendar.MONDAY -> result.add(userTimes.sleepMonday + 4 * 60)
+                    Calendar.TUESDAY -> result.add(userTimes.sleepTuesday + 4 * 60)
+                    Calendar.WEDNESDAY -> result.add(userTimes.sleepWednesday + 4 * 60)
+                    Calendar.THURSDAY -> result.add(userTimes.sleepThursday + 4 * 60)
+                    Calendar.FRIDAY -> result.add(userTimes.sleepFriday + 4 * 60)
+                    Calendar.SATURDAY -> result.add(userTimes.sleepSaturday + 4 * 60)
+                    Calendar.SUNDAY -> result.add(userTimes.sleepSunday + 4 * 60)
+                }
             }
         }
 
