@@ -6,13 +6,13 @@ import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
 import de.htwBerlin.ai.mediAlarm.data.rhythm.TimePoint
 import de.htwBerlin.ai.mediAlarm.data.rhythm.TimepointType
-import de.htwBerlin.ai.mediAlarm.data.wakeUpTime.WakeUpTimePreferences
+import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
 import java.util.*
 
 class TargetTimeCalculator(val context: Context) {
 
     private val gson = Gson()
-    private val wakeUpTime = WakeUpTimePreferences(context).get()
+    private val wakeUpTime = UserTimePreferences(context).get()
 
     fun calculate(medicine: Medicine): Long {
         val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
@@ -67,13 +67,13 @@ class TargetTimeCalculator(val context: Context) {
             when(timePoint.type) {
                 TimepointType.AbsoluteTime -> result.add(timePoint.absoluteTimeFromMidnight!!)
                 TimepointType.Morning -> when (weekDay) {
-                    Calendar.MONDAY -> result.add(wakeUpTime.monday)
-                    Calendar.TUESDAY -> result.add(wakeUpTime.tuesday)
-                    Calendar.WEDNESDAY -> result.add(wakeUpTime.wednesday)
-                    Calendar.THURSDAY -> result.add(wakeUpTime.thursday)
-                    Calendar.FRIDAY -> result.add(wakeUpTime.friday)
-                    Calendar.SATURDAY -> result.add(wakeUpTime.saturday)
-                    Calendar.SUNDAY -> result.add(wakeUpTime.sunday)
+                    Calendar.MONDAY -> result.add(wakeUpTime.wakeupMonday)
+                    Calendar.TUESDAY -> result.add(wakeUpTime.wakeupTuesday)
+                    Calendar.WEDNESDAY -> result.add(wakeUpTime.wakeupWednesday)
+                    Calendar.THURSDAY -> result.add(wakeUpTime.wakeupThursday)
+                    Calendar.FRIDAY -> result.add(wakeUpTime.wakeupFriday)
+                    Calendar.SATURDAY -> result.add(wakeUpTime.wakeupSaturday)
+                    Calendar.SUNDAY -> result.add(wakeUpTime.wakeupSunday)
                 }
                 TimepointType.Midday -> TODO()
                 TimepointType.Evening -> TODO()

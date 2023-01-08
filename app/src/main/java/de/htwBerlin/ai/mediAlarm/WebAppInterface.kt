@@ -9,15 +9,15 @@ import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
-import de.htwBerlin.ai.mediAlarm.data.wakeUpTime.WakeUpTime
-import de.htwBerlin.ai.mediAlarm.data.wakeUpTime.WakeUpTimePreferences
+import de.htwBerlin.ai.mediAlarm.data.userTime.UserTime
+import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
 
 class WebAppInterface internal constructor(c: Context) {
     private var mContext: MainActivity = c as MainActivity
     private val gson: Gson = Gson()
 
     private val medicineDao: MedicineDao = AppDatabase.getDatabase(c).medicineDao()
-    private val wakeUpTimePreferences = WakeUpTimePreferences(c)
+    private val userTimePreferences = UserTimePreferences(c)
 
     @JavascriptInterface
     fun showToast(msg: String) {
@@ -51,19 +51,19 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun getUserTimesInitialized(): Boolean {
-        return wakeUpTimePreferences.isInitialized()
+        return userTimePreferences.isInitialized()
     }
 
     @JavascriptInterface
     fun getUserTimesData(): String {
-        return gson.toJson(wakeUpTimePreferences.get())
+        return gson.toJson(userTimePreferences.get())
     }
 
     @JavascriptInterface
-    fun updateUserTimesData(wakeUpTimeDataJson: String) {
-        val wakeUpTimeData = gson.fromJson(wakeUpTimeDataJson, WakeUpTime::class.java)
-        wakeUpTimePreferences.set(wakeUpTimeData)
-        Log.d("DEBUG", "updateWakeUpTimes: JSON = " + wakeUpTimeDataJson);
+    fun updateUserTimesData(userTimeDataJson: String) {
+        val userTimeData = gson.fromJson(userTimeDataJson, UserTime::class.java)
+        userTimePreferences.set(userTimeData)
+        Log.d("DEBUG", "updateWakeUpTimes: JSON = " + userTimeDataJson);
     }
 
     @JavascriptInterface
