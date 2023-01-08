@@ -63,15 +63,11 @@ class WebAppInterface internal constructor(c: Context) {
     fun updateUserTimesData(userTimeDataJson: String) {
         val userTimeData = gson.fromJson(userTimeDataJson, UserTime::class.java)
         userTimePreferences.set(userTimeData)
-        Log.d("DEBUG", "updateWakeUpTimes: JSON = " + userTimeDataJson);
     }
 
     @JavascriptInterface
     fun userTimesInitialized() {
-        // Save that we setup wake up times
-        var editor = mContext.preferences.edit()
-        editor.putBoolean("WakeUpTimes.Initialized", true);
-        editor.apply()
+        userTimePreferences.setInitialized()
     }
 
     @JavascriptInterface

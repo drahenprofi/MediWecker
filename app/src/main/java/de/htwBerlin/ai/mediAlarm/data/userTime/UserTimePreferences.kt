@@ -6,6 +6,12 @@ class UserTimePreferences(context: Context) {
 
     private val preferences = context.getSharedPreferences("UserTime", Context.MODE_PRIVATE)
 
+    fun setInitialized() {
+        val preferencesEditor = preferences.edit()
+        preferencesEditor.putBoolean("UserTime.Initialized", true)
+        preferencesEditor.apply()
+    }
+
     fun isInitialized(): Boolean {
         return preferences.getBoolean("UserTime.Initialized", false)
     }
@@ -26,7 +32,6 @@ class UserTimePreferences(context: Context) {
         val sleepFriday = preferences.getLong("UserTime.SleepFriday", 1320)
         val sleepSaturday = preferences.getLong("UserTime.SleepSaturday", 1320)
         val sleepSunday = preferences.getLong("UserTime.SleepSunday", 1320)
-        
 
         return UserTime(wakeupMonday, wakeupTuesday, wakeupWednesday,
             wakeupThursday, wakeupFriday, wakeupSaturday, wakeupSunday,
@@ -52,8 +57,6 @@ class UserTimePreferences(context: Context) {
         preferencesEditor.putLong("UserTime.SleepFriday", userTime.sleepFriday)
         preferencesEditor.putLong("UserTime.SleepSaturday", userTime.sleepSaturday)
         preferencesEditor.putLong("UserTime.SleepSunday", userTime.sleepSunday)
-
-        preferencesEditor.putBoolean("UserTime.Initialized", true)
 
         preferencesEditor.apply()
     }
