@@ -61,37 +61,52 @@ public class AppInterop
         return await _js.InvokeAsync<bool>("Android.getAndResetPermissionsRequestCompleted");
     }
 
-    public async Task<bool> GetWakeUpTimesSetupRequiredAsync()
+    public async Task<bool> GetUserTimesDataSetupRequiredAsync()
     {
-        if (!IsInApp()) return false;
+        if (!IsInApp()) return true;
 
-        return !await _js.InvokeAsync<bool>("Android.getWakeUpTimesInitialized");
+        return !await _js.InvokeAsync<bool>("Android.getUserTimesInitialized");
     }
 
-    public async Task<WakeUpTimeData> GetWakeUpTimeDataAsync()
+    public async Task<UserTimeData> GetUserTimesDataAsync()
     {
         if (!IsInApp())
-            return new WakeUpTimeData
+            return new UserTimeData
             {
-                Monday = 480,
-                Tuesday = 420,
-                Wednesday = 420,
-                Thursday = 420,
-                Friday = 420,
-                Saturday = 420,
-                Sunday = 420
+                WakeupMonday = 480,
+                WakeupTuesday = 420,
+                WakeupWednesday = 420,
+                WakeupThursday = 420,
+                WakeupFriday = 420,
+                WakeupSaturday = 420,
+                WakeupSunday = 420,
+                
+                SleepMonday = 1320,
+                SleepTuesday = 1320,
+                SleepWednesday = 1320,
+                SleepThursday = 1320,
+                SleepFriday = 1320,
+                SleepSaturday = 1320,
+                SleepSunday = 1320
             };
         
-        var json = await _js.InvokeAsync<string>("Android.getWakeUpTimeData");
+        var json = await _js.InvokeAsync<string>("Android.getUserTimesData");
         
-        return JsonSerializer.Deserialize<WakeUpTimeData>(json);
+        return JsonSerializer.Deserialize<UserTimeData>(json);
     }
 
-    public async Task UpdateWakeUpTimeDataAsync(WakeUpTimeData data)
+    public async Task UpdateUserTimesDataAsync(UserTimeData data)
     {
         if (!IsInApp()) return;
         
-        await _js.InvokeVoidAsync("Android.updateWakeUpTimes", JsonSerializer.Serialize(data));
+        await _js.InvokeVoidAsync("Android.updateUserTimesData", JsonSerializer.Serialize(data));
+    }
+
+    public async Task MarkUserTimesSetupCompletedAsync()
+    {
+        if (!IsInApp()) return;
+        
+        await _js.InvokeVoidAsync("Android.userTimesInitialized");
     }
     
     public async Task<List<Medicine>> GetAllPlansAsync()

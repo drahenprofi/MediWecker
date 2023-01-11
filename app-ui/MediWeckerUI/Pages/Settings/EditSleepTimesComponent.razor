@@ -22,7 +22,7 @@
 
     protected override void OnInitialized()
     {
-        if (Data.IsWakeupSingleTime())
+        if (Data.IsSleepSingleTime())
         {
             Type = SelectedType.SingleTime;
         }
@@ -31,32 +31,32 @@
             Type = SelectedType.IndividualTime;
         }
 
-        SingleTime = TimeSpan.FromMinutes(Data.WakeupMonday).ToString("hh\\:mm\\:ss");
-        MondayTime = TimeSpan.FromMinutes(Data.WakeupMonday).ToString("hh\\:mm\\:ss");
-        TuesdayTime = TimeSpan.FromMinutes(Data.WakeupTuesday).ToString("hh\\:mm\\:ss");
-        WednesdayTime = TimeSpan.FromMinutes(Data.WakeupWednesday).ToString("hh\\:mm\\:ss");
-        ThursdayTime = TimeSpan.FromMinutes(Data.WakeupThursday).ToString("hh\\:mm\\:ss");
-        FridayTime = TimeSpan.FromMinutes(Data.WakeupFriday).ToString("hh\\:mm\\:ss");
-        SaturdayTime = TimeSpan.FromMinutes(Data.WakeupSaturday).ToString("hh\\:mm\\:ss");
-        SundayTime = TimeSpan.FromMinutes(Data.WakeupSunday).ToString("hh\\:mm\\:ss");
+        SingleTime = TimeSpan.FromMinutes(Data.SleepMonday).ToString("hh\\:mm\\:ss");
+        MondayTime = TimeSpan.FromMinutes(Data.SleepMonday).ToString("hh\\:mm\\:ss");
+        TuesdayTime = TimeSpan.FromMinutes(Data.SleepTuesday).ToString("hh\\:mm\\:ss");
+        WednesdayTime = TimeSpan.FromMinutes(Data.SleepWednesday).ToString("hh\\:mm\\:ss");
+        ThursdayTime = TimeSpan.FromMinutes(Data.SleepThursday).ToString("hh\\:mm\\:ss");
+        FridayTime = TimeSpan.FromMinutes(Data.SleepFriday).ToString("hh\\:mm\\:ss");
+        SaturdayTime = TimeSpan.FromMinutes(Data.SleepSaturday).ToString("hh\\:mm\\:ss");
+        SundayTime = TimeSpan.FromMinutes(Data.SleepSunday).ToString("hh\\:mm\\:ss");
     }
 
     protected async Task OnSubmitAsync()
     {
         if (Type == SelectedType.SingleTime)
         {
-            Data.WakeupMonday = (int) TimeSpan.ParseExact(SingleTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
-            Data.WakeupSunday = Data.WakeupSaturday = Data.WakeupFriday = Data.WakeupThursday = Data.WakeupWednesday = Data.WakeupTuesday = Data.WakeupMonday;
+            Data.SleepMonday = (int) TimeSpan.ParseExact(SingleTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.SleepSunday = Data.SleepSaturday = Data.SleepFriday = Data.SleepThursday = Data.SleepWednesday = Data.SleepTuesday = Data.SleepMonday;
         }
         else
         {
-            Data.WakeupMonday = (int) TimeSpan.ParseExact(MondayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
-            Data.WakeupTuesday = (int) TimeSpan.ParseExact(TuesdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
-            Data.WakeupWednesday = (int) TimeSpan.ParseExact(WednesdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
-            Data.WakeupThursday = (int) TimeSpan.ParseExact(ThursdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
-            Data.WakeupFriday = (int) TimeSpan.ParseExact(FridayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
-            Data.WakeupSaturday = (int) TimeSpan.ParseExact(SaturdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
-            Data.WakeupSunday = (int) TimeSpan.ParseExact(SundayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.SleepMonday = (int) TimeSpan.ParseExact(MondayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.SleepTuesday = (int) TimeSpan.ParseExact(TuesdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.SleepWednesday = (int) TimeSpan.ParseExact(WednesdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.SleepThursday = (int) TimeSpan.ParseExact(ThursdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.SleepFriday = (int) TimeSpan.ParseExact(FridayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.SleepSaturday = (int) TimeSpan.ParseExact(SaturdayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
+            Data.SleepSunday = (int) TimeSpan.ParseExact(SundayTime, "hh\\:mm\\:ss", CultureInfo.InvariantCulture).TotalMinutes;
         }
 
         await OnSubmit.InvokeAsync();

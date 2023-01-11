@@ -1,13 +1,18 @@
 package de.htwBerlin.ai.mediAlarm.alarm
 
+import android.content.Context
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
+import de.htwBerlin.ai.mediAlarm.data.rhythm.TimePoint
+import de.htwBerlin.ai.mediAlarm.data.rhythm.TimepointType
+import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
 import java.util.*
 
-class TargetTimeCalculator {
+class TargetTimeCalculator(val context: Context) {
 
     private val gson = Gson()
+    private val userTimes = UserTimePreferences(context).get()
 
     fun calculate(medicine: Medicine): Long {
         val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
@@ -18,185 +23,233 @@ class TargetTimeCalculator {
         val calendar = Calendar.getInstance()
 
         val now = calendar.timeInMillis
-
         val currentDay = now - calendar[Calendar.HOUR_OF_DAY] * 60 * 60 * 1000 - calendar[Calendar.MINUTE] * 60 * 1000 - calendar[Calendar.SECOND] * 1000
         val currentTimeFromMidnight = (calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)) * 60 * 1000
 
-        val scheduledDayDifference = if (rhythm.intervalDays != null) {
-            rhythm.intervalDays.days * 24 * 60 * 60 * 1000
+        val pendingAlarmsToday = getAlarmTimePoints(rhythm.timePoints, calendar[Calendar.DAY_OF_WEEK])
+            .map { time -> time * 60 * 1000 }
+            .filter { time -> time > currentTimeFromMidnight }
+            .sorted()
+
+        var scheduledDayDifference = if (rhythm.intervalDays != null && pendingAlarmsToday.isEmpty()) {
+            rhythm.intervalDays.days
         } else if (rhythm.specificDays != null) {
-            getDayDifferenceBySpecificDaysData(rhythm, calendar, currentTimeFromMidnight)
+            getDayDifferenceBySpecificDaysData(rhythm, calendar, scheduleToday = true)
         } else {
             0
         }
 
-        // schedule next alarm for today
-        if (scheduledDayDifference == 0) {
-            // TODO: this will crash for all timePointTypes except TimePointType.AbsoluteTime
-            for (timePoint in rhythm.timePoints) {
-                val scheduledTimeFromMidnight = timePoint.absoluteTimeFromMidnight!! * 60 * 1000
-                if (scheduledTimeFromMidnight > currentTimeFromMidnight) {
-                    return currentDay + scheduledTimeFromMidnight
+        if (scheduledDayDifference == 0 && pendingAlarmsToday.any()) {
+            return currentDay + pendingAlarmsToday.first()
+        }
+
+        scheduledDayDifference = if (rhythm.intervalDays != null) {
+            rhythm.intervalDays.days
+        } else if (rhythm.specificDays != null) {
+            getDayDifferenceBySpecificDaysData(rhythm, calendar, scheduleToday = false)
+        } else {
+            1
+        }
+
+        val plannedDay = (calendar[Calendar.DAY_OF_WEEK] + scheduledDayDifference) % 8
+
+        val nextPendingAlarm = getAlarmTimePoints(rhythm.timePoints, plannedDay)
+            .map { time -> time * 60 * 1000 }
+            .sorted()
+
+        return currentDay + nextPendingAlarm.first() + 1000 * 60 * 60 * 24 * scheduledDayDifference
+    }
+
+    private fun getAlarmTimePoints(timePoints: List<TimePoint>, weekDay: Int): List<Long> {
+        val result = mutableListOf<Long>()
+
+        for (timePoint in timePoints) {
+            when(timePoint.type) {
+                TimepointType.AbsoluteTime -> result.add(timePoint.absoluteTimeFromMidnight!!)
+                TimepointType.Morning -> when (weekDay) {
+                    Calendar.MONDAY -> result.add(userTimes.wakeupMonday)
+                    Calendar.TUESDAY -> result.add(userTimes.wakeupTuesday)
+                    Calendar.WEDNESDAY -> result.add(userTimes.wakeupWednesday)
+                    Calendar.THURSDAY -> result.add(userTimes.wakeupThursday)
+                    Calendar.FRIDAY -> result.add(userTimes.wakeupFriday)
+                    Calendar.SATURDAY -> result.add(userTimes.wakeupSaturday)
+                    Calendar.SUNDAY -> result.add(userTimes.wakeupSunday)
+                }
+                TimepointType.Midday -> when (weekDay) {
+                    Calendar.MONDAY -> result.add((userTimes.wakeupMonday + userTimes.sleepMonday) / 2)
+                    Calendar.TUESDAY -> result.add((userTimes.wakeupTuesday + userTimes.sleepTuesday) / 2)
+                    Calendar.WEDNESDAY -> result.add((userTimes.wakeupWednesday + userTimes.sleepWednesday) / 2)
+                    Calendar.THURSDAY -> result.add((userTimes.wakeupThursday + userTimes.sleepThursday) / 2)
+                    Calendar.FRIDAY -> result.add((userTimes.wakeupFriday + userTimes.sleepFriday) / 2)
+                    Calendar.SATURDAY -> result.add((userTimes.wakeupSaturday + userTimes.sleepSaturday) / 2)
+                    Calendar.SUNDAY -> result.add((userTimes.wakeupSunday + userTimes.sleepSunday) / 2)
+                }
+                TimepointType.Evening -> when (weekDay) {
+                    Calendar.MONDAY -> result.add(userTimes.sleepMonday)
+                    Calendar.TUESDAY -> result.add(userTimes.sleepTuesday)
+                    Calendar.WEDNESDAY -> result.add(userTimes.sleepWednesday)
+                    Calendar.THURSDAY -> result.add(userTimes.sleepThursday)
+                    Calendar.FRIDAY -> result.add(userTimes.sleepFriday)
+                    Calendar.SATURDAY -> result.add(userTimes.sleepSaturday)
+                    Calendar.SUNDAY -> result.add(userTimes.sleepSunday)
+                }
+                TimepointType.Night -> when (weekDay) {
+                    Calendar.MONDAY -> result.add(userTimes.sleepMonday + 4 * 60)
+                    Calendar.TUESDAY -> result.add(userTimes.sleepTuesday + 4 * 60)
+                    Calendar.WEDNESDAY -> result.add(userTimes.sleepWednesday + 4 * 60)
+                    Calendar.THURSDAY -> result.add(userTimes.sleepThursday + 4 * 60)
+                    Calendar.FRIDAY -> result.add(userTimes.sleepFriday + 4 * 60)
+                    Calendar.SATURDAY -> result.add(userTimes.sleepSaturday + 4 * 60)
+                    Calendar.SUNDAY -> result.add(userTimes.sleepSunday + 4 * 60)
                 }
             }
         }
 
-        // all time points for current day expired
-        // schedule earliest time point for next scheduled day or next day
-        val earliestAbsoluteTimePoint = rhythm.timePoints
-            .minByOrNull { x -> x.absoluteTimeFromMidnight!! }!!
-            .absoluteTimeFromMidnight!!
-
-        return if (scheduledDayDifference > 0) {
-            currentDay + earliestAbsoluteTimePoint * 60 * 1000 + scheduledDayDifference
-        } else {
-            currentDay + earliestAbsoluteTimePoint * 60 * 1000 + 1000 * 60 * 60 * 24
-        }
+        return result
     }
 
-    private fun getDayDifferenceBySpecificDaysData(rhythm: Rhythm, calendar: Calendar, currentTimeFromMidnight: Int): Int {
+    private fun getDayDifferenceBySpecificDaysData(rhythm: Rhythm, calendar: Calendar, scheduleToday: Boolean): Int {
         if (rhythm.specificDays == null) return 0
 
-        val absoluteTimePointAfterCurrentTime = rhythm.timePoints
-            .any { timePoint -> timePoint.absoluteTimeFromMidnight!! * 60 * 1000 > currentTimeFromMidnight }
+        val specificDays = rhythm.specificDays!!
 
-        val scheduledDayDifference = when (calendar[Calendar.DAY_OF_WEEK]) {
+        return when (calendar[Calendar.DAY_OF_WEEK]) {
             Calendar.MONDAY -> {
-                if (rhythm.specificDays.monday && absoluteTimePointAfterCurrentTime) {
+                if (specificDays.monday && scheduleToday) {
                     0
-                } else if (rhythm.specificDays.tuesday) {
-                    24 * 60 * 60 * 1000
-                } else if (rhythm.specificDays.wednesday) {
-                    24 * 60 * 60 * 1000 * 2
-                } else if (rhythm.specificDays.thursday) {
-                    24 * 60 * 60 * 1000 * 3
-                }else if (rhythm.specificDays.friday) {
-                    24 * 60 * 60 * 1000 * 4
-                }else if (rhythm.specificDays.saturday) {
-                    24 * 60 * 60 * 1000 * 5
-                } else if (rhythm.specificDays.sunday) {
-                    24 * 60 * 60 * 1000 * 6
+                } else if (specificDays.tuesday) {
+                    1
+                } else if (specificDays.wednesday) {
+                    2
+                } else if (specificDays.thursday) {
+                    3
+                } else if (specificDays.friday) {
+                    4
+                } else if (specificDays.saturday) {
+                    5
+                } else if (specificDays.sunday) {
+                    6
                 } else {
-                    24 * 60 * 60 * 1000 * 7
+                    7
                 }
             }
             Calendar.TUESDAY -> {
-                if (rhythm.specificDays.tuesday && absoluteTimePointAfterCurrentTime) {
+                if (specificDays.tuesday && scheduleToday) {
                     0
-                } else if (rhythm.specificDays.wednesday) {
-                    24 * 60 * 60 * 1000
-                } else if (rhythm.specificDays.thursday) {
-                    24 * 60 * 60 * 1000 * 2
-                } else if (rhythm.specificDays.friday) {
-                    24 * 60 * 60 * 1000 * 3
-                }else if (rhythm.specificDays.saturday) {
-                    24 * 60 * 60 * 1000 * 4
-                }else if (rhythm.specificDays.sunday) {
-                    24 * 60 * 60 * 1000 * 5
-                } else if (rhythm.specificDays.monday) {
-                    24 * 60 * 60 * 1000 * 6
+                } else if (specificDays.wednesday) {
+                    1
+                } else if (specificDays.thursday) {
+                    2
+                } else if (specificDays.friday) {
+                    3
+                } else if (specificDays.saturday) {
+                    4
+                } else if (specificDays.sunday) {
+                    5
+                } else if (specificDays.monday) {
+                    6
                 } else {
-                    24 * 60 * 60 * 1000 * 7
+                    7
                 }
             }
             Calendar.WEDNESDAY -> {
-                if (rhythm.specificDays.wednesday && absoluteTimePointAfterCurrentTime) {
+                if (specificDays.wednesday && scheduleToday) {
                     0
-                } else if (rhythm.specificDays.thursday) {
-                    24 * 60 * 60 * 1000
-                } else if (rhythm.specificDays.friday) {
-                    24 * 60 * 60 * 1000 * 2
-                } else if (rhythm.specificDays.saturday) {
-                    24 * 60 * 60 * 1000 * 3
-                }else if (rhythm.specificDays.sunday) {
-                    24 * 60 * 60 * 1000 * 4
-                }else if (rhythm.specificDays.monday) {
-                    24 * 60 * 60 * 1000 * 5
-                } else if (rhythm.specificDays.tuesday) {
-                    24 * 60 * 60 * 1000 * 6
+                } else if (specificDays.thursday) {
+                    1
+                } else if (specificDays.friday) {
+                    2
+                } else if (specificDays.saturday) {
+                    3
+                } else if (specificDays.sunday) {
+                    4
+                } else if (specificDays.monday) {
+                    5
+                } else if (specificDays.tuesday) {
+                    6
                 } else {
-                    24 * 60 * 60 * 1000 * 7
+                    7
                 }
             }
             Calendar.THURSDAY -> {
-                if (rhythm.specificDays.thursday && absoluteTimePointAfterCurrentTime) {
+                if (specificDays.thursday && scheduleToday) {
                     0
-                } else if (rhythm.specificDays.friday) {
-                    24 * 60 * 60 * 1000
-                } else if (rhythm.specificDays.saturday) {
-                    24 * 60 * 60 * 1000 * 2
-                } else if (rhythm.specificDays.sunday) {
-                    24 * 60 * 60 * 1000 * 3
-                }else if (rhythm.specificDays.monday) {
-                    24 * 60 * 60 * 1000 * 4
-                }else if (rhythm.specificDays.tuesday) {
-                    24 * 60 * 60 * 1000 * 5
-                } else if (rhythm.specificDays.wednesday) {
-                    24 * 60 * 60 * 1000 * 6
+                } else if (specificDays.friday) {
+                    1
+                } else if (specificDays.saturday) {
+                    2
+                } else if (specificDays.sunday) {
+                    3
+                } else if (specificDays.monday) {
+                    4
+                } else if (specificDays.tuesday) {
+                    5
+                } else if (specificDays.wednesday) {
+                    6
                 } else {
-                    24 * 60 * 60 * 1000 * 7
+                    7
                 }
             }
             Calendar.FRIDAY -> {
-                if (rhythm.specificDays.friday && absoluteTimePointAfterCurrentTime) {
+                if (specificDays.friday && scheduleToday) {
                     0
-                } else if (rhythm.specificDays.saturday) {
-                    24 * 60 * 60 * 1000
-                } else if (rhythm.specificDays.sunday) {
-                    24 * 60 * 60 * 1000 * 2
-                } else if (rhythm.specificDays.monday) {
-                    24 * 60 * 60 * 1000 * 3
-                }else if (rhythm.specificDays.tuesday) {
-                    24 * 60 * 60 * 1000 * 4
-                }else if (rhythm.specificDays.wednesday) {
-                    24 * 60 * 60 * 1000 * 5
-                } else if (rhythm.specificDays.thursday) {
-                    24 * 60 * 60 * 1000 * 6
+                } else if (specificDays.saturday) {
+                    1
+                } else if (specificDays.sunday) {
+                    2
+                } else if (specificDays.monday) {
+                    3
+                } else if (specificDays.tuesday) {
+                    4
+                } else if (specificDays.wednesday) {
+                    5
+                } else if (specificDays.thursday) {
+                    6
                 } else {
-                    24 * 60 * 60 * 1000 * 7
+                    7
                 }
             }
             Calendar.SATURDAY -> {
-                if (rhythm.specificDays.saturday && absoluteTimePointAfterCurrentTime) {
+                if (specificDays.saturday && scheduleToday) {
                     0
-                } else if (rhythm.specificDays.sunday) {
-                    24 * 60 * 60 * 1000
-                } else if (rhythm.specificDays.monday) {
-                    24 * 60 * 60 * 1000 * 2
-                } else if (rhythm.specificDays.tuesday) {
-                    24 * 60 * 60 * 1000 * 3
-                }else if (rhythm.specificDays.wednesday) {
-                    24 * 60 * 60 * 1000 * 4
-                }else if (rhythm.specificDays.thursday) {
-                    24 * 60 * 60 * 1000 * 5
-                } else if (rhythm.specificDays.friday) {
-                    24 * 60 * 60 * 1000 * 6
+                } else if (specificDays.sunday) {
+                    1
+                } else if (specificDays.monday) {
+                    2
+                } else if (specificDays.tuesday) {
+                    3
+                } else if (specificDays.wednesday) {
+                    4
+                } else if (specificDays.thursday) {
+                    5
+                } else if (specificDays.friday) {
+                    6
                 } else {
-                    24 * 60 * 60 * 1000 * 7
+                    7
                 }
             }
             Calendar.SUNDAY -> {
-                if (rhythm.specificDays.sunday && absoluteTimePointAfterCurrentTime) {
+                if (specificDays.sunday && scheduleToday) {
                     0
-                } else if (rhythm.specificDays.monday) {
-                    24 * 60 * 60 * 1000
-                } else if (rhythm.specificDays.tuesday) {
-                    24 * 60 * 60 * 1000 * 2
-                } else if (rhythm.specificDays.wednesday) {
-                    24 * 60 * 60 * 1000 * 3
-                }else if (rhythm.specificDays.thursday) {
-                    24 * 60 * 60 * 1000 * 4
-                }else if (rhythm.specificDays.friday) {
-                    24 * 60 * 60 * 1000 * 5
-                } else if (rhythm.specificDays.saturday) {
-                    24 * 60 * 60 * 1000 * 6
+                } else if (specificDays.monday) {
+                    1
+                } else if (specificDays.tuesday) {
+                    2
+                } else if (specificDays.wednesday) {
+                    3
+                } else if (specificDays.thursday) {
+                    4
+                } else if (specificDays.friday) {
+                    5
+                } else if (specificDays.saturday) {
+                    6
                 } else {
-                    24 * 60 * 60 * 1000 * 7
+                    7
                 }
             }
-            else -> { 0 }
+            else -> {
+                0
+            }
         }
-
-        return scheduledDayDifference
     }
 }

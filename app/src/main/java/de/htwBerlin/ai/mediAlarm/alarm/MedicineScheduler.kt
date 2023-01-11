@@ -17,7 +17,7 @@ class MedicineScheduler(private val context: Context) {
             return
         }
 
-        val targetTime = TargetTimeCalculator().calculate(medicine)
+        val targetTime = TargetTimeCalculator(context).calculate(medicine)
 
         val alarm = Alarm(medicine.id, targetTime)
         alarm.id = alarmDao.insert(alarm)
