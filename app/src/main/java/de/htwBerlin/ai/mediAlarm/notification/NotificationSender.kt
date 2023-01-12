@@ -26,11 +26,10 @@ class NotificationSender {
             .setContentTitle("Medicine Reminder")
             .setContentText(medicine.name)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
+            .setAutoCancel(false)
+            .setOngoing(true)
             .addAction(R.drawable.ic_launcher_foreground, "Schlummern", snoozePendingIntent)
             .build()
-
-        notification.flags = Notification.FLAG_AUTO_CANCEL
 
         val mNotificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
