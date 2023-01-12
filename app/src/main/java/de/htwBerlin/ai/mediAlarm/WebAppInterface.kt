@@ -7,6 +7,9 @@ import android.widget.Toast
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
+import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarItem
+import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequest
+import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequestProcessor
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTime
@@ -93,5 +96,11 @@ class WebAppInterface internal constructor(c: Context) {
     fun updateMedicine(medicineJson: String) {
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
         medicineDao.update(medicine)
+    }
+
+    @JavascriptInterface
+    fun getCalendarData(calendarRequestJson: String): List<CalendarItem> {
+        val request = gson.fromJson(calendarRequestJson, CalendarRequest::class.java)
+        return CalendarRequestProcessor(mContext).process(request)
     }
 }

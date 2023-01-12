@@ -14,13 +14,13 @@ class TargetTimeCalculator(val context: Context) {
     private val gson = Gson()
     private val userTimes = UserTimePreferences(context).get()
 
-    fun calculate(medicine: Medicine): Long {
+    fun calculate(medicine: Medicine, calendar: Calendar): Long {
         val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
-        return calculate(rhythm)
+        return calculate(rhythm, calendar)
     }
 
-    private fun calculate(rhythm: Rhythm): Long {
-        val calendar = Calendar.getInstance()
+    private fun calculate(rhythm: Rhythm, calendar: Calendar): Long {
+        //val calendar = Calendar.getInstance()
 
         val now = calendar.timeInMillis
         val currentDay = now - calendar[Calendar.HOUR_OF_DAY] * 60 * 60 * 1000 - calendar[Calendar.MINUTE] * 60 * 1000 - calendar[Calendar.SECOND] * 1000
