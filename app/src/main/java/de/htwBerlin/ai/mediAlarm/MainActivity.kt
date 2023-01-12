@@ -102,21 +102,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         return false;
     }
 
-    fun setAlarm() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, AlarmReceiver::class.java)
-        val pendingIntent =
-            PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        alarmManager.setExact(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            100,
-            pendingIntent
-        )
-
-        Log.d("Medicine Reminder", "setAlarm")
-    }
-
     private class LocalChromeClient : WebChromeClient() {
         override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
             if (consoleMessage != null) {

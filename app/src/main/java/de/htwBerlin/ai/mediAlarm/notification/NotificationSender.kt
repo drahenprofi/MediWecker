@@ -1,6 +1,5 @@
 package de.htwBerlin.ai.mediAlarm.notification
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -9,9 +8,12 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import de.htwBerlin.ai.mediAlarm.MainActivity
+import de.htwBerlin.ai.mediAlarm.NotificationClickActivity
 import de.htwBerlin.ai.mediAlarm.R
 import de.htwBerlin.ai.mediAlarm.alarm.snooze.SnoozeButtonReceiver
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
+import java.util.*
 
 class NotificationSender {
     private val channelId = "1"
@@ -19,12 +21,14 @@ class NotificationSender {
     fun send(context: Context, medicine: Medicine) {
         createNotificationChannel(context)
 
+        val clickPendingIntent = getClickPendingIntent(context, medicine)
         val snoozePendingIntent = getSnoozePendingIntent(context, medicine)
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.sym_def_app_icon)
             .setContentTitle("Medicine Reminder")
             .setContentText(medicine.name)
+            .setContentIntent(clickPendingIntent)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(false)
             .setOngoing(true)
@@ -53,6 +57,17 @@ class NotificationSender {
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    private fun getClickPendingIntent(context: Context, medicine: Medicine): PendingIntent {
+        val scheduledTimeUtc = Calendar.getInstance().timeInMillis
+
+        val clickIntent = Intent(context, NotificationClickActivity::class.java).apply {
+            putExtra("MEDICINE_ID", medicine.id)
+            putExtra("SCHEDULED_TIME_UTC", scheduledTimeUtc)
+        }
+
+        return PendingIntent.getActivity(context, medicine.id.toInt(), clickIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun getSnoozePendingIntent(context: Context, medicine: Medicine): PendingIntent {
