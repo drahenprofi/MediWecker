@@ -20,6 +20,7 @@
     public DateTimeOffset From { get; set; } = DateTimeOffset.UtcNow.AddDays(-1);
     public DateTimeOffset To { get; set; } = DateTimeOffset.UtcNow.AddDays(1);
     public List<CalendarItem> CalendarItems { get; set; }
+    public List<Medicine> Plans { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,6 +40,7 @@
 
     protected async Task RefreshCalendarAsync()
     {
+        Plans = await AppInterop.GetAllPlansAsync();
         CalendarItems = await AppInterop.GetCalendarItemsAsync(From, To);
         StateHasChanged();
     }
@@ -59,10 +61,14 @@
     <div class="mt-5 flex flex-col gap-2">
         @if (CalendarItems != null)
         {
-            if (CalendarItems.Count == 0)
+            if (Plans.Count == 0)
             {
                 <div class="text-center text-gray-400 font-medium mt-10 text-lg">Hm, hier scheint noch nichts los zu sein..</div>
                 <div class="text-center text-gray-400">Legen Sie einen Plan an, um Ihre nächsten Einnahmen hier sehen zu können.</div>
+            }
+            else if (CalendarItems.Count == 0)
+            {
+                <div class="text-center text-gray-400 font-medium mt-10 text-lg">Keine geplanten Einnahmen gefunden</div>
             }
             else
             {
@@ -106,11 +112,12 @@
                         </div>
                     </button>
                 }
-
-                <button class="border-2 border-dashed border-gray-100 p-3 rounded grid place-items-center mt-3" @onclick="ShowMoreDaysAsync">
-                    Weiteren Tag anzeigen
-                </button>
             }
+            
+            <button class="p-3 rounded grid place-items-center text-center mt-5" @onclick="ShowMoreDaysAsync">
+                <div class="font-semibold">Ansicht bis @To.ToString("dddd' der 'dd'., 'HH:mm' Uhr'")</div>
+                <div class="text-sm">Hier klicken, um einen weiteren Tag anzuzeigen</div>
+            </button>
         }
     </div>
 </div>
