@@ -2,6 +2,7 @@
 using MediWeckerUI.Application.Features.Planning;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using JSRuntimeExtensions = Microsoft.JSInterop.JSRuntimeExtensions;
 
 namespace MediWeckerUI.Application;
 
@@ -9,8 +10,8 @@ public class AppInterop
 {
     private readonly IJSRuntime _js;
     private readonly NavigationManager _navigationManager;
-    private bool _mockPermissionsGiven = false;
-    
+    private bool _mockPermissionsGiven = true;
+
     public AppInterop(IJSRuntime js, NavigationManager navigationManager)
     {
         _js = js;
@@ -26,23 +27,75 @@ public class AppInterop
     {
         if (!IsInApp()) return;
 
-        await _js.InvokeVoidAsync("Android.showToast", message);
+        await JSRuntimeExtensions.InvokeVoidAsync(_js, "Android.showToast", message);
     }
 
     public async Task<bool> GetIfNotificationsPermissionGivenAsync()
     {
         if (!IsInApp()) return _mockPermissionsGiven;
 
-        return await _js.InvokeAsync<bool>("Android.getIfNotificationsPermissionGiven");
+        return await JSRuntimeExtensions.InvokeAsync<bool>(_js, "Android.getIfNotificationsPermissionGiven");
     }
-    
+
     public async Task<bool> GetIfInternetPermissionGivenAsync()
     {
         if (!IsInApp()) return _mockPermissionsGiven;
 
-        return await _js.InvokeAsync<bool>("Android.getIfInternetPermissionGiven");
+        return await JSRuntimeExtensions.InvokeAsync<bool>(_js, "Android.getIfInternetPermissionGiven");
     }
-    
+
+    public async Task<List<CalendarItem>> GetCalendarItemsAsync(DateTimeOffset from, DateTimeOffset to)
+    {
+        var random = new Random();
+
+        if (!IsInApp())
+        {
+            var items = new List<CalendarItem>();
+
+            for (var i = 0; i < 5; i++)
+            {
+                items.Add(new CalendarItem
+                {
+                    Medicine = new Medicine
+                    {
+                        Id = 0,
+                        Name = "Ibuprofen",
+                        Amount = "1 Tablette",
+                        Rythm = JsonSerializer.Serialize(new Rythm
+                        {
+                            IntervalDays = new IntervalDaysData { Days = 1 },
+                            Timepoints = new List<Timepoint>
+                            {
+                                new()
+                                {
+                                    Type = TimepointType.Morning
+                                }
+                            }
+                        })
+                    },
+
+                    ScheduledTimeUtc = DateTimeOffset.UtcNow.AddMinutes(random.Next(-600, 6000)).ToUnixTimeSeconds()
+                });
+            }
+
+            return items;
+        }
+
+
+        Console.WriteLine($"GetCalendarItemsAsync serializing request");
+        
+        var requestJson = JsonSerializer.Serialize(new CalendarRequest
+            { From = from.ToUnixTimeMilliseconds(), To = to.ToUnixTimeMilliseconds() });
+
+        Console.WriteLine($"GetCalendarItemsAsync request JSON is {requestJson}");
+        
+        var json = await _js.InvokeAsync<string>("Android.getCalendarData", requestJson);
+
+        Console.WriteLine($"GetCalendarItemsAsync returned JSON is {json}");
+
+        return JsonSerializer.Deserialize<List<CalendarItem>>(json);
+    }
+
     public async Task AttemptRequestPermissionsAsync()
     {
         if (!IsInApp())
@@ -51,26 +104,27 @@ public class AppInterop
             return;
         }
 
-        await _js.InvokeVoidAsync("Android.attemptRequestPermissions");
+        await JSRuntimeExtensions.InvokeVoidAsync(_js, "Android.attemptRequestPermissions");
     }
 
     public async Task<bool> GetAndResetPermissionsRequestCompletedFlagAsync()
     {
         if (!IsInApp()) return true;
 
-        return await _js.InvokeAsync<bool>("Android.getAndResetPermissionsRequestCompleted");
+        return await JSRuntimeExtensions.InvokeAsync<bool>(_js, "Android.getAndResetPermissionsRequestCompleted");
     }
 
     public async Task<bool> GetUserTimesDataSetupRequiredAsync()
     {
-        if (!IsInApp()) return true;
+        if (!IsInApp()) return false;
 
-        return !await _js.InvokeAsync<bool>("Android.getUserTimesInitialized");
+        return !await JSRuntimeExtensions.InvokeAsync<bool>(_js, "Android.getUserTimesInitialized");
     }
 
     public async Task<UserTimeData> GetUserTimesDataAsync()
     {
         if (!IsInApp())
+        {
             return new UserTimeData
             {
                 WakeupMonday = 480,
@@ -80,7 +134,7 @@ public class AppInterop
                 WakeupFriday = 420,
                 WakeupSaturday = 420,
                 WakeupSunday = 420,
-                
+
                 SleepMonday = 1320,
                 SleepTuesday = 1320,
                 SleepWednesday = 1320,
@@ -89,26 +143,27 @@ public class AppInterop
                 SleepSaturday = 1320,
                 SleepSunday = 1320
             };
-        
-        var json = await _js.InvokeAsync<string>("Android.getUserTimesData");
-        
+        }
+
+        var json = await JSRuntimeExtensions.InvokeAsync<string>(_js, "Android.getUserTimesData");
+
         return JsonSerializer.Deserialize<UserTimeData>(json);
     }
 
     public async Task UpdateUserTimesDataAsync(UserTimeData data)
     {
         if (!IsInApp()) return;
-        
-        await _js.InvokeVoidAsync("Android.updateUserTimesData", JsonSerializer.Serialize(data));
+
+        await JSRuntimeExtensions.InvokeVoidAsync(_js, "Android.updateUserTimesData", JsonSerializer.Serialize(data));
     }
 
     public async Task MarkUserTimesSetupCompletedAsync()
     {
         if (!IsInApp()) return;
-        
-        await _js.InvokeVoidAsync("Android.userTimesInitialized");
+
+        await JSRuntimeExtensions.InvokeVoidAsync(_js, "Android.userTimesInitialized");
     }
-    
+
     public async Task<List<Medicine>> GetAllPlansAsync()
     {
         if (!IsInApp())
@@ -135,7 +190,7 @@ public class AppInterop
             };
         }
 
-        var json = await _js.InvokeAsync<string>("Android.getMedicine");
+        var json = await JSRuntimeExtensions.InvokeAsync<string>(_js, "Android.getMedicine");
 
         Console.WriteLine($"GetAllPlansAsync: {json}");
 
@@ -146,32 +201,38 @@ public class AppInterop
     {
         if (!IsInApp()) return;
 
-        await _js.InvokeVoidAsync("Android.deleteMedicine", id);
+        await JSRuntimeExtensions.InvokeVoidAsync(_js, "Android.deleteMedicine", id);
     }
 
     public async Task AddPlanAsync(Medicine medicine)
     {
         if (!IsInApp()) return;
 
-        await _js.InvokeVoidAsync("Android.insertMedicine", JsonSerializer.Serialize(medicine));
+        await JSRuntimeExtensions.InvokeVoidAsync(_js, "Android.insertMedicine", JsonSerializer.Serialize(medicine));
     }
 
     public async Task UpdatePlanAsync(Medicine medicine)
     {
         if (!IsInApp())
         {
-            Console.WriteLine($"UpdatePlanAsync: Not in app.");
-            
+            Console.WriteLine("UpdatePlanAsync: Not in app.");
+
             return;
         }
 
-        await _js.InvokeVoidAsync("Android.updateMedicine", JsonSerializer.Serialize(medicine));
+        await JSRuntimeExtensions.InvokeVoidAsync(_js, "Android.updateMedicine", JsonSerializer.Serialize(medicine));
     }
 
     public async Task BackEventAsync()
     {
         if (!IsInApp()) return;
 
-        await _js.InvokeVoidAsync("Android.navigateBackInApp");
+        await JSRuntimeExtensions.InvokeVoidAsync(_js, "Android.navigateBackInApp");
+    }
+
+    private class CalendarRequest
+    {
+        public long From { get; set; }
+        public long To { get; set; }
     }
 }

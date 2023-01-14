@@ -2,6 +2,9 @@
 @page "/assets"
 @page "/index_mobile.html"
 @using MediWeckerUI.Application
+@using MediWeckerUI.Application.Features.Planning
+@using Humanizer
+@using System.Globalization
 
 @code {
 
@@ -10,9 +13,13 @@
 
     [CascadingParameter]
     public BaseNavigationLayout BaseLayout { get; set; }
-    
+
     [Inject]
     public AppInterop AppInterop { get; set; }
+
+    public DateTimeOffset From { get; set; } = DateTimeOffset.UtcNow.AddDays(-1);
+    public DateTimeOffset To { get; set; } = DateTimeOffset.UtcNow.AddDays(1);
+    public List<CalendarItem> CalendarItems { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -24,11 +31,86 @@
         if (setupRequired || anyPermissionRequired)
         {
             BaseLayout.Navigate<Setup.Welcome>();
+            return;
         }
+
+        await RefreshCalendarAsync();
     }
+
+    protected async Task RefreshCalendarAsync()
+    {
+        CalendarItems = await AppInterop.GetCalendarItemsAsync(From, To);
+        StateHasChanged();
+    }
+
+    protected async Task ShowMoreDaysAsync()
+    {
+        To = To.AddDays(1);
+        await RefreshCalendarAsync();
+    }
+
 
 }
 
 <div class="container mx-auto max-w-4xl p-4 animate-fade-move-in">
     <div class="text-2xl">Kalender</div>
+    <div class="text-gray-400">Ihre nächsten Einnahmen</div>
+
+    <div class="mt-5 flex flex-col gap-2">
+        @if (CalendarItems != null)
+        {
+            if (CalendarItems.Count == 0)
+            {
+                <div class="text-center text-gray-400 font-medium mt-10 text-lg">Hm, hier scheint noch nichts los zu sein..</div>
+                <div class="text-center text-gray-400">Legen Sie einen Plan an, um Ihre nächsten Einnahmen hier sehen zu können.</div>
+            }
+            else
+            {
+                foreach (var calendarItem in CalendarItems.OrderBy(x => x.ScheduledTimeUtc))
+                {
+                    var intakeTime = DateTimeOffset.FromUnixTimeMilliseconds(calendarItem.ScheduledTimeUtc);
+                    var difference = intakeTime - DateTimeOffset.UtcNow;
+
+                    <button class="border-2 border-gray-50 shadow p-3 rounded flex items-center">
+                        <div class="grow shrink-0 text-left">
+                            <div class="text-lg font-semibold">@calendarItem.Medicine.Name</div>
+
+                            <div class="text-sm">
+                                @calendarItem.Medicine.Amount,
+                                @intakeTime.ToString("dddd' der 'dd'., 'HH:mm' Uhr'")
+                            </div>
+
+                            <div class="mt-4">
+                                @if ((difference.Ticks > 0 && difference < TimeSpan.FromMinutes(5)) || (difference.Ticks < 0 && difference > TimeSpan.FromMinutes(-20)))
+                                {
+                                    <span class="bg-lime-400 text-lime-800 font-semibold px-5 py-1 rounded-full">Jetzt einnehmen</span>
+                                }
+                                else
+                                {
+                                    if (difference.Ticks > 0)
+                                    {
+                                        <span class="bg-gray-100 font-semibold px-5 py-1 rounded-full">@intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="bg-red-700 text-red-100 font-semibold px-5 py-1 rounded-full">@intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <div>
+                            <svg class="w-6 h-6 text-gray-300 group-hover:translate-x-1 group-hover:text-gray-600 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </button>
+                }
+
+                <button class="border-2 border-dashed border-gray-100 p-3 rounded grid place-items-center mt-3" @onclick="ShowMoreDaysAsync">
+                    Weiteren Tag anzeigen
+                </button>
+            }
+        }
+    </div>
 </div>
