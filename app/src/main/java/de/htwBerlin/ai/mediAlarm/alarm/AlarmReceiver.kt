@@ -19,6 +19,8 @@ import java.util.concurrent.Executors
 
 class AlarmReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        Log.d("AlarmReceiver", "onReceive called");
+
         val database = AppDatabase.getDatabase(context)
         val alarmDao = database.alarmDao()
         val medicineDao = database.medicineDao()

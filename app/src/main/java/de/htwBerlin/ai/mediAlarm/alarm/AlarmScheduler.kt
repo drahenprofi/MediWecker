@@ -28,6 +28,9 @@ class AlarmScheduler(private val context: Context) {
     }
 
     private fun getTriggerAtMillisFromTargetTime(targetTime: Long): Long {
-        return targetTime - Calendar.getInstance().timeInMillis + SystemClock.elapsedRealtime()
+        val timeInMillis = Calendar.getInstance().timeInMillis;
+        val realTime = SystemClock.elapsedRealtime()
+        val waitTimeMillis = targetTime - timeInMillis + realTime
+        return waitTimeMillis
     }
 }

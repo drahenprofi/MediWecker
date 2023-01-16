@@ -13,3 +13,16 @@
         </NotFound>
     </Router>
 </CascadingBlazoredModal>
+
+@code {
+
+    [Inject]
+    public IJSRuntime JS { get; set; }
+    
+    protected async override Task OnInitializedAsync()
+    {
+        await JS.InvokeVoidAsync("MediWecker.init");
+        await base.OnInitializedAsync();
+    }
+
+}

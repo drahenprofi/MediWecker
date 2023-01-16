@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using MediWeckerUI.Application.Features.Notifications;
 using MediWeckerUI.Application.Features.Planning;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -8,6 +9,8 @@ namespace MediWeckerUI.Application;
 
 public class AppInterop
 {
+    public EventCallback<ReminderPromptRequestData> OnReminderPromptShowRequest;
+    
     private readonly IJSRuntime _js;
     private readonly NavigationManager _navigationManager;
     private bool _mockPermissionsGiven = true;
@@ -23,6 +26,26 @@ public class AppInterop
         return _navigationManager.BaseUri.StartsWith("https://appassets.androidplatform.net/");
     }
 
+    public void RegisterOnReminderPromptShownRequestCallback(EventCallback<ReminderPromptRequestData> callback)
+    {
+        OnReminderPromptShowRequest = callback;
+    }
+
+    [JSInvokable]
+    public async Task ShowReminderPromptAsync(string requestJson)
+    {
+        var request = JsonSerializer.Deserialize<ReminderPromptRequestData>(requestJson);
+
+        await OnReminderPromptShowRequest.InvokeAsync(request);
+    }
+
+    public async Task SubmitReminderPromptResponseDataAsync(ReminderPromptResponseData data)
+    {
+        if (!IsInApp()) return;
+
+        await _js.InvokeVoidAsync("Android.submitReminderPromptResponse", JsonSerializer.Serialize(data));
+    }
+    
     public async Task ShowAlertAsync(string message)
     {
         if (!IsInApp()) return;
@@ -74,7 +97,7 @@ public class AppInterop
                         })
                     },
 
-                    ScheduledTimeUtc = DateTimeOffset.UtcNow.AddMinutes(random.Next(-600, 6000)).ToUnixTimeSeconds()
+                    ScheduledTimeUtc = DateTimeOffset.UtcNow.AddMinutes(random.Next(-600, 6000)).ToUnixTimeMilliseconds()
                 });
             }
 
@@ -82,18 +105,18 @@ public class AppInterop
         }
 
 
-        Console.WriteLine($"GetCalendarItemsAsync serializing request");
+        //Console.WriteLine($"GetCalendarItemsAsync serializing request");
         
         var requestJson = JsonSerializer.Serialize(new CalendarRequest
             { From = from.ToUnixTimeMilliseconds(), To = to.ToUnixTimeMilliseconds() });
 
-        Console.WriteLine($"GetCalendarItemsAsync request JSON is {requestJson}");
+        //Console.WriteLine($"GetCalendarItemsAsync request JSON is {requestJson}");
         
         var json = await _js.InvokeAsync<string>("Android.getCalendarData", requestJson);
 
-        Console.WriteLine($"GetCalendarItemsAsync returned JSON is {json}");
+        //Console.WriteLine($"GetCalendarItemsAsync returned JSON is {json}");
 
-        return JsonSerializer.Deserialize<List<CalendarItem>>(json);
+        return JsonSerializer.Deserialize<List<CalendarItem>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 
     public async Task AttemptRequestPermissionsAsync()
@@ -192,7 +215,7 @@ public class AppInterop
 
         var json = await JSRuntimeExtensions.InvokeAsync<string>(_js, "Android.getMedicine");
 
-        Console.WriteLine($"GetAllPlansAsync: {json}");
+        //Console.WriteLine($"GetAllPlansAsync: {json}");
 
         return JsonSerializer.Deserialize<List<Medicine>>(json);
     }
@@ -215,7 +238,7 @@ public class AppInterop
     {
         if (!IsInApp())
         {
-            Console.WriteLine("UpdatePlanAsync: Not in app.");
+            //Console.WriteLine("UpdatePlanAsync: Not in app.");
 
             return;
         }

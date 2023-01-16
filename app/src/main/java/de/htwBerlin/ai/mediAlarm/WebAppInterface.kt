@@ -74,6 +74,11 @@ class WebAppInterface internal constructor(c: Context) {
     }
 
     @JavascriptInterface
+    fun submitReminderPromptResponse(responseJson: String) {
+        Log.d("WebAppInterface", responseJson);
+    }
+
+    @JavascriptInterface
     fun getMedicine(): String {
         val medicine = medicineDao.getAll()
         return gson.toJson(medicine)

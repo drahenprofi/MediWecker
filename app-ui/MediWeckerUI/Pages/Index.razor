@@ -5,6 +5,7 @@
 @using MediWeckerUI.Application.Features.Planning
 @using Humanizer
 @using System.Globalization
+@using System.Text.Json
 
 @code {
 
@@ -42,6 +43,9 @@
     {
         Plans = await AppInterop.GetAllPlansAsync();
         CalendarItems = await AppInterop.GetCalendarItemsAsync(From, To);
+        
+        //Console.WriteLine($"Test: {JsonSerializer.Serialize(CalendarItems)}");
+        
         StateHasChanged();
     }
 

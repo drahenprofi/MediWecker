@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -15,15 +16,19 @@ import android.webkit.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
+import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.alarm.AlarmReceiver
 import de.htwBerlin.ai.mediAlarm.data.Constants
+import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequestProcessor
 
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
     lateinit var preferences: SharedPreferences
 
+    private val gson: Gson = Gson()
     private lateinit var webView: WebView
     private var permissionRequestcode: Int = 200
     private var permissionRequestCompleted: Boolean = false
@@ -68,20 +73,40 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             val scheduledTimeUtc = intent.getLongExtra(Constants.SCHEDULED_TIME_UTC, 0)
 
             Log.d("DEBUG", "Received notification click for medicine $medicineId, scheduled for $scheduledTimeUtc")
-            TODO("Ryan")
+
+            val request = ShowReminderPromptRequestData()
+
+            request.medicineId = medicineId
+            request.scheduledTimeUtc = scheduledTimeUtc
+
+            val json = gson.toJson(request)
+            val sb = java.lang.StringBuilder()
+
+            sb.append("MediWecker.showReminderPrompt(")
+            sb.append(json)
+            sb.append(");");
+
+            val jsStatement = sb.toString()
+
+            webView.evaluateJavascript(jsStatement, null)
         }
     }
 
+    class ShowReminderPromptRequestData {
+        var medicineId: Long = 0;
+        var scheduledTimeUtc: Long = 0;
+    }
+
     fun getIfNotificationsPermissionGiven() : Boolean {
-        //return ContextCompat.checkSelfPermission(this,
-        //    Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED
-        return true;
+        return ContextCompat.checkSelfPermission(this,
+            Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED// && ContextCompat.checkSelfPermission(this, Manifest.permission.POST)
+        //return true;
     }
 
     fun getIfInternetPermissionGiven() : Boolean {
-        //return ContextCompat.checkSelfPermission(this,
-        //    Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
-        return true;
+        return ContextCompat.checkSelfPermission(this,
+            Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
+        //return true;
     }
 
     fun attemptRequestPermissions() {
@@ -124,6 +149,10 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
 
     private class LocalContentWebViewClient(private val assetLoader: WebViewAssetLoader) : WebViewClientCompat() {
+        override fun onPageFinished(view: WebView?, url: String?) {
+            Log.d("MainActivity", "onPageFinished");
+        }
+
         @RequiresApi(21)
         override fun shouldInterceptRequest(
             view: WebView,

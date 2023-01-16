@@ -68,7 +68,7 @@ class NotificationSender {
             putExtra(Constants.SCHEDULED_TIME_UTC, scheduledTimeUtc)
         }
 
-        return PendingIntent.getActivity(context, medicine.id.toInt(), clickIntent, 0)
+        return PendingIntent.getActivity(context, medicine.id.toInt(), clickIntent, PendingIntent.FLAG_IMMUTABLE)
     }
 
     private fun getSnoozePendingIntent(context: Context, medicine: Medicine): PendingIntent {
@@ -76,6 +76,6 @@ class NotificationSender {
             putExtra(Constants.MEDICINE_ID, medicine.id)
         }
 
-        return PendingIntent.getBroadcast(context, medicine.id.toInt(), snoozeIntent, 0)
+        return PendingIntent.getBroadcast(context, medicine.id.toInt(), snoozeIntent, PendingIntent.FLAG_IMMUTABLE)
     }
 }

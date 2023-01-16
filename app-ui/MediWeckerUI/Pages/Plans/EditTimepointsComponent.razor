@@ -67,7 +67,7 @@
         Rythm.Timepoints.Add(new Timepoint
         {
             Type = initialType,
-            AbsoluteTimeFromMidnight = 0
+            AbsoluteTimeFromMidnight = (int)DateTimeOffset.Now.TimeOfDay.Add(TimeSpan.FromMinutes(1)).TotalMinutes
         });
 
         StateHasChanged();
