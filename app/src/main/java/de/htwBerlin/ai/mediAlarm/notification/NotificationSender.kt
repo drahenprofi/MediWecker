@@ -9,9 +9,9 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import de.htwBerlin.ai.mediAlarm.MainActivity
-import de.htwBerlin.ai.mediAlarm.NotificationClickActivity
 import de.htwBerlin.ai.mediAlarm.R
 import de.htwBerlin.ai.mediAlarm.alarm.snooze.SnoozeButtonReceiver
+import de.htwBerlin.ai.mediAlarm.data.Constants
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import java.util.*
 
@@ -62,9 +62,10 @@ class NotificationSender {
     private fun getClickPendingIntent(context: Context, medicine: Medicine): PendingIntent {
         val scheduledTimeUtc = Calendar.getInstance().timeInMillis
 
-        val clickIntent = Intent(context, NotificationClickActivity::class.java).apply {
-            putExtra("MEDICINE_ID", medicine.id)
-            putExtra("SCHEDULED_TIME_UTC", scheduledTimeUtc)
+        val clickIntent = Intent(context, MainActivity::class.java).apply {
+            putExtra(Constants.NOTIFICATION_CLICK, true)
+            putExtra(Constants.MEDICINE_ID, medicine.id)
+            putExtra(Constants.SCHEDULED_TIME_UTC, scheduledTimeUtc)
         }
 
         return PendingIntent.getActivity(context, medicine.id.toInt(), clickIntent, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -72,7 +73,7 @@ class NotificationSender {
 
     private fun getSnoozePendingIntent(context: Context, medicine: Medicine): PendingIntent {
         val snoozeIntent = Intent(context, SnoozeButtonReceiver::class.java).apply {
-            putExtra("MEDICINE_ID", medicine.id)
+            putExtra(Constants.MEDICINE_ID, medicine.id)
         }
 
         return PendingIntent.getBroadcast(context, medicine.id.toInt(), snoozeIntent, 0)

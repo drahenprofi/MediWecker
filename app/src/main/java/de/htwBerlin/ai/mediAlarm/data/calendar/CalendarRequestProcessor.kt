@@ -33,6 +33,4 @@ class CalendarRequestProcessor(val context: Context) {
 
         return result
     }
-
-
 }

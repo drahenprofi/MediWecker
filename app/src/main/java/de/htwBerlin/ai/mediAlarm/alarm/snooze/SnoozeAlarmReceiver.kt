@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
+import de.htwBerlin.ai.mediAlarm.data.Constants
 import de.htwBerlin.ai.mediAlarm.notification.NotificationSender
 import java.util.concurrent.Executors
 
@@ -12,7 +13,7 @@ class SnoozeAlarmReceiver : BroadcastReceiver() {
         val database = AppDatabase.getDatabase(context)
         val medicineDao = database.medicineDao()
 
-        val medicineId = intent.getLongExtra("MEDICINE_ID", 0)
+        val medicineId = intent.getLongExtra(Constants.MEDICINE_ID, 0)
 
         val executor = Executors.newSingleThreadExecutor()
 

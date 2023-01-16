@@ -1,3 +1,10 @@
 package de.htwBerlin.ai.mediAlarm.data.calendar
 
-data class CalendarRequest(val from: Long, val to: Long)
+import com.google.gson.annotations.SerializedName
+
+data class CalendarRequest(
+    @SerializedName("From")
+    val from: Long,
+    @SerializedName("To")
+    val to: Long
+)

@@ -18,6 +18,7 @@ import androidx.core.app.ActivityCompat
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 import de.htwBerlin.ai.mediAlarm.alarm.AlarmReceiver
+import de.htwBerlin.ai.mediAlarm.data.Constants
 
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
@@ -48,7 +49,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         webView.settings.builtInZoomControls = true
         webView.settings.domStorageEnabled = true
         webView.settings.allowContentAccess = true
-        webView.settings.safeBrowsingEnabled = false
+        //webView.settings.safeBrowsingEnabled = false
 
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
@@ -57,8 +58,18 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         webView.addJavascriptInterface(WebAppInterface(this), "Android")
 
         webView.webViewClient = LocalContentWebViewClient(assetLoader)
-        webView.webChromeClient = LocalChromeClient();
-        webView.loadUrl("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html");
+        webView.webChromeClient = LocalChromeClient()
+        webView.loadUrl("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html")
+
+        val isNotificationClick = intent.getBooleanExtra(Constants.NOTIFICATION_CLICK, false)
+
+        if (isNotificationClick) {
+            val medicineId = intent.getLongExtra(Constants.MEDICINE_ID, 0)
+            val scheduledTimeUtc = intent.getLongExtra(Constants.SCHEDULED_TIME_UTC, 0)
+
+            Log.d("DEBUG", "Received notification click for medicine $medicineId, scheduled for $scheduledTimeUtc")
+            TODO("Ryan")
+        }
     }
 
     fun getIfNotificationsPermissionGiven() : Boolean {

@@ -8,12 +8,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
 import android.util.Log
+import de.htwBerlin.ai.mediAlarm.data.Constants
 import kotlin.random.Random
-
 
 class SnoozeButtonReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val medicineId = intent.getLongExtra("MEDICINE_ID", 0)
+        val medicineId = intent.getLongExtra(Constants.MEDICINE_ID, 0)
         Log.d("SnoozeReceiver", "Received snooze event for medicine $medicineId")
 
         val notificationManager = context
@@ -28,7 +28,7 @@ class SnoozeButtonReceiver: BroadcastReceiver() {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val intent = Intent(context, SnoozeAlarmReceiver::class.java)
-        intent.putExtra("MEDICINE_ID", medicineId)
+        intent.putExtra(Constants.MEDICINE_ID, medicineId)
 
         val randomCode = Random.nextInt()
 
