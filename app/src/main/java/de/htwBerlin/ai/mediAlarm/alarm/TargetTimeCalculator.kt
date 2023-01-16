@@ -2,6 +2,7 @@ package de.htwBerlin.ai.mediAlarm.alarm
 
 import android.content.Context
 import com.google.gson.Gson
+import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
 import de.htwBerlin.ai.mediAlarm.data.rhythm.TimePoint
@@ -10,9 +11,9 @@ import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
 import java.util.*
 
 class TargetTimeCalculator(val context: Context) {
-
     private val gson = Gson()
     private val userTimes = UserTimePreferences(context).get()
+    private val alarmDao = AppDatabase.getDatabase(context).alarmDao()
 
     fun calculate(medicine: Medicine, calendar: Calendar): Long {
         val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
@@ -20,8 +21,6 @@ class TargetTimeCalculator(val context: Context) {
     }
 
     private fun calculate(rhythm: Rhythm, calendar: Calendar): Long {
-        //val calendar = Calendar.getInstance()
-
         val now = calendar.timeInMillis
         val currentDay = now - calendar[Calendar.HOUR_OF_DAY] * 60 * 60 * 1000 - calendar[Calendar.MINUTE] * 60 * 1000 - calendar[Calendar.SECOND] * 1000
         val currentTimeFromMidnight = (calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)) * 60 * 1000
@@ -31,8 +30,17 @@ class TargetTimeCalculator(val context: Context) {
             .filter { time -> time > currentTimeFromMidnight }
             .sorted()
 
-        var scheduledDayDifference = if (rhythm.intervalDays != null && pendingAlarmsToday.isEmpty()) {
-            rhythm.intervalDays.days
+        var scheduledDayDifference = if (rhythm.intervalDays != null) {
+            val mostRecentExpiredAlarm = alarmDao.getMostRecentExpiredAlarm()
+
+            if (mostRecentExpiredAlarm != null) {
+                val dayDifference = (now - mostRecentExpiredAlarm.targetTime) / 1000 / 60 / 60 / 24
+                (rhythm.intervalDays.days - dayDifference) % rhythm.intervalDays.days
+            } else if (pendingAlarmsToday.isEmpty()) {
+                rhythm.intervalDays.days
+            } else {
+                0
+            }
         } else if (rhythm.specificDays != null) {
             getDayDifferenceBySpecificDaysData(rhythm, calendar, scheduleToday = true)
         } else {

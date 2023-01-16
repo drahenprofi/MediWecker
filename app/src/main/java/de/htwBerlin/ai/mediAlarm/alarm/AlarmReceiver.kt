@@ -35,7 +35,9 @@ class AlarmReceiver: BroadcastReceiver() {
 
                 NotificationSender().send(context, medicine)
 
-                alarmDao.delete(alarm)
+                alarm.isExpired = true
+                alarmDao.update(alarm)
+
                 MedicineScheduler(context).schedule(medicine)
             }
         }

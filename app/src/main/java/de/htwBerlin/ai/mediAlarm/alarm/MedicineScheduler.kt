@@ -13,7 +13,11 @@ class MedicineScheduler(private val context: Context) {
     private val alarmDao = AppDatabase.getDatabase(context).alarmDao()
 
     fun schedule(medicine: Medicine) {
-        if (alarmDao.getByMedicineId(medicine.id).isNotEmpty()) {
+        val runningAlarms = alarmDao
+            .getByMedicineId(medicine.id)
+            .filter { alarm -> !alarm.isExpired }
+
+        if (runningAlarms.isNotEmpty()) {
             return
         }
 
