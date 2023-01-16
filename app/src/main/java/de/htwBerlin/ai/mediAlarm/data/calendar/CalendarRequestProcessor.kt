@@ -17,7 +17,7 @@ class CalendarRequestProcessor(val context: Context) {
     }
 
     private fun getPastCalendarItems(request: CalendarRequest): List<CalendarItem> {
-        val alarms = alarmDao.getAlarmsByTimeFrame(request.from, request.to)
+        val alarms = alarmDao.getExpiredAlarmsByTimeFrame(request.from, request.to)
 
         val medicineIds = alarms.map { alarm -> alarm.medicineId }
 
@@ -35,9 +35,9 @@ class CalendarRequestProcessor(val context: Context) {
         val medicines = medicineDao.getAll()
 
         val targetTimeCalculator = TargetTimeCalculator(context)
-        val calendar = Calendar.getInstance()
 
         medicines.forEach { medicine ->
+            val calendar = Calendar.getInstance()
             var scheduledTimeUtc = calendar.timeInMillis
 
             while (scheduledTimeUtc < request.to) {

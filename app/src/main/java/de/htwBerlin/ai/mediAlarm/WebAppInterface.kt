@@ -101,6 +101,7 @@ class WebAppInterface internal constructor(c: Context) {
     @JavascriptInterface
     fun getCalendarData(calendarRequestJson: String): String {
         val request = gson.fromJson(calendarRequestJson, CalendarRequest::class.java)
-        return gson.toJson(CalendarRequestProcessor(mContext).process(request))
+        val calendarItems = CalendarRequestProcessor(mContext).process(request)
+        return gson.toJson(calendarItems)
     }
 }

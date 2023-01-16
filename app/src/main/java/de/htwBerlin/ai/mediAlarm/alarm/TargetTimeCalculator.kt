@@ -17,10 +17,7 @@ class TargetTimeCalculator(val context: Context) {
 
     fun calculate(medicine: Medicine, calendar: Calendar): Long {
         val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
-        return calculate(rhythm, calendar)
-    }
 
-    private fun calculate(rhythm: Rhythm, calendar: Calendar): Long {
         val now = calendar.timeInMillis
         val currentDay = now - calendar[Calendar.HOUR_OF_DAY] * 60 * 60 * 1000 - calendar[Calendar.MINUTE] * 60 * 1000 - calendar[Calendar.SECOND] * 1000
         val currentTimeFromMidnight = (calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)) * 60 * 1000
@@ -31,11 +28,16 @@ class TargetTimeCalculator(val context: Context) {
             .sorted()
 
         var scheduledDayDifference = if (rhythm.intervalDays != null) {
-            val mostRecentExpiredAlarm = alarmDao.getMostRecentExpiredAlarm()
+            val mostRecentExpiredAlarm = alarmDao.getMostRecentExpiredAlarmByMedicineId(medicine.id)
 
             if (mostRecentExpiredAlarm != null) {
                 val dayDifference = (now - mostRecentExpiredAlarm.targetTime) / 1000 / 60 / 60 / 24
-                (rhythm.intervalDays.days - dayDifference) % rhythm.intervalDays.days
+
+                if (dayDifference == 0L && pendingAlarmsToday.isNotEmpty()) {
+                    0
+                } else {
+                    (rhythm.intervalDays.days - dayDifference) % rhythm.intervalDays.days
+                }
             } else if (pendingAlarmsToday.isEmpty()) {
                 rhythm.intervalDays.days
             } else {
