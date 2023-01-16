@@ -89,7 +89,7 @@
 
                                 <div class="text-sm">
                                     @calendarItem.Medicine.Amount,
-                                    @intakeTime.ToString("dddd' der 'dd'., 'HH:mm' Uhr'")
+                                    @intakeTime.ToLocalTime().ToString("dddd' der 'dd'., 'HH:mm' Uhr'")
                                 </div>
 
                                 <div class="mt-4">
@@ -121,7 +121,7 @@
                 }
                 
                 <button class="p-3 rounded grid place-items-center text-center mt-5" @onclick="ShowMoreDaysAsync">
-                    <div class="font-semibold">Ansicht bis @To.ToString("dddd' der 'dd'., 'HH:mm' Uhr'")</div>
+                    <div class="font-semibold">Ansicht bis @To.ToLocalTime().ToString("dddd' der 'dd'., 'HH:mm' Uhr'")</div>
                     <div class="text-sm">Hier klicken, um einen weiteren Tag anzuzeigen</div>
                 </button>
             }
