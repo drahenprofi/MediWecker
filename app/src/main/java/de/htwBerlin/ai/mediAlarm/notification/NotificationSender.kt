@@ -68,7 +68,7 @@ class NotificationSender {
             putExtra(Constants.SCHEDULED_TIME_UTC, scheduledTimeUtc)
         }
 
-        return PendingIntent.getActivity(context, medicine.id.toInt(), clickIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getActivity(context, medicine.id.toInt(), clickIntent, 0)
     }
 
     private fun getSnoozePendingIntent(context: Context, medicine: Medicine): PendingIntent {
