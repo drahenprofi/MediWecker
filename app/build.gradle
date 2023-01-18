@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace 'de.htwBerlin.ai.mediAlarm'
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "de.htwBerlin.ai.mediAlarm"
         minSdk 21
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 

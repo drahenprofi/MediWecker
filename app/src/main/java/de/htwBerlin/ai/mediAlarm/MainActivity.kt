@@ -13,6 +13,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.webkit.*
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -34,9 +37,15 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     private var permissionRequestcode: Int = 200
     private var permissionRequestCompleted: Boolean = false
 
+    var requestPermissionLauncher: ActivityResultLauncher<String>? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        requestPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { }
 
         if (Build.VERSION.SDK_INT >= 21) {
             val window = this.window
@@ -97,36 +106,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     class ShowReminderPromptRequestData {
         var medicineId: Long = 0;
         var scheduledTimeUtc: Long = 0;
-    }
-
-    fun getIfNotificationsPermissionGiven() : Boolean {
-        return ContextCompat.checkSelfPermission(this,
-            Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED// && ContextCompat.checkSelfPermission(this, Manifest.permission.POST)
-    }
-
-    fun getIfInternetPermissionGiven() : Boolean {
-        return ContextCompat.checkSelfPermission(this,
-            Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
-    }
-
-    fun attemptRequestPermissions() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.INTERNET, Manifest.permission.SCHEDULE_EXACT_ALARM),
-            permissionRequestcode
-        )
-    }
-
-    fun onRequestPermissionResult(
-        requestCode: Int,
-        permissions: Array<String?>?,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            permissionRequestcode -> {
-                permissionRequestCompleted = true
-            }
-        }
     }
 
     fun getAndResetPermissionsRequestCompleted() : Boolean {
