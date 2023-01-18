@@ -34,20 +34,18 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun getIfNotificationsPermissionGiven(): Boolean {
-
-        val test = PermissionManager(mContext).notificationPermissionGiven()
-
         return PermissionManager(mContext).notificationPermissionGiven()
     }
 
     @JavascriptInterface
     fun getIfInternetPermissionGiven(): Boolean {
-        return mContext.getIfInternetPermissionGiven()
+        return true
     }
 
     @JavascriptInterface
     fun attemptRequestPermissions() {
-        mContext.attemptRequestPermissions()
+        //mContext.attemptRequestPermissions()
+        PermissionManager(mContext).requestNotificationPermission()
     }
 
     @JavascriptInterface
