@@ -12,6 +12,7 @@ import de.htwBerlin.ai.mediAlarm.MainActivity
 import de.htwBerlin.ai.mediAlarm.R
 import de.htwBerlin.ai.mediAlarm.alarm.snooze.SnoozeButtonReceiver
 import de.htwBerlin.ai.mediAlarm.data.Constants
+import de.htwBerlin.ai.mediAlarm.data.alarm.Alarm
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import java.util.*
 import kotlin.random.Random
@@ -19,13 +20,13 @@ import kotlin.random.Random
 class NotificationSender {
     private val channelId = "1"
 
-    fun send(context: Context, medicine: Medicine) {
+    fun send(context: Context, medicine: Medicine, alarm: Alarm) {
         createNotificationChannel(context)
 
         val notificationId = Random.nextInt()
 
-        val clickPendingIntent = getClickPendingIntent(context, medicine, notificationId)
-        val snoozePendingIntent = getSnoozePendingIntent(context, medicine, notificationId)
+        val clickPendingIntent = getClickPendingIntent(context, medicine, alarm, notificationId)
+        val snoozePendingIntent = getSnoozePendingIntent(context, medicine, alarm, notificationId)
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -63,22 +64,24 @@ class NotificationSender {
         }
     }
 
-    private fun getClickPendingIntent(context: Context, medicine: Medicine, notificationId: Int): PendingIntent {
+    private fun getClickPendingIntent(context: Context, medicine: Medicine, alarm: Alarm, notificationId: Int): PendingIntent {
         val scheduledTimeUtc = Calendar.getInstance().timeInMillis
 
         val clickIntent = Intent(context, MainActivity::class.java).apply {
-            putExtra(Constants.NOTIFICATION_CLICK, true)
             putExtra(Constants.MEDICINE_ID, medicine.id)
-            putExtra(Constants.NOTIFICATION_ID, notificationId)
+            putExtra(Constants.ALARM_ID, alarm.id)
             putExtra(Constants.SCHEDULED_TIME_UTC, scheduledTimeUtc)
+            putExtra(Constants.NOTIFICATION_ID, notificationId)
+            putExtra(Constants.NOTIFICATION_CLICK, true)
         }
 
         return PendingIntent.getActivity(context, medicine.id.toInt(), clickIntent, PendingIntent.FLAG_IMMUTABLE)
     }
 
-    private fun getSnoozePendingIntent(context: Context, medicine: Medicine, notificationId: Int): PendingIntent {
+    private fun getSnoozePendingIntent(context: Context, medicine: Medicine, alarm: Alarm, notificationId: Int): PendingIntent {
         val snoozeIntent = Intent(context, SnoozeButtonReceiver::class.java).apply {
             putExtra(Constants.MEDICINE_ID, medicine.id)
+            putExtra(Constants.ALARM_ID, alarm.id)
             putExtra(Constants.NOTIFICATION_ID, notificationId)
         }
 

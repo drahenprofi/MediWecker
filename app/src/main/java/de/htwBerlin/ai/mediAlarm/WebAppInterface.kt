@@ -8,7 +8,7 @@ import android.widget.Toast
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
-import de.htwBerlin.ai.mediAlarm.data.alarm.AlarmResponse
+import de.htwBerlin.ai.mediAlarm.data.reminderPrompt.ReminderPromptResponse
 import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequest
 import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequestProcessor
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
@@ -79,7 +79,7 @@ class WebAppInterface internal constructor(c: Context) {
     @JavascriptInterface
     fun submitReminderPromptResponse(responseJson: String) {
         Log.d("WebAppInterface", responseJson)
-        val alarmResponse = gson.fromJson(responseJson, AlarmResponse::class.java)
+        val reminderPromptResponse = gson.fromJson(responseJson, ReminderPromptResponse::class.java)
 
     }
 

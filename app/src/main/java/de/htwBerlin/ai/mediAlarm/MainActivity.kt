@@ -14,6 +14,7 @@ import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.data.Constants
+import de.htwBerlin.ai.mediAlarm.data.reminderPrompt.ReminderPromptRequest
 import de.htwBerlin.ai.mediAlarm.notification.NotificationCanceller
 
 
@@ -67,32 +68,18 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
         if (isNotificationClick) {
             val medicineId = intent.getLongExtra(Constants.MEDICINE_ID, 0)
+            val alarmId = intent.getLongExtra(Constants.ALARM_ID, 0)
             val scheduledTimeUtc = intent.getLongExtra(Constants.SCHEDULED_TIME_UTC, 0)
             val notificationId = intent.getIntExtra(Constants.NOTIFICATION_ID, 0)
 
             NotificationCanceller(this).cancel(notificationId)
 
-            val request = ShowReminderPromptRequestData()
+            val request = ReminderPromptRequest(medicineId, alarmId, scheduledTimeUtc)
 
-            request.medicineId = medicineId
-            request.scheduledTimeUtc = scheduledTimeUtc
-
-            val json = gson.toJson(request)
-            val sb = java.lang.StringBuilder()
-
-            sb.append("MediWecker.showReminderPrompt(")
-            sb.append(json)
-            sb.append(");")
-
-            val jsStatement = sb.toString()
+            val jsStatement = "MediWecker.showReminderPrompt(${gson.toJson(request)});"
 
             webView.evaluateJavascript(jsStatement, null)
         }
-    }
-
-    class ShowReminderPromptRequestData {
-        var medicineId: Long = 0
-        var scheduledTimeUtc: Long = 0
     }
 
     fun getAndResetPermissionsRequestCompleted() : Boolean {
