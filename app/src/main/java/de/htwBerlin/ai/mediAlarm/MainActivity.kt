@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
     private val gson: Gson = Gson()
     private lateinit var webView: WebView
-    private var permissionRequestcode: Int = 200
     private var permissionRequestCompleted: Boolean = false
 
     var requestPermissionLauncher: ActivityResultLauncher<String>? = null
@@ -45,7 +44,9 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
         requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
-        ) { }
+        ) { isGranted: Boolean ->
+            permissionRequestCompleted = isGranted
+        }
 
         if (Build.VERSION.SDK_INT >= 21) {
             val window = this.window
