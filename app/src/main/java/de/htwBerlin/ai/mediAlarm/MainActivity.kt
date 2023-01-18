@@ -23,6 +23,7 @@ import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.alarm.AlarmReceiver
 import de.htwBerlin.ai.mediAlarm.data.Constants
 import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequestProcessor
+import de.htwBerlin.ai.mediAlarm.notification.NotificationCanceller
 
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
@@ -71,8 +72,9 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         if (isNotificationClick) {
             val medicineId = intent.getLongExtra(Constants.MEDICINE_ID, 0)
             val scheduledTimeUtc = intent.getLongExtra(Constants.SCHEDULED_TIME_UTC, 0)
+            val notificationId = intent.getIntExtra(Constants.NOTIFICATION_ID, 0)
 
-            Log.d("DEBUG", "Received notification click for medicine $medicineId, scheduled for $scheduledTimeUtc")
+            NotificationCanceller(this).cancel(notificationId)
 
             val request = ShowReminderPromptRequestData()
 
@@ -100,13 +102,11 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     fun getIfNotificationsPermissionGiven() : Boolean {
         return ContextCompat.checkSelfPermission(this,
             Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED// && ContextCompat.checkSelfPermission(this, Manifest.permission.POST)
-        //return true;
     }
 
     fun getIfInternetPermissionGiven() : Boolean {
         return ContextCompat.checkSelfPermission(this,
             Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
-        //return true;
     }
 
     fun attemptRequestPermissions() {
@@ -158,14 +158,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             view: WebView,
             request: WebResourceRequest
         ): WebResourceResponse? {
-            Log.d("DEBUG", request.url.toString());
-
-            /*if (request.url.toString().startsWith("https://appassets.androidplatform.net/assets/wwwroot/")) {
-                return assetLoader.shouldInterceptRequest(request.url)
-            } else {
-                return assetLoader.shouldInterceptRequest(Uri.parse("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html"));
-            }*/
-
             return return assetLoader.shouldInterceptRequest(request.url)
         }
 
@@ -176,60 +168,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         ): WebResourceResponse? {
             return assetLoader.shouldInterceptRequest(Uri.parse(url))
         }
-
-    /*@RequiresApi(21)
-        override fun shouldInterceptRequest(
-            view: WebView,
-            request: WebResourceRequest
-        ): WebResourceResponse? {
-            var urlString: String = request.url.toString()
-
-            if (urlString.startsWith("https://appassets.androidplatform.net/assets/wwwroot")) {
-                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets for " + urlString);
-
-                return assetLoader.shouldInterceptRequest(request.url)
-            }
-
-            if (urlString.startsWith("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html")) {
-                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets for " + urlString);
-
-                return assetLoader.shouldInterceptRequest(request.url)
-            }
-
-            Log.d("DEBUG", "shouldInterceptRequest: Returning NULL for " + urlString);
-            return null
-        }
-
-        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-            var urlString: String = request.url.toString()
-
-            return false;
-        }
-
-        // to support API < 21
-        override fun shouldInterceptRequest(
-            view: WebView,
-            url: String
-        ): WebResourceResponse? {
-            return assetLoader.shouldInterceptRequest(Uri.parse(url))
-
-            var urlString: String = url
-
-            if (urlString.startsWith("https://appassets.androidplatform.net/assets/assets")) {
-                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets");
-
-                return assetLoader.shouldInterceptRequest(Uri.parse(url))
-            }
-
-            if (urlString.startsWith("https://appassets.androidplatform.net/assets/index_mobile.html")) {
-                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets");
-
-                return assetLoader.shouldInterceptRequest(Uri.parse(url))
-            }
-
-            Log.d("DEBUG", "shouldInterceptRequest: Returning NULL");
-            return null
-        }*/
     }
 
     fun onBackPressedBypassWebView() {
