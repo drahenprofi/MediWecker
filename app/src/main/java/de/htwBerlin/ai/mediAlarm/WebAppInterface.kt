@@ -1,13 +1,14 @@
 package de.htwBerlin.ai.mediAlarm
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.widget.Toast
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
-import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarItem
+import de.htwBerlin.ai.mediAlarm.data.alarm.AlarmResponse
 import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequest
 import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequestProcessor
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
@@ -24,7 +25,7 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun showToast(msg: String) {
-        Toast.makeText(mContext, "$msg", Toast.LENGTH_SHORT).show()
+        Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show()
     }
 
     @JavascriptInterface
@@ -44,8 +45,9 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun attemptRequestPermissions() {
-        //mContext.attemptRequestPermissions()
-        PermissionManager(mContext).requestNotificationPermission()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            PermissionManager(mContext).requestNotificationPermission()
+        }
     }
 
     @JavascriptInterface
@@ -76,7 +78,9 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun submitReminderPromptResponse(responseJson: String) {
-        Log.d("WebAppInterface", responseJson);
+        Log.d("WebAppInterface", responseJson)
+        val alarmResponse = gson.fromJson(responseJson, AlarmResponse::class.java)
+
     }
 
     @JavascriptInterface

@@ -1,36 +1,24 @@
 package de.htwBerlin.ai.mediAlarm
 
-import android.Manifest
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.webkit.*
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 import com.google.gson.Gson
-import de.htwBerlin.ai.mediAlarm.alarm.AlarmReceiver
 import de.htwBerlin.ai.mediAlarm.data.Constants
-import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequestProcessor
 import de.htwBerlin.ai.mediAlarm.notification.NotificationCanceller
 
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
-    lateinit var preferences: SharedPreferences
+    private lateinit var preferences: SharedPreferences
 
     private val gson: Gson = Gson()
     private lateinit var webView: WebView
@@ -48,16 +36,14 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             permissionRequestCompleted = isGranted
         }
 
-        if (Build.VERSION.SDK_INT >= 21) {
-            val window = this.window
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            window.statusBarColor = this.resources.getColor(R.color.lime_500)
-        }
+        val window = this.window
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        window.statusBarColor = this.resources.getColor(R.color.lime_500)
 
-        preferences = getSharedPreferences("MediWecker.Preferences", Context.MODE_PRIVATE);
+        preferences = getSharedPreferences("MediWecker.Preferences", Context.MODE_PRIVATE)
 
-        // Temporary webview setup
+        // Temporary webView setup
         webView = findViewById(R.id.webView)
 
         webView.settings.javaScriptEnabled = true
@@ -96,7 +82,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
             sb.append("MediWecker.showReminderPrompt(")
             sb.append(json)
-            sb.append(");");
+            sb.append(");")
 
             val jsStatement = sb.toString()
 
@@ -105,17 +91,17 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
 
     class ShowReminderPromptRequestData {
-        var medicineId: Long = 0;
-        var scheduledTimeUtc: Long = 0;
+        var medicineId: Long = 0
+        var scheduledTimeUtc: Long = 0
     }
 
     fun getAndResetPermissionsRequestCompleted() : Boolean {
         if (permissionRequestCompleted) {
-            permissionRequestCompleted = false;
-            return true;
+            permissionRequestCompleted = false
+            return true
         }
 
-        return false;
+        return false
     }
 
     private class LocalChromeClient : WebChromeClient() {
@@ -130,28 +116,19 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
     private class LocalContentWebViewClient(private val assetLoader: WebViewAssetLoader) : WebViewClientCompat() {
         override fun onPageFinished(view: WebView?, url: String?) {
-            Log.d("MainActivity", "onPageFinished");
+            Log.d("MainActivity", "onPageFinished")
         }
 
-        @RequiresApi(21)
         override fun shouldInterceptRequest(
             view: WebView,
             request: WebResourceRequest
         ): WebResourceResponse? {
-            return return assetLoader.shouldInterceptRequest(request.url)
-        }
-
-        // to support API < 21
-        override fun shouldInterceptRequest(
-            view: WebView,
-            url: String
-        ): WebResourceResponse? {
-            return assetLoader.shouldInterceptRequest(Uri.parse(url))
+            return assetLoader.shouldInterceptRequest(request.url)
         }
     }
 
     fun onBackPressedBypassWebView() {
-        super.onBackPressed();
+        super.onBackPressed()
     }
 
     override fun onBackPressed() {

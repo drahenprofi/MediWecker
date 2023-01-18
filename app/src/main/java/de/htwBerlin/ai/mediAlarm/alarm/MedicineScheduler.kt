@@ -1,11 +1,9 @@
 package de.htwBerlin.ai.mediAlarm.alarm
 
 import android.content.Context
-import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.alarm.Alarm
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
-import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
 import java.util.*
 
 class MedicineScheduler(private val context: Context) {
