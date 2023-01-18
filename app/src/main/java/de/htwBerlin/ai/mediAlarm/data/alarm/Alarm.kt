@@ -6,9 +6,10 @@ import androidx.room.PrimaryKey
 @Entity
 data class Alarm(
     val medicineId: Long,
-    val targetTime: Long,
+    val targetTimeUtc: Long,
     var isExpired: Boolean = false
 ) {
     @PrimaryKey(autoGenerate = true) var id: Long = 0
+    var actualTimeUtc: Long = 0
 }
 

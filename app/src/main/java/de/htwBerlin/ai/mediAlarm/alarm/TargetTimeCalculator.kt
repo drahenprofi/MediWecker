@@ -31,7 +31,7 @@ class TargetTimeCalculator(val context: Context) {
             val mostRecentExpiredAlarm = alarmDao.getMostRecentExpiredAlarmByMedicineId(medicine.id)
 
             if (mostRecentExpiredAlarm != null) {
-                val dayDifference = (now - mostRecentExpiredAlarm.targetTime) / 1000 / 60 / 60 / 24
+                val dayDifference = (now - mostRecentExpiredAlarm.targetTimeUtc) / 1000 / 60 / 60 / 24
 
                 if (dayDifference == 0L && pendingAlarmsToday.isNotEmpty()) {
                     0

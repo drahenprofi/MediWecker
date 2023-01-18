@@ -15,6 +15,7 @@ import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTime
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.ReminderPromptResponseHandler
 
 class WebAppInterface internal constructor(c: Context) {
     private var mContext: MainActivity = c as MainActivity
@@ -79,8 +80,8 @@ class WebAppInterface internal constructor(c: Context) {
     @JavascriptInterface
     fun submitReminderPromptResponse(responseJson: String) {
         Log.d("WebAppInterface", responseJson)
-        val reminderPromptResponse = gson.fromJson(responseJson, ReminderPromptResponse::class.java)
-
+        val response = gson.fromJson(responseJson, ReminderPromptResponse::class.java)
+        ReminderPromptResponseHandler(mContext).handle(response)
     }
 
     @JavascriptInterface

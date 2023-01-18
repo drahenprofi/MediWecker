@@ -25,7 +25,7 @@ class CalendarRequestProcessor(val context: Context) {
 
         return alarms.map { alarm ->
             val medicine = medicines.first { medicine -> medicine.id == alarm.medicineId }
-            CalendarItem(medicine, alarm.targetTime)
+            CalendarItem(medicine, alarm.targetTimeUtc, alarm.actualTimeUtc)
         }
     }
 
@@ -45,7 +45,7 @@ class CalendarRequestProcessor(val context: Context) {
                 scheduledTimeUtc = targetTimeCalculator.calculate(medicine, calendar)
 
                 if (scheduledTimeUtc < request.to) {
-                    result.add(CalendarItem(medicine, scheduledTimeUtc))
+                    result.add(CalendarItem(medicine, scheduledTimeUtc, 0))
                 }
             }
         }

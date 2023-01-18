@@ -29,9 +29,9 @@ interface AlarmDao {
     @Update
     fun update(alarm: Alarm)
 
-    @Query("SELECT * FROM alarm WHERE targetTime >= :from AND targetTime <= :to AND isExpired")
+    @Query("SELECT * FROM alarm WHERE targetTimeUtc >= :from AND targetTimeUtc <= :to AND isExpired")
     fun getExpiredAlarmsByTimeFrame(from: Long, to: Long): List<Alarm>
 
-    @Query("SELECT * FROM alarm WHERE medicineId = :medicineId AND isExpired ORDER BY targetTime DESC LIMIT 1")
+    @Query("SELECT * FROM alarm WHERE medicineId = :medicineId AND isExpired ORDER BY targetTimeUtc DESC LIMIT 1")
     fun getMostRecentExpiredAlarmByMedicineId(medicineId: Long): Alarm?
 }
