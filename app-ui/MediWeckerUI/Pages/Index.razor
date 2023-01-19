@@ -43,9 +43,9 @@
     {
         Plans = await AppInterop.GetAllPlansAsync();
         CalendarItems = await AppInterop.GetCalendarItemsAsync(From, To);
-        
-        //Console.WriteLine($"Test: {JsonSerializer.Serialize(CalendarItems)}");
-        
+
+    //Console.WriteLine($"Test: {JsonSerializer.Serialize(CalendarItems)}");
+
         StateHasChanged();
     }
 
@@ -78,9 +78,13 @@
                 }
                 else
                 {
+                    bool renderedHereMarker = false;
+
                     foreach (var calendarItem in CalendarItems.OrderBy(x => x.ScheduledTimeUtc))
                     {
                         var intakeTime = DateTimeOffset.FromUnixTimeMilliseconds(calendarItem.ScheduledTimeUtc);
+                        var actualTime = DateTimeOffset.FromUnixTimeMilliseconds(calendarItem.ActualTimeUtc);
+                        var hasActualTime = calendarItem.ActualTimeUtc != 0;
                         var difference = intakeTime - DateTimeOffset.UtcNow;
 
                         <button class="border-2 border-gray-50 shadow p-3 rounded flex items-center">
@@ -92,7 +96,7 @@
                                     @intakeTime.ToLocalTime().ToString("dddd' der 'dd'., 'HH:mm' Uhr'")
                                 </div>
 
-                                <div class="mt-4">
+                                <div class="mt-4 flex">
                                     @if ((difference.Ticks > 0 && difference < TimeSpan.FromMinutes(5)) || (difference.Ticks < 0 && difference > TimeSpan.FromMinutes(-20)))
                                     {
                                         <span class="bg-lime-400 text-lime-800 font-semibold px-5 py-1 rounded-full">Jetzt einnehmen</span>
@@ -108,6 +112,18 @@
                                             <span class="bg-red-700 text-red-100 font-semibold px-5 py-1 rounded-full">@intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)</span>
                                         }
                                     }
+                                    
+                                    @if (hasActualTime)
+                                    {
+                                        if (actualTime == intakeTime)
+                                        {
+                                            
+                                        }
+                                        else
+                                        {
+                                            
+                                        }
+                                    }
                                 </div>
                             </div>
 
@@ -117,9 +133,24 @@
                                 </svg>
                             </div>
                         </button>
+
+                        if (intakeTime > DateTimeOffset.UtcNow && !renderedHereMarker)
+                        {
+                            renderedHereMarker = true;
+
+                            <div class="bg-lime-400/90 py-0.5 px-3 text-xs font-semibold text-center rounded-full flex items-center justify-center gap-3">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+                                </svg>
+                                <div>@DateTimeOffset.Now.ToString("HH:mm") Uhr</div>
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+                                </svg>
+                            </div>
+                        }
                     }
                 }
-                
+
                 <button class="p-3 rounded grid place-items-center text-center mt-5" @onclick="ShowMoreDaysAsync">
                     <div class="font-semibold">Ansicht bis @To.ToLocalTime().ToString("dddd' der 'dd'., 'HH:mm' Uhr'")</div>
                     <div class="text-sm">Hier klicken, um einen weiteren Tag anzuzeigen</div>
