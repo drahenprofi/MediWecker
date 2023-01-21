@@ -23,10 +23,12 @@ class CalendarRequestProcessor(val context: Context) {
 
         val medicines = medicineDao.loadAllByIds(medicineIds)
 
-        return alarms.map { alarm ->
-            val medicine = medicines.first { medicine -> medicine.id == alarm.medicineId }
-            CalendarItem(medicine, alarm.targetTimeUtc, alarm.actualTimeUtc)
-        }
+        return alarms
+            .filter { medicines.any { medicine -> medicine.id == it.medicineId } }
+            .map { alarm ->
+                    val medicine = medicines.first { medicine -> medicine.id == alarm.medicineId }
+                    CalendarItem(medicine, alarm.targetTimeUtc, alarm.actualTimeUtc)
+            }
     }
 
     private fun getFutureCalendarItems(request: CalendarRequest): List<CalendarItem> {
