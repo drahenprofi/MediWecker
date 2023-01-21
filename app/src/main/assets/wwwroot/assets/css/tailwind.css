@@ -1215,6 +1215,10 @@ textarea:focus, input:focus{
   height: 1.5rem;
 }
 
+.h-4 {
+  height: 1rem;
+}
+
 .h-full {
   height: 100%;
 }
@@ -1237,10 +1241,6 @@ textarea:focus, input:focus{
 
 .h-1 {
   height: 0.25rem;
-}
-
-.h-4 {
-  height: 1rem;
 }
 
 .h-8 {
@@ -1271,6 +1271,10 @@ textarea:focus, input:focus{
   width: 1.5rem;
 }
 
+.w-4 {
+  width: 1rem;
+}
+
 .w-full {
   width: 100%;
 }
@@ -1285,10 +1289,6 @@ textarea:focus, input:focus{
 
 .w-60 {
   width: 15rem;
-}
-
-.w-4 {
-  width: 1rem;
 }
 
 .w-8 {
@@ -1309,10 +1309,6 @@ textarea:focus, input:focus{
 
 .w-12 {
   width: 3rem;
-}
-
-.w-2 {
-  width: 0.5rem;
 }
 
 .min-w-0 {
@@ -1444,12 +1440,12 @@ textarea:focus, input:focus{
   gap: 0.5rem;
 }
 
-.gap-4 {
-  gap: 1rem;
-}
-
 .gap-3 {
   gap: 0.75rem;
+}
+
+.gap-4 {
+  gap: 1rem;
 }
 
 .gap-1 {
@@ -1602,6 +1598,10 @@ textarea:focus, input:focus{
   background-color: rgb(185 28 28 / var(--tw-bg-opacity));
 }
 
+.bg-lime-400\/90 {
+  background-color: rgb(163 230 53 / 0.9);
+}
+
 .bg-white\/80 {
   background-color: rgb(255 255 255 / 0.8);
 }
@@ -1664,43 +1664,6 @@ textarea:focus, input:focus{
   background-color: rgb(248 250 252 / var(--tw-bg-opacity));
 }
 
-.bg-blue-700 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(29 78 216 / var(--tw-bg-opacity));
-}
-
-.bg-lime-700 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(77 124 15 / var(--tw-bg-opacity));
-}
-
-.bg-lime-800 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(63 98 18 / var(--tw-bg-opacity));
-}
-
-.bg-lime-600 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(101 163 13 / var(--tw-bg-opacity));
-}
-
-.bg-gray-300 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(209 213 219 / var(--tw-bg-opacity));
-}
-
-.bg-gray-200\/90 {
-  background-color: rgb(229 231 235 / 0.9);
-}
-
-.bg-lime-500\/90 {
-  background-color: rgb(132 204 22 / 0.9);
-}
-
-.bg-lime-400\/90 {
-  background-color: rgb(163 230 53 / 0.9);
-}
-
 .p-4 {
   padding: 1rem;
 }
@@ -1735,6 +1698,21 @@ textarea:focus, input:focus{
   padding-bottom: 0.25rem;
 }
 
+.py-0\.5 {
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+}
+
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.py-0 {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
 .px-4 {
   padding-left: 1rem;
   padding-right: 1rem;
@@ -1748,21 +1726,6 @@ textarea:focus, input:focus{
 .py-3 {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
-}
-
-.py-0\.5 {
-  padding-top: 0.125rem;
-  padding-bottom: 0.125rem;
-}
-
-.py-0 {
-  padding-top: 0px;
-  padding-bottom: 0px;
-}
-
-.px-3 {
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
 }
 
 .py-1\.5 {
@@ -1985,11 +1948,6 @@ textarea:focus, input:focus{
 .text-slate-500 {
   --tw-text-opacity: 1;
   color: rgb(100 116 139 / var(--tw-text-opacity));
-}
-
-.text-slate-400 {
-  --tw-text-opacity: 1;
-  color: rgb(148 163 184 / var(--tw-text-opacity));
 }
 
 .underline {
