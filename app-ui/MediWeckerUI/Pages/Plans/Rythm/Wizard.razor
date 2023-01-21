@@ -33,7 +33,7 @@
     
     protected override Task OnInitializedAsync()
     {
-        Console.WriteLine($"Wizard: OnInitializedAsync witwh instance id = {Guid}");
+        //Console.WriteLine($"Wizard: OnInitializedAsync witwh instance id = {Guid}");
         
         NavigationHistory.BackEvent += BackEvent;
         
@@ -64,7 +64,7 @@
 
     public async Task OnBackwardAsync(bool entireStep = false)
     {
-        Console.WriteLine($"Wizard: OnBackwardAsync called, current step = {CurrentStep}");
+        //Console.WriteLine($"Wizard: OnBackwardAsync called, current step = {CurrentStep}");
         
         if (CurrentStep == Step.Name)
         {
@@ -107,7 +107,7 @@
 
     protected async Task OnTimepointsSubmit()
     {
-        Console.WriteLine("OnTimepointsSubmit");
+        //Console.WriteLine("OnTimepointsSubmit");
 
         // Prune data to remove redudant timepoints (e.g. 2 times morning, or 2 timepoints at the same time).
         void RemoveDuplicates(Func<Timepoint, bool> selector, Func<Timepoint, object> keySelector)
@@ -161,7 +161,7 @@
 
     public void Dispose()
     {
-        Console.WriteLine($"Wizard: Disposing instance id = {Guid}");
+        //Console.WriteLine($"Wizard: Disposing instance id = {Guid}");
         
         NavigationHistory.BackEvent -= BackEvent;
     }

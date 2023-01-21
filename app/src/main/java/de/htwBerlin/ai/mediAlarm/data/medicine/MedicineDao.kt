@@ -15,7 +15,7 @@ interface MedicineDao {
     fun get(id: Long): Medicine
 
     @Query("SELECT * FROM medicine WHERE id IN (:medicineIds)")
-    fun loadAllByIds(medicineIds: IntArray): List<Medicine>
+    fun loadAllByIds(medicineIds: List<Long>): List<Medicine>
 
     @Query("SELECT * FROM medicine WHERE name LIKE :name LIMIT 1")
     fun findByName(name: String): Medicine

@@ -1,46 +1,51 @@
 package de.htwBerlin.ai.mediAlarm
 
-import android.Manifest
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.webkit.*
-import androidx.annotation.RequiresApi
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
-import de.htwBerlin.ai.mediAlarm.alarm.AlarmReceiver
+import com.google.gson.Gson
+import de.htwBerlin.ai.mediAlarm.data.Constants
+import de.htwBerlin.ai.mediAlarm.data.reminderPrompt.ReminderPromptRequest
+import de.htwBerlin.ai.mediAlarm.notification.NotificationCanceller
 
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
-    lateinit var preferences: SharedPreferences
+    private lateinit var preferences: SharedPreferences
 
+    private val gson: Gson = Gson()
     private lateinit var webView: WebView
-    private var permissionRequestcode: Int = 200
     private var permissionRequestCompleted: Boolean = false
+    private var jsToExecute: String = ""
+
+    var requestPermissionLauncher: ActivityResultLauncher<String>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (Build.VERSION.SDK_INT >= 21) {
-            val window = this.window
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            window.statusBarColor = this.resources.getColor(R.color.lime_500)
+        requestPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            permissionRequestCompleted = isGranted
         }
 
-        preferences = getSharedPreferences("MediWecker.Preferences", Context.MODE_PRIVATE);
+        val window = this.window
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        window.statusBarColor = this.resources.getColor(R.color.lime_500)
 
-        // Temporary webview setup
+        preferences = getSharedPreferences("MediWecker.Preferences", Context.MODE_PRIVATE)
+
+        // Temporary webView setup
         webView = findViewById(R.id.webView)
 
         webView.settings.javaScriptEnabled = true
@@ -48,7 +53,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         webView.settings.builtInZoomControls = true
         webView.settings.domStorageEnabled = true
         webView.settings.allowContentAccess = true
-        webView.settings.safeBrowsingEnabled = false
+        //webView.settings.safeBrowsingEnabled = false
 
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
@@ -56,65 +61,35 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
         webView.addJavascriptInterface(WebAppInterface(this), "Android")
 
-        webView.webViewClient = LocalContentWebViewClient(assetLoader)
-        webView.webChromeClient = LocalChromeClient();
-        webView.loadUrl("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html");
-    }
+        webView.webViewClient = LocalContentWebViewClient(assetLoader, this)
+        webView.webChromeClient = LocalChromeClient()
+        webView.loadUrl("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html")
 
-    fun getIfNotificationsPermissionGiven() : Boolean {
-        //return ContextCompat.checkSelfPermission(this,
-        //    Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED
-        return true;
-    }
+        val isNotificationClick = intent.getBooleanExtra(Constants.NOTIFICATION_CLICK, false)
 
-    fun getIfInternetPermissionGiven() : Boolean {
-        //return ContextCompat.checkSelfPermission(this,
-        //    Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
-        return true;
-    }
+        if (isNotificationClick) {
+            val medicineId = intent.getLongExtra(Constants.MEDICINE_ID, 0)
+            val alarmId = intent.getLongExtra(Constants.ALARM_ID, 0)
+            val scheduledTimeUtc = intent.getLongExtra(Constants.SCHEDULED_TIME_UTC, 0)
+            val notificationId = intent.getIntExtra(Constants.NOTIFICATION_ID, 0)
 
-    fun attemptRequestPermissions() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.INTERNET, Manifest.permission.SCHEDULE_EXACT_ALARM),
-            permissionRequestcode
-        )
-    }
+            NotificationCanceller(this).cancel(notificationId)
 
-    fun onRequestPermissionResult(
-        requestCode: Int,
-        permissions: Array<String?>?,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            permissionRequestcode -> {
-                permissionRequestCompleted = true
-            }
+            val request = ReminderPromptRequest(medicineId, alarmId, scheduledTimeUtc)
+
+            jsToExecute = "MediWecker.showReminderPrompt(${gson.toJson(request)});"
+
+            //webView.evaluateJavascript(jsStatement, null)
         }
     }
 
     fun getAndResetPermissionsRequestCompleted() : Boolean {
         if (permissionRequestCompleted) {
-            permissionRequestCompleted = false;
-            return true;
+            permissionRequestCompleted = false
+            return true
         }
 
-        return false;
-    }
-
-    fun setAlarm() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, AlarmReceiver::class.java)
-        val pendingIntent =
-            PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        alarmManager.setExact(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            100,
-            pendingIntent
-        )
-
-        Log.d("Medicine Reminder", "setAlarm")
+        return false
     }
 
     private class LocalChromeClient : WebChromeClient() {
@@ -127,88 +102,25 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         }
     }
 
-    private class LocalContentWebViewClient(private val assetLoader: WebViewAssetLoader) : WebViewClientCompat() {
-        @RequiresApi(21)
+    private class LocalContentWebViewClient(private val assetLoader: WebViewAssetLoader, private val mainActivity: MainActivity) : WebViewClientCompat() {
+        override fun onPageFinished(view: WebView?, url: String?) {
+            Log.d("MainActivity", "onPageFinished")
+
+            if (!mainActivity.jsToExecute.isNullOrBlank()) {
+                mainActivity.webView.evaluateJavascript(mainActivity.jsToExecute, null)
+            }
+        }
+
         override fun shouldInterceptRequest(
             view: WebView,
             request: WebResourceRequest
         ): WebResourceResponse? {
-            Log.d("DEBUG", request.url.toString());
-
-            /*if (request.url.toString().startsWith("https://appassets.androidplatform.net/assets/wwwroot/")) {
-                return assetLoader.shouldInterceptRequest(request.url)
-            } else {
-                return assetLoader.shouldInterceptRequest(Uri.parse("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html"));
-            }*/
-
-            return return assetLoader.shouldInterceptRequest(request.url)
+            return assetLoader.shouldInterceptRequest(request.url)
         }
-
-        // to support API < 21
-        override fun shouldInterceptRequest(
-            view: WebView,
-            url: String
-        ): WebResourceResponse? {
-            return assetLoader.shouldInterceptRequest(Uri.parse(url))
-        }
-
-    /*@RequiresApi(21)
-        override fun shouldInterceptRequest(
-            view: WebView,
-            request: WebResourceRequest
-        ): WebResourceResponse? {
-            var urlString: String = request.url.toString()
-
-            if (urlString.startsWith("https://appassets.androidplatform.net/assets/wwwroot")) {
-                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets for " + urlString);
-
-                return assetLoader.shouldInterceptRequest(request.url)
-            }
-
-            if (urlString.startsWith("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html")) {
-                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets for " + urlString);
-
-                return assetLoader.shouldInterceptRequest(request.url)
-            }
-
-            Log.d("DEBUG", "shouldInterceptRequest: Returning NULL for " + urlString);
-            return null
-        }
-
-        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-            var urlString: String = request.url.toString()
-
-            return false;
-        }
-
-        // to support API < 21
-        override fun shouldInterceptRequest(
-            view: WebView,
-            url: String
-        ): WebResourceResponse? {
-            return assetLoader.shouldInterceptRequest(Uri.parse(url))
-
-            var urlString: String = url
-
-            if (urlString.startsWith("https://appassets.androidplatform.net/assets/assets")) {
-                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets");
-
-                return assetLoader.shouldInterceptRequest(Uri.parse(url))
-            }
-
-            if (urlString.startsWith("https://appassets.androidplatform.net/assets/index_mobile.html")) {
-                Log.d("DEBUG", "shouldInterceptRequest: Returning from assets");
-
-                return assetLoader.shouldInterceptRequest(Uri.parse(url))
-            }
-
-            Log.d("DEBUG", "shouldInterceptRequest: Returning NULL");
-            return null
-        }*/
     }
 
     fun onBackPressedBypassWebView() {
-        super.onBackPressed();
+        super.onBackPressed()
     }
 
     override fun onBackPressed() {

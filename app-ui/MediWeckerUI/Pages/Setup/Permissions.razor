@@ -23,10 +23,10 @@
 
     protected async Task RequestAsync()
     {
-        Console.WriteLine("Requesting permission from native app");
+        //Console.WriteLine("Requesting permission from native app");
         await AppInterop.AttemptRequestPermissionsAsync();
 
-        Console.WriteLine("Polling permission request status");
+        //Console.WriteLine("Polling permission request status");
         while (!await AppInterop.GetAndResetPermissionsRequestCompletedFlagAsync())
             await Task.Delay(100);
 

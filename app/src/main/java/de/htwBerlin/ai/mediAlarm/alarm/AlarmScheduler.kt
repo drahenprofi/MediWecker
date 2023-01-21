@@ -18,7 +18,7 @@ class AlarmScheduler(private val context: Context) {
 
         val pendingIntent = PendingIntent.getBroadcast(context, alarm.id.toInt(), intent, PendingIntent.FLAG_IMMUTABLE)
 
-        val triggerAtMillis = getTriggerAtMillisFromTargetTime(alarm.targetTime)
+        val triggerAtMillis = getTriggerAtMillisFromTargetTime(alarm.targetTimeUtc)
 
         alarmManager.setExact(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
@@ -28,6 +28,9 @@ class AlarmScheduler(private val context: Context) {
     }
 
     private fun getTriggerAtMillisFromTargetTime(targetTime: Long): Long {
-        return targetTime - Calendar.getInstance().timeInMillis + SystemClock.elapsedRealtime()
+        val timeInMillis = Calendar.getInstance().timeInMillis
+        val systemTime = SystemClock.elapsedRealtime()
+
+        return targetTime - timeInMillis + systemTime
     }
 }

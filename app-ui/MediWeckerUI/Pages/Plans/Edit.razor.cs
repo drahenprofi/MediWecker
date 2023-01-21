@@ -54,7 +54,10 @@ public partial class Edit : IDisposable
 
     protected override async Task OnParametersSetAsync()
     {
-        Plan = (await Interop.GetAllPlansAsync()).First(x => x.Id == Id);
+        Plan = (await Interop.GetAllPlansAsync()).FirstOrDefault(x => x.Id == Id);
+
+        if (Plan == null) return;
+        
         Rythm = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm);
     }
 

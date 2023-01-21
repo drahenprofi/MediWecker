@@ -1,6 +1,10 @@
-﻿@using Index = MediWeckerUI.Pages.Index
+﻿@inherits LayoutComponentBase
 @using MediWeckerUI.Application.Features.Navigation
-@inherits LayoutComponentBase
+@using MediWeckerUI.Application.Features.Notifications
+@using MediWeckerUI.Application
+@using MediWeckerUI.Application.Features.Planning
+@using Index = MediWeckerUI.Pages.Index
+@using System.Text.Json
 @implements IDisposable
 
 @if (RouteData != null)
@@ -14,7 +18,10 @@
 
     [Inject]
     public WebViewNavigationHistory NavigationHistory { get; set; }
-    
+
+    [Inject]
+    public AppInterop AppInterop { get; set; }
+
     [Parameter]
     public RenderFragment PageRender { get; set; }
 
@@ -26,14 +33,48 @@
     {
         Id = Guid.NewGuid().ToString();
         RouteData = new RouteData(typeof(Index), new Dictionary<string, object>());
-        
-        Console.WriteLine($"BaseNavigationLayout: Created {Id}");
+
+        AppInterop.RegisterOnReminderPromptShownRequestCallback(EventCallback.Factory.Create<ReminderPromptRequestData>(this, OnReminderPromptRequest));
+
+        //Console.WriteLine($"BaseNavigationLayout: Created {Id}");
     }
 
     protected override async Task OnInitializedAsync()
     {
         await NavigationHistory.InitializeAsync();
         await base.OnInitializedAsync();
+
+        // _ = Task.Run(async () =>
+        // {
+        //     await Task.Delay(TimeSpan.FromSeconds(1));
+        //     await OnReminderPromptRequest(new ReminderPromptRequestData()
+        //     {
+        //         Medicine = new Medicine
+        //         {
+        //             Id = 0,
+        //             Name = "Ibuprofen",
+        //             Amount = "1 Tablette",
+        //             Rythm = JsonSerializer.Serialize(new Rythm
+        //             {
+        //                 IntervalDays = new IntervalDaysData { Days = 1 },
+        //                 Timepoints = new List<Timepoint>
+        //                 {
+        //                     new()
+        //                     {
+        //                         Type = TimepointType.Morning
+        //                     }
+        //                 }
+        //             })
+        //         },
+        //
+        //         ScheduledTimeUtc = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        //     });
+        // });
+    }
+
+    protected async Task OnReminderPromptRequest(ReminderPromptRequestData data)
+    {
+        await Navigate<Pages.Reminders.Prompt>(nameof(Pages.Reminders.Prompt.RequestData), data);
     }
 
     public void Navigate<T>() where T : IComponent
@@ -66,6 +107,7 @@
 
     public void Dispose()
     {
-        Console.WriteLine($"BaseNavigationLayout: Disposing {Id}");
+        //Console.WriteLine($"BaseNavigationLayout: Disposing {Id}");
     }
+
 }

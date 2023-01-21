@@ -1,16 +1,21 @@
 package de.htwBerlin.ai.mediAlarm
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.widget.Toast
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
+import de.htwBerlin.ai.mediAlarm.data.reminderPrompt.ReminderPromptResponse
+import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequest
+import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequestProcessor
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTime
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.ReminderPromptResponseHandler
 
 class WebAppInterface internal constructor(c: Context) {
     private var mContext: MainActivity = c as MainActivity
@@ -21,7 +26,7 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun showToast(msg: String) {
-        Toast.makeText(mContext, "$msg", Toast.LENGTH_SHORT).show()
+        Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show()
     }
 
     @JavascriptInterface
@@ -31,17 +36,19 @@ class WebAppInterface internal constructor(c: Context) {
 
     @JavascriptInterface
     fun getIfNotificationsPermissionGiven(): Boolean {
-        return mContext.getIfNotificationsPermissionGiven()
+        return PermissionManager(mContext).notificationPermissionGiven()
     }
 
     @JavascriptInterface
     fun getIfInternetPermissionGiven(): Boolean {
-        return mContext.getIfInternetPermissionGiven()
+        return true
     }
 
     @JavascriptInterface
     fun attemptRequestPermissions() {
-        mContext.attemptRequestPermissions()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            PermissionManager(mContext).requestNotificationPermission()
+        }
     }
 
     @JavascriptInterface
@@ -71,6 +78,13 @@ class WebAppInterface internal constructor(c: Context) {
     }
 
     @JavascriptInterface
+    fun submitReminderPromptResponse(responseJson: String) {
+        Log.d("WebAppInterface", responseJson)
+        val response = gson.fromJson(responseJson, ReminderPromptResponse::class.java)
+        ReminderPromptResponseHandler(mContext).handle(response)
+    }
+
+    @JavascriptInterface
     fun getMedicine(): String {
         val medicine = medicineDao.getAll()
         return gson.toJson(medicine)
@@ -93,5 +107,12 @@ class WebAppInterface internal constructor(c: Context) {
     fun updateMedicine(medicineJson: String) {
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
         medicineDao.update(medicine)
+    }
+
+    @JavascriptInterface
+    fun getCalendarData(calendarRequestJson: String): String {
+        val request = gson.fromJson(calendarRequestJson, CalendarRequest::class.java)
+        val calendarItems = CalendarRequestProcessor(mContext).process(request)
+        return gson.toJson(calendarItems)
     }
 }

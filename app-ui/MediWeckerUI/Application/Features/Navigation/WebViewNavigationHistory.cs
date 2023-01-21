@@ -27,22 +27,22 @@ public class WebViewNavigationHistory
 
     private async ValueTask OnLocationChanging(LocationChangingContext context)
     {
-        Console.WriteLine($"WebViewNavigationHistory: Back event raised");
+        //Console.WriteLine($"WebViewNavigationHistory: Back event raised");
         
         context.PreventNavigation();
 
         int subscriberCount = BackEvent?.GetInvocationList().Length ?? 0;
         
-        Console.WriteLine($"WebViewNavigationHistory: BackEvent subscriber count = {subscriberCount}");
+        //Console.WriteLine($"WebViewNavigationHistory: BackEvent subscriber count = {subscriberCount}");
 
         if (subscriberCount == 0)
         {
-            Console.WriteLine($"WebViewNavigationHistory: No subscriber found, redirecting back event to native host app");
+            //Console.WriteLine($"WebViewNavigationHistory: No subscriber found, redirecting back event to native host app");
             await _appInterop.BackEventAsync();
         }
         else
         {
-            Console.WriteLine($"WebViewNavigationHistory: Internal subscribers found, raising internal event");
+            //Console.WriteLine($"WebViewNavigationHistory: Internal subscribers found, raising internal event");
             BackEvent?.Invoke(this, EventArgs.Empty);
         }
     }

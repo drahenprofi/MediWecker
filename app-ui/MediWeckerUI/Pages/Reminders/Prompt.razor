@@ -1,0 +1,182 @@
+﻿@page "/reminders/prompt"
+@using MediWeckerUI.Application.Features.Notifications
+@using MediWeckerUI.Application
+@using MediWeckerUI.Application.Features.Planning
+@using System.Globalization
+@using Index = MediWeckerUI.Pages.Index
+@layout EmptyLayout
+
+@code {
+
+    [Parameter]
+    public ReminderPromptRequestData RequestData { get; set; }
+
+    [Inject]
+    public AppInterop AppInterop { get; set; }
+
+    [CascadingParameter]
+    public BaseNavigationLayout BaseLayout { get; set; }
+
+    public Medicine Medicine { get; set; }
+
+    public string TimeString { get; set; } = "00:00:00";
+
+    protected override void OnInitialized()
+    {
+        TimeString = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc).ToLocalTime().TimeOfDay.ToString("hh\\:mm\\:ss");
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        Medicine = (await AppInterop.GetAllPlansAsync()).FirstOrDefault(x => x.Id == RequestData.MedicineId);
+    }
+
+    protected async Task SubmitPunctualAsync()
+    {
+        await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData()
+        {
+            MedicineId = RequestData.MedicineId,
+            ScheduledTimeUtc = RequestData.ScheduledTimeUtc,
+            ActualTimeUtc = RequestData.ScheduledTimeUtc
+        });
+
+        await AppInterop.ShowAlertAsync("Antwort übernommen.");
+        BaseLayout.Navigate<Index>();
+    }
+
+    protected async Task SubmitNotTakenAsync()
+    {
+        await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData()
+        {
+            MedicineId = RequestData.MedicineId,
+            ScheduledTimeUtc = RequestData.ScheduledTimeUtc,
+            ActualTimeUtc = null
+        });
+
+        await AppInterop.ShowAlertAsync("Antwort übernommen.");
+        BaseLayout.Navigate<Index>();
+    }
+
+    protected async Task SubmitTakenAtAsync()
+    {
+        if (!TimeSpan.TryParseExact(TimeString, "hh\\:mm\\:ss", CultureInfo.InvariantCulture, out var actualIntakeTimeOfDay))
+        {
+            throw new InvalidOperationException("Time string is in incorrect format.");
+        }
+
+        actualIntakeTimeOfDay = actualIntakeTimeOfDay - DateTimeOffset.Now.Offset;
+
+        var plannedIntake = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc);
+        var plannedIntakeTimeOfDay = plannedIntake.TimeOfDay; //new TimeSpan(plannedIntake.TimeOfDay.Hours, plannedIntake.TimeOfDay.Minutes, 0);
+
+    // If the user entered a time smaller than the planned intake time of day, then assume he means a time after
+    // the planned intake time.
+        if (plannedIntakeTimeOfDay > actualIntakeTimeOfDay)
+        {
+            actualIntakeTimeOfDay = actualIntakeTimeOfDay.Add(TimeSpan.FromDays(1));
+        }
+
+        var differenceTime = actualIntakeTimeOfDay - plannedIntakeTimeOfDay;
+        var actualIntake = plannedIntake.Add(differenceTime);
+
+        await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData()
+        {
+            MedicineId = RequestData.MedicineId,
+            ScheduledTimeUtc = RequestData.ScheduledTimeUtc,
+            ActualTimeUtc = actualIntake.ToUnixTimeMilliseconds()
+        });
+
+        await AppInterop.ShowAlertAsync("Antwort übernommen.");
+        BaseLayout.Navigate<Index>();
+    }
+
+}
+
+@{
+    var intakeTime = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc);
+}
+
+@if (Medicine != null)
+{
+    <div class="container mx-auto max-w-3xl h-min-full p-4 animate-fade-move-in">
+        <div class="flex justify-center mt-5">
+            <svg class="w-16 h-16 text-lime-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.124 7.5A8.969 8.969 0 015.292 3m13.416 0a8.969 8.969 0 012.168 4.5"></path>
+            </svg>
+        </div>
+
+        <div class="mt-4 text-xl text-center font-semibold">
+            @Medicine.Name
+        </div>
+
+        <div class="text-sm text-center mt-1">
+            @Medicine.Amount,
+            @intakeTime.ToLocalTime().ToString("dddd' der 'dd'., 'HH:mm' Uhr'")
+        </div>
+
+        @* <div class="mt-4 text-center font-semibold"> *@
+        @*     Wie ist die Einnahme verlaufen? *@
+        @* </div> *@
+
+        <div class="mt-8 flex flex-col gap-8">
+            <div>
+                <div class="flex gap-4">
+                    <div class="shrink-0">
+                        <svg class="text-lime-400 h-10 w-10" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path clip-rule="evenodd" fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"></path>
+                        </svg>
+                    </div>
+
+                    <div class="grow">
+                        <div class="font-semibold text-lg">Pünktlich gewesen?</div>
+                        <div class="mt-0.5">Super! Dann hier klicken.</div>
+                        <div class="text-sm text-gray-400 mt-0.5">Bis zu 10 Min. vor oder nach @intakeTime.ToLocalTime().ToString("HH:mm") ist ebenfalls pünktlich.</div>
+                        <button class="button-primary w-full mt-4" @onclick="SubmitPunctualAsync">Einnahme pünktlich</button>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex gap-4">
+                    <div class="shrink-0">
+                        <svg class="text-amber-400 h-10 w-10" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path clip-rule="evenodd" fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z"></path>
+                        </svg>
+                    </div>
+
+                    <div class="grow">
+                        <div class="font-semibold text-lg">Zu spät eingenommen?</div>
+                        <div class="mt-0.5">Bitte geben Sie die Uhrzeit an, zu der die Einnahme erfolgte.</div>
+
+                        <div class="flex gap-2 mt-4">
+                            <InputText type="time" @bind-Value="TimeString" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5 grow"></InputText>
+                            <button class="bg-amber-300 text-amber-900 px-3 py-1.5 rounded shrink flex items-center" @onclick="SubmitTakenAtAsync">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex gap-4">
+                    <div class="shrink-0">
+                        <svg class="text-red-500 h-10 w-10" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path clip-rule="evenodd" fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z"></path>
+                        </svg>
+                    </div>
+
+                    <div class="grow">
+                        <div class="font-semibold text-lg">Einnahme ganz vergessen?</div>
+                        <div class="mt-0.5">Das kann mal passieren.</div>
+
+                        <button class="bg-red-500 text-white px-3 py-1.5 rounded w-full mt-4" @onclick="SubmitNotTakenAsync">Nicht eingenommen</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
