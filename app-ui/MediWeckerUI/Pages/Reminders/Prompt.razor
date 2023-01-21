@@ -36,6 +36,7 @@
         await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData()
         {
             MedicineId = RequestData.MedicineId,
+            AlarmId = RequestData.AlarmId,
             ScheduledTimeUtc = RequestData.ScheduledTimeUtc,
             ActualTimeUtc = RequestData.ScheduledTimeUtc
         });
@@ -49,6 +50,7 @@
         await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData()
         {
             MedicineId = RequestData.MedicineId,
+            AlarmId = RequestData.AlarmId,
             ScheduledTimeUtc = RequestData.ScheduledTimeUtc,
             ActualTimeUtc = null
         });
@@ -82,6 +84,7 @@
         await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData()
         {
             MedicineId = RequestData.MedicineId,
+            AlarmId = RequestData.AlarmId,
             ScheduledTimeUtc = RequestData.ScheduledTimeUtc,
             ActualTimeUtc = actualIntake.ToUnixTimeMilliseconds()
         });

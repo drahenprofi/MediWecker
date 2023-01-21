@@ -3,6 +3,7 @@
 public class ReminderPromptResponseData
 {
     public long MedicineId { get; set; }
+    public long AlarmId { get; set; }
     public long ScheduledTimeUtc { get; set; }
     public long? ActualTimeUtc { get; set; }
 }
