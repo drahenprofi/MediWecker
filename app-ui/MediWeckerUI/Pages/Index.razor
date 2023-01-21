@@ -6,6 +6,7 @@
 @using Humanizer
 @using System.Globalization
 @using System.Text.Json
+@implements IDisposable
 
 @code {
 
@@ -23,6 +24,8 @@
     public List<CalendarItem> CalendarItems { get; set; }
     public List<Medicine> Plans { get; set; }
 
+    private CancellationTokenSource _cancelAutomaticRefresh = new CancellationTokenSource();
+
     protected override async Task OnInitializedAsync()
     {
         Layout.UpdateTab(MainLayout.NavigationTab.Calendar);
@@ -37,6 +40,15 @@
         }
 
         await RefreshCalendarAsync();
+
+        _ = Task.Run(async () =>
+        {
+            while (!_cancelAutomaticRefresh.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromMinutes(1));
+                await RefreshCalendarAsync();
+            }
+        });
     }
 
     protected async Task RefreshCalendarAsync()
@@ -55,6 +67,10 @@
         await RefreshCalendarAsync();
     }
 
+    public void Dispose()
+    {
+        _cancelAutomaticRefresh.Cancel();
+    }
 
 }
 
@@ -115,6 +131,10 @@
                                     @if (difference.Ticks < 0 && difference > TimeSpan.FromMinutes(-20))
                                     {
                                         <span class="bg-lime-400 text-lime-800 font-semibold px-5 py-1 rounded-full">Jetzt einnehmen</span>
+                                    }
+                                    else if (difference.Ticks > 0 && difference < TimeSpan.FromSeconds(60))
+                                    {
+                                        <span class="bg-gray-100 font-semibold px-5 py-1 rounded-full">In unter einer Minute</span>
                                     }
                                     else
                                     {
