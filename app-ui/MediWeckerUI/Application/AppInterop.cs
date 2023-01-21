@@ -14,6 +14,7 @@ public class AppInterop
     private readonly IJSRuntime _js;
     private readonly NavigationManager _navigationManager;
     private bool _mockPermissionsGiven = true;
+    private readonly JsonSerializerOptions _jsonSettings = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
     public AppInterop(IJSRuntime js, NavigationManager navigationManager)
     {
@@ -34,7 +35,8 @@ public class AppInterop
     [JSInvokable]
     public async Task ShowReminderPromptAsync(string requestJson)
     {
-        var request = JsonSerializer.Deserialize<ReminderPromptRequestData>(requestJson);
+        Console.WriteLine($"ShowReminderPromptAsync: requestJson = {requestJson}");
+        var request = JsonSerializer.Deserialize<ReminderPromptRequestData>(requestJson, _jsonSettings);
 
         await OnReminderPromptShowRequest.InvokeAsync(request);
     }
@@ -116,7 +118,7 @@ public class AppInterop
 
         //Console.WriteLine($"GetCalendarItemsAsync returned JSON is {json}");
 
-        return JsonSerializer.Deserialize<List<CalendarItem>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<List<CalendarItem>>(json, _jsonSettings);
     }
 
     public async Task AttemptRequestPermissionsAsync()
@@ -170,7 +172,7 @@ public class AppInterop
 
         var json = await JSRuntimeExtensions.InvokeAsync<string>(_js, "Android.getUserTimesData");
 
-        return JsonSerializer.Deserialize<UserTimeData>(json);
+        return JsonSerializer.Deserialize<UserTimeData>(json, _jsonSettings);
     }
 
     public async Task UpdateUserTimesDataAsync(UserTimeData data)
@@ -217,7 +219,7 @@ public class AppInterop
 
         //Console.WriteLine($"GetAllPlansAsync: {json}");
 
-        return JsonSerializer.Deserialize<List<Medicine>>(json);
+        return JsonSerializer.Deserialize<List<Medicine>>(json, _jsonSettings);
     }
 
     public async Task DeletePlanAsync(int id)

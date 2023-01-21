@@ -29,11 +29,13 @@
         }
     },
 
-    showReminderPrompt: function (requestDataJson) {
+    showReminderPrompt: function (requestData) {
         console.log("showReminderPrompt called");
         
         MediWecker.queueInvocation(() => {
-            MediWecker.data.serviceReference.invokeMethodAsync("ShowReminderPromptAsync", requestDataJson);
+            var json = JSON.stringify(requestData);
+            console.log("queueInvocation data: " + json);
+            MediWecker.data.serviceReference.invokeMethodAsync("ShowReminderPromptAsync", json);
         });
     }
 }

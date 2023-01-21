@@ -1,4 +1,5 @@
-﻿@inject NavigationManager NavigationManager
+﻿@using MediWeckerUI.Application
+@inject NavigationManager NavigationManager
 
 <CascadingBlazoredModal>
     <Router AppAssembly="@typeof(App).Assembly">
@@ -19,9 +20,12 @@
     [Inject]
     public IJSRuntime JS { get; set; }
     
+    [Inject]
+    public AppInterop AppInterop { get; set; }
+    
     protected async override Task OnInitializedAsync()
     {
-        await JS.InvokeVoidAsync("MediWecker.init");
+        await JS.InvokeVoidAsync("MediWecker.init", DotNetObjectReference.Create(AppInterop));
         await base.OnInitializedAsync();
     }
 
