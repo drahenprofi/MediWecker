@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     private val gson: Gson = Gson()
     private lateinit var webView: WebView
     private var permissionRequestCompleted: Boolean = false
+    private var jsToExecute: String = ""
 
     var requestPermissionLauncher: ActivityResultLauncher<String>? = null
 
@@ -60,7 +61,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
         webView.addJavascriptInterface(WebAppInterface(this), "Android")
 
-        webView.webViewClient = LocalContentWebViewClient(assetLoader)
+        webView.webViewClient = LocalContentWebViewClient(assetLoader, this)
         webView.webChromeClient = LocalChromeClient()
         webView.loadUrl("https://appassets.androidplatform.net/assets/wwwroot/index_mobile.html")
 
@@ -76,9 +77,9 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
             val request = ReminderPromptRequest(medicineId, alarmId, scheduledTimeUtc)
 
-            val jsStatement = "MediWecker.showReminderPrompt(${gson.toJson(request)});"
+            jsToExecute = "MediWecker.showReminderPrompt(${gson.toJson(request)});"
 
-            webView.evaluateJavascript(jsStatement, null)
+            //webView.evaluateJavascript(jsStatement, null)
         }
     }
 
@@ -101,9 +102,13 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         }
     }
 
-    private class LocalContentWebViewClient(private val assetLoader: WebViewAssetLoader) : WebViewClientCompat() {
+    private class LocalContentWebViewClient(private val assetLoader: WebViewAssetLoader, private val mainActivity: MainActivity) : WebViewClientCompat() {
         override fun onPageFinished(view: WebView?, url: String?) {
             Log.d("MainActivity", "onPageFinished")
+
+            if (!mainActivity.jsToExecute.isNullOrBlank()) {
+                mainActivity.webView.evaluateJavascript(mainActivity.jsToExecute, null)
+            }
         }
 
         override fun shouldInterceptRequest(
