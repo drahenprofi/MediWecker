@@ -9,7 +9,7 @@ import de.htwBerlin.ai.mediAlarm.data.alarm.AlarmDao
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
 
-@Database(entities = [Medicine::class, Alarm::class], version = 3)
+@Database(entities = [Medicine::class, Alarm::class], version = 4)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun medicineDao(): MedicineDao
     abstract fun alarmDao(): AlarmDao

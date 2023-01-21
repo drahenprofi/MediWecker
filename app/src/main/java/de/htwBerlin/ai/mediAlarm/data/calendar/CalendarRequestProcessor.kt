@@ -26,8 +26,14 @@ class CalendarRequestProcessor(val context: Context) {
         return alarms
             .filter { medicines.any { medicine -> medicine.id == it.medicineId } }
             .map { alarm ->
-                    val medicine = medicines.first { medicine -> medicine.id == alarm.medicineId }
-                    CalendarItem(medicine, alarm.targetTimeUtc, alarm.actualTimeUtc)
+                val medicine = medicines.first { medicine -> medicine.id == alarm.medicineId }
+
+                CalendarItem(
+                    medicine,
+                    alarm.targetTimeUtc,
+                    alarm.actualTimeUtc,
+                    alarm.userResponded
+                )
             }
     }
 

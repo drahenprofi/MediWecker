@@ -17,6 +17,7 @@ class ReminderPromptResponseHandler(context: Context) {
 
             if (alarm != null) {
                 alarm.actualTimeUtc = reminderPromptResponse.actualTimeUtc
+                alarm.userResponded = true
 
                 alarmDao.update(alarm)
             }
