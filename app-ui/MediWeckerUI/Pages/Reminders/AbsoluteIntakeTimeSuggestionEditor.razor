@@ -1,0 +1,39 @@
+﻿@using System.Globalization
+@code {
+
+    [Parameter]
+    public int SuggestedTimeFromMidnight { get; set; }
+
+    [Parameter]
+    public EventCallback<TimeSpan> OnTimeSubmit { get; set; }
+
+    public string TimeString { get; set; }
+
+    protected override void OnInitialized()
+    {
+        TimeString = TimeSpan.FromMinutes(SuggestedTimeFromMidnight).ToString("hh\\:mm\\:ss");
+    }
+
+    protected async Task TimeUpdatedAsync()
+    {
+        
+    }
+
+    protected async Task SubmitAsync()
+    {
+        TimeSpan.TryParseExact(TimeString, "hh\\:mm\\:ss", CultureInfo.InvariantCulture, out var result);
+
+        await OnTimeSubmit.InvokeAsync(result);
+    }
+
+}
+
+<div class="flex gap-2">
+    <InputText type="time" @bind-Value="TimeString" @bind-Value:after="TimeUpdatedAsync" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5"></InputText>
+    
+    <button class="button-primary rounded shrink flex items-center" @onclick="SubmitAsync">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+        </svg>
+    </button>
+</div>

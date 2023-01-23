@@ -44,32 +44,16 @@
         await NavigationHistory.InitializeAsync();
         await base.OnInitializedAsync();
 
-        // _ = Task.Run(async () =>
-        // {
-        //     await Task.Delay(TimeSpan.FromSeconds(1));
-        //     await OnReminderPromptRequest(new ReminderPromptRequestData()
-        //     {
-        //         Medicine = new Medicine
-        //         {
-        //             Id = 0,
-        //             Name = "Ibuprofen",
-        //             Amount = "1 Tablette",
-        //             Rythm = JsonSerializer.Serialize(new Rythm
-        //             {
-        //                 IntervalDays = new IntervalDaysData { Days = 1 },
-        //                 Timepoints = new List<Timepoint>
-        //                 {
-        //                     new()
-        //                     {
-        //                         Type = TimepointType.Morning
-        //                     }
-        //                 }
-        //             })
-        //         },
-        //
-        //         ScheduledTimeUtc = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-        //     });
-        // });
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            await OnReminderPromptRequest(new ReminderPromptRequestData()
+            {
+                MedicineId = 1,
+                ScheduledTimeUtc = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                AlarmId = 1,
+            });
+        });
     }
 
     protected async Task OnReminderPromptRequest(ReminderPromptRequestData data)

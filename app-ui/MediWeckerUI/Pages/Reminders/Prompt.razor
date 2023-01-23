@@ -1,7 +1,7 @@
 ﻿@page "/reminders/prompt"
 @using MediWeckerUI.Application.Features.Notifications
-@using MediWeckerUI.Application
 @using MediWeckerUI.Application.Features.Planning
+@using MediWeckerUI.Application
 @using System.Globalization
 @using Index = MediWeckerUI.Pages.Index
 @layout EmptyLayout
@@ -21,42 +21,42 @@
 
     public string TimeString { get; set; } = "00:00:00";
 
+    public List<RescheduleSuggestion> Suggestions { get; set; }
+    public UserTimeData UserTimeData { get; set; }
+
+    public bool IsShowingAbsoluteExplanation { get; set; }
+    public bool IsShowingTimeChangeExplanation { get; set; }
+
     protected override void OnInitialized()
     {
         TimeString = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc).ToLocalTime().TimeOfDay.ToString("hh\\:mm\\:ss");
     }
 
-    protected async override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         Medicine = (await AppInterop.GetAllPlansAsync()).FirstOrDefault(x => x.Id == RequestData.MedicineId);
     }
 
     protected async Task SubmitPunctualAsync()
     {
-        await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData()
+        await OnSuggestionsReceivedAsync(await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData
         {
             MedicineId = RequestData.MedicineId,
             AlarmId = RequestData.AlarmId,
             ScheduledTimeUtc = RequestData.ScheduledTimeUtc,
             ActualTimeUtc = RequestData.ScheduledTimeUtc
-        });
-
-        await AppInterop.ShowAlertAsync("Antwort übernommen.");
-        BaseLayout.Navigate<Index>();
+        }));
     }
 
     protected async Task SubmitNotTakenAsync()
     {
-        await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData()
+        await OnSuggestionsReceivedAsync(await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData
         {
             MedicineId = RequestData.MedicineId,
             AlarmId = RequestData.AlarmId,
             ScheduledTimeUtc = RequestData.ScheduledTimeUtc,
             ActualTimeUtc = null
-        });
-
-        await AppInterop.ShowAlertAsync("Antwort übernommen.");
-        BaseLayout.Navigate<Index>();
+        }));
     }
 
     protected async Task SubmitTakenAtAsync()
@@ -81,15 +81,50 @@
         var differenceTime = actualIntakeTimeOfDay - plannedIntakeTimeOfDay;
         var actualIntake = plannedIntake.Add(differenceTime);
 
-        await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData()
+        await OnSuggestionsReceivedAsync(await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData
         {
             MedicineId = RequestData.MedicineId,
             AlarmId = RequestData.AlarmId,
             ScheduledTimeUtc = RequestData.ScheduledTimeUtc,
             ActualTimeUtc = actualIntake.ToUnixTimeMilliseconds()
-        });
+        }));
+    }
 
-        await AppInterop.ShowAlertAsync("Antwort übernommen.");
+    protected async Task OnSuggestionsReceivedAsync(List<RescheduleSuggestion> suggestions)
+    {
+        if (suggestions.Count == 0 || suggestions.Any(x => x.Type == RescheduleSuggestionType.Acknowledged))
+        {
+            await AppInterop.ShowAlertAsync("Antwort gespeichert.");
+            BaseLayout.Navigate<Index>();
+            return;
+        }
+
+        UserTimeData = await AppInterop.GetUserTimesDataAsync();
+        await AppInterop.ShowAlertAsync("Bitte wählen Sie aus.");
+
+        Suggestions = suggestions;
+        StateHasChanged();
+    }
+
+    private async Task OnAbsoluteTimeSubmitAsync(TimeSpan newTime, RescheduleSuggestion suggestion)
+    {
+        suggestion.SuggestedTimeFromMidnight = (long) newTime.TotalMinutes;
+
+        await AppInterop.ShowAlertAsync("Änderung angewendet.");
+        BaseLayout.Navigate<Index>();
+    }
+
+    private async Task OnWakeUpOrSleepTimeSubmitAsync(TimeSpan newTime, RescheduleSuggestion suggestion)
+    {
+        suggestion.SuggestedTimeFromMidnight = (long) newTime.TotalMinutes;
+
+        await AppInterop.ShowAlertAsync("Änderung angewendet.");
+        BaseLayout.Navigate<Index>();
+    }
+
+    private async Task OnNoActionAsync()
+    {
+        await AppInterop.ShowAlertAsync("Keine Änderung vorgenommen.");
         BaseLayout.Navigate<Index>();
     }
 
@@ -99,7 +134,7 @@
     var intakeTime = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc);
 }
 
-@if (Medicine != null)
+@if (Medicine != null && Suggestions == null)
 {
     <div class="container mx-auto max-w-3xl h-min-full p-4 animate-fade-move-in">
         <div class="flex justify-center mt-5">
@@ -180,6 +215,152 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+}
+else if (Suggestions != null && Suggestions.Count > 0)
+{
+    <div class="container mx-auto max-w-3xl h-min-full p-4 animate-fade-move-in">
+        <div class="mt-8 text-xl text-left font-semibold">
+            Passt Ihnen eine andere Zeit besser?
+        </div>
+
+        <div class="text-sm text-justify mt-1.5">
+            Sie scheinen diese Einnahme regelmäßig nicht rechtzeitig zu schaffen. Vielleicht können wir Ihre Erfolgschance mit einem der folgenden Vorschläge verbessern.
+        </div>
+
+        <div class="text-sm text-left mt-1.5">
+            <span class="text-gray-400">Eine Änderung ist nicht zwingend notwendig.</span>
+        </div>
+
+        <div class="mt-6 flex flex-col gap-6">
+            @{
+                var suggestionFriendlyNumber = 0;
+            }
+
+            @foreach (var suggestion in Suggestions)
+            {
+                suggestionFriendlyNumber++;
+
+                <div class="p-3 bg-gray-50 shadow rounded ">
+                    <div>
+                        @if (suggestion.Type is RescheduleSuggestionType.RescheduleAbsoluteTime)
+                        {
+                            <div>
+                                <div class="font-semibold">Ändern der Zeit zu einem festen Zeitpunkt</div>
+                                <div class="text-sm mt-1">
+                                    @if (!IsShowingAbsoluteExplanation)
+                                    {
+                                        <button class="text-blue-400 underline" @onclick="@(() => IsShowingAbsoluteExplanation = true)">
+                                            Was bedeutet das?
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span>
+                                            Aktuell steht die Einnahme im Zusammenhang mit Ihrer Aufstehuhrzeit. Stattdessen
+                                            können Sie die Einnahme zu einer festen Uhrzeit verschieben, die unabhängig Ihrer Aufstehuhrzeit
+                                            ist. Dies betrifft die Einnahme an allen Tagen. <span class="text-blue-400 underline" @onclick="@(() => IsShowingAbsoluteExplanation = false)">Ausblenden</span>
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else if (suggestion.Type is RescheduleSuggestionType.RescheduleWakeUpTime)
+                        {
+                            <div>
+                                <div class="font-semibold">Ändern Ihrer Aufstehuhrzeit</div>
+                                <div class="text-sm mt-1">
+                                    @if (!IsShowingTimeChangeExplanation)
+                                    {
+                                        <button class="text-blue-400 underline" @onclick="@(() => IsShowingTimeChangeExplanation = true)">
+                                            Was bedeutet das?
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span>
+                                            Wir passen Ihre Aufstehuhrzeit am @DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc).ToLocalTime().ToString("dddd") an.
+                                            Diese Änderung betrifft nur die Aufstehuhrzeit dieses Tages. <span class="text-blue-400 underline" @onclick="@(() => IsShowingTimeChangeExplanation = false)">Ausblenden</span>
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else if (suggestion.Type is RescheduleSuggestionType.RescheduleSleepTime)
+                        {
+                            <div>
+                                <div class="font-semibold">Ändern Ihrer Schlafengehen-Uhrzeit</div>
+                                <div class="text-sm mt-1">
+                                    Wir passen Ihre Schlafengehen-Uhrzeit am @intakeTime.ToLocalTime().ToString("dddd") an.
+                                    Diese Änderung betrifft nur die Schlafengehen-Uhrzeit dieses Tages.
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mt-2 text-sm">
+                        @{
+                            int dayIndex = ((int) intakeTime.DayOfWeek - 1) % 7;
+
+                            if (suggestion.Type is RescheduleSuggestionType.RescheduleWakeUpTime)
+                            {
+                                var wakeupTimes = new[]
+                                {
+                                    UserTimeData.WakeupMonday,
+                                    UserTimeData.WakeupTuesday,
+                                    UserTimeData.WakeupWednesday,
+                                    UserTimeData.WakeupThursday,
+                                    UserTimeData.WakeupFriday,
+                                    UserTimeData.WakeupSaturday,
+                                    UserTimeData.WakeupSunday
+                                };
+
+                                <span>Ihre aktuelle Aufstehuhrzeit ist @TimeSpan.FromMinutes(wakeupTimes[dayIndex]).ToString("hh\\:mm") Uhr. </span>
+                            }
+                            else if (suggestion.Type is RescheduleSuggestionType.RescheduleSleepTime)
+                            {
+                                var wakeupTimes = new[]
+                                {
+                                    UserTimeData.SleepMonday,
+                                    UserTimeData.SleepTuesday,
+                                    UserTimeData.SleepWednesday,
+                                    UserTimeData.SleepThursday,
+                                    UserTimeData.SleepFriday,
+                                    UserTimeData.SleepSaturday,
+                                    UserTimeData.SleepSunday
+                                };
+
+                                <span>Ihre aktuelle Schlafengehen-Uhrzeit ist @TimeSpan.FromMinutes(wakeupTimes[dayIndex]).ToString("hh\\:mm") Uhr. </span>
+                            }
+                        }
+
+                        <span class="font-semibold">Wir schlagen @TimeSpan.FromMinutes(suggestion.SuggestedTimeFromMidnight).ToString("hh\\:mm") Uhr vor.</span>
+                    </div>
+
+                    <div class="mt-2">
+                        @if (suggestion.Type == RescheduleSuggestionType.RescheduleAbsoluteTime)
+                        {
+                            <AbsoluteIntakeTimeSuggestionEditor SuggestedTimeFromMidnight="@((int) suggestion.SuggestedTimeFromMidnight)" OnTimeSubmit="async time => await OnWakeUpOrSleepTimeSubmitAsync(time, suggestion)"/>
+                        }
+                        else if (suggestion.Type is RescheduleSuggestionType.RescheduleSleepTime or RescheduleSuggestionType.RescheduleWakeUpTime)
+                        {
+                            <WakeUpOrSleepTimeSuggestionEditor SuggestedTimeFromMidnight="@((int) suggestion.SuggestedTimeFromMidnight)" OnTimeSubmit="async time => await OnWakeUpOrSleepTimeSubmitAsync(time, suggestion)"/>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="p-3 bg-gray-50 shadow rounded ">
+                <div>
+                    <div class="font-semibold">Keine Änderung vornehmen</div>
+                    <div class="text-sm mt-1">
+                        An der Einnahmeuhrzeit wird nichts verändert.
+                    </div>
+
+                    <button class="button-primary w-full mt-3" @onclick="OnNoActionAsync">Nichts ändern</button>
+                </div>
+            </div>
         </div>
     </div>
 }

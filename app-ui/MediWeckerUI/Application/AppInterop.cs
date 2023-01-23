@@ -41,11 +41,27 @@ public class AppInterop
         await OnReminderPromptShowRequest.InvokeAsync(request);
     }
 
-    public async Task SubmitReminderPromptResponseDataAsync(ReminderPromptResponseData data)
+    public async Task<List<RescheduleSuggestion>> SubmitReminderPromptResponseDataAsync(ReminderPromptResponseData data)
     {
-        if (!IsInApp()) return;
+        if (!IsInApp()) return new List<RescheduleSuggestion>
+        {
+            new RescheduleSuggestion()
+            {
+                Type = RescheduleSuggestionType.RescheduleAbsoluteTime,
+                MedicineId = 1,
+                SuggestedTimeFromMidnight = 600
+            },
+            new RescheduleSuggestion()
+            {
+                Type = RescheduleSuggestionType.RescheduleWakeUpTime,
+                MedicineId = 1,
+                SuggestedTimeFromMidnight = 600
+            }
+        };
 
-        await _js.InvokeVoidAsync("Android.submitReminderPromptResponse", JsonSerializer.Serialize(data));
+        var responseJson = await _js.InvokeAsync<string>("Android.submitReminderPromptResponse", JsonSerializer.Serialize(data));
+
+        return JsonSerializer.Deserialize<List<RescheduleSuggestion>>(responseJson, _jsonSettings);
     }
     
     public async Task ShowAlertAsync(string message)
@@ -81,23 +97,7 @@ public class AppInterop
             {
                 items.Add(new CalendarItem
                 {
-                    Medicine = new Medicine
-                    {
-                        Id = 0,
-                        Name = "Ibuprofen",
-                        Amount = "1 Tablette",
-                        Rythm = JsonSerializer.Serialize(new Rythm
-                        {
-                            IntervalDays = new IntervalDaysData { Days = 1 },
-                            Timepoints = new List<Timepoint>
-                            {
-                                new()
-                                {
-                                    Type = TimepointType.Morning
-                                }
-                            }
-                        })
-                    },
+                    Medicine = (await GetAllPlansAsync()).First(),
 
                     ScheduledTimeUtc = DateTimeOffset.UtcNow.AddMinutes(random.Next(-600, 6000)).ToUnixTimeMilliseconds(),
                     ActualTimeUtc = 1,
