@@ -52,7 +52,9 @@ class CalendarRequestProcessor(val context: Context) {
 
             while (scheduledTimeUtc < request.to) {
                 calendar.timeInMillis = scheduledTimeUtc
-                scheduledTimeUtc = targetTimeCalculator.calculate(medicine, calendar)
+
+                val targetTimeCalculatorResult = targetTimeCalculator.calculate(medicine, calendar)
+                scheduledTimeUtc = targetTimeCalculatorResult.first
 
                 if (scheduledTimeUtc < request.to) {
                     result.add(CalendarItem(medicine, scheduledTimeUtc, 0))

@@ -8,4 +8,5 @@ object Constants {
     const val NOTIFICATION_CLICK = "NOTIFICATION_CLICK"
 
     const val SNOOZE_INTERVAL_IN_MINUTES = 10
+    const val RESCHEDULE_MINIMUM_DEVIATION_IN_MINUTES = 30
 }

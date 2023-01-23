@@ -13,9 +13,11 @@ import de.htwBerlin.ai.mediAlarm.calendar.data.CalendarRequest
 import de.htwBerlin.ai.mediAlarm.calendar.CalendarRequestProcessor
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
+import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTime
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
 import de.htwBerlin.ai.mediAlarm.reminderPrompt.ReminderPromptResponseHandler
+import java.util.*
 
 class WebAppInterface internal constructor(c: Context) {
     private var mContext: MainActivity = c as MainActivity
@@ -78,10 +80,10 @@ class WebAppInterface internal constructor(c: Context) {
     }
 
     @JavascriptInterface
-    fun submitReminderPromptResponse(responseJson: String) {
-        Log.d("WebAppInterface", responseJson)
+    fun submitReminderPromptResponse(responseJson: String): String {
         val response = gson.fromJson(responseJson, ReminderPromptResponse::class.java)
-        ReminderPromptResponseHandler(mContext).handle(response)
+        val rescheduleSuggestions = ReminderPromptResponseHandler(mContext).handle(response)
+        return gson.toJson(rescheduleSuggestions)
     }
 
     @JavascriptInterface
@@ -98,6 +100,11 @@ class WebAppInterface internal constructor(c: Context) {
     @JavascriptInterface
     fun insertMedicine(medicineJson: String) {
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
+
+        val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
+        rhythm.timePoints.map { it.uuid = UUID.randomUUID() }
+        medicine.rhythm = gson.toJson(rhythm)
+
         medicine.id = medicineDao.insert(medicine)
 
         MedicineScheduler(mContext).schedule(medicine)
@@ -106,6 +113,11 @@ class WebAppInterface internal constructor(c: Context) {
     @JavascriptInterface
     fun updateMedicine(medicineJson: String) {
         val medicine = gson.fromJson(medicineJson, Medicine::class.java)
+
+        val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
+        rhythm.timePoints.map { it.uuid = UUID.randomUUID() }
+        medicine.rhythm = gson.toJson(rhythm)
+
         medicineDao.update(medicine)
     }
 
