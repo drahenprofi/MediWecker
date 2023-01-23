@@ -9,4 +9,7 @@ public class Timepoint
     
     [JsonPropertyName("absoluteTimeFromMidnight")]
     public int? AbsoluteTimeFromMidnight { get; set; }
+
+    [JsonPropertyName("uuid")]
+    public string UUID { get; set; }
 }
