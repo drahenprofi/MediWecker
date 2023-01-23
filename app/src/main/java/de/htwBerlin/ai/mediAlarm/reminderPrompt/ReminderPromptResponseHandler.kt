@@ -2,7 +2,7 @@ package de.htwBerlin.ai.mediAlarm.reminderPrompt
 
 import android.content.Context
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
-import de.htwBerlin.ai.mediAlarm.data.reminderPrompt.ReminderPromptResponse
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.ReminderPromptResponse
 import java.util.concurrent.Executors
 
 class ReminderPromptResponseHandler(context: Context) {

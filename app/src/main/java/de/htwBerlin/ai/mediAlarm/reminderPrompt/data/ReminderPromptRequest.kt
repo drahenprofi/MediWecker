@@ -1,4 +1,4 @@
-package de.htwBerlin.ai.mediAlarm.data.reminderPrompt
+package de.htwBerlin.ai.mediAlarm.reminderPrompt.data
 
 data class ReminderPromptRequest(
     val medicineId: Long,

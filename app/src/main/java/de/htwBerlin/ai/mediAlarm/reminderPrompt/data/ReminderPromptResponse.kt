@@ -1,4 +1,4 @@
-package de.htwBerlin.ai.mediAlarm.data.reminderPrompt
+package de.htwBerlin.ai.mediAlarm.reminderPrompt.data
 
 import com.google.gson.annotations.SerializedName
 

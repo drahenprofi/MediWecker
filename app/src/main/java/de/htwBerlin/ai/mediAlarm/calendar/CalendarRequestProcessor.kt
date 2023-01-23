@@ -1,7 +1,9 @@
-package de.htwBerlin.ai.mediAlarm.data.calendar
+package de.htwBerlin.ai.mediAlarm.calendar
 
 import android.content.Context
 import de.htwBerlin.ai.mediAlarm.alarm.TargetTimeCalculator
+import de.htwBerlin.ai.mediAlarm.calendar.data.CalendarItem
+import de.htwBerlin.ai.mediAlarm.calendar.data.CalendarRequest
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.alarm.AlarmDao
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao

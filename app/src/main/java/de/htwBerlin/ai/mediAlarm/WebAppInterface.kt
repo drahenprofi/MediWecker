@@ -8,9 +8,9 @@ import android.widget.Toast
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
-import de.htwBerlin.ai.mediAlarm.data.reminderPrompt.ReminderPromptResponse
-import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequest
-import de.htwBerlin.ai.mediAlarm.data.calendar.CalendarRequestProcessor
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.ReminderPromptResponse
+import de.htwBerlin.ai.mediAlarm.calendar.data.CalendarRequest
+import de.htwBerlin.ai.mediAlarm.calendar.CalendarRequestProcessor
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 import de.htwBerlin.ai.mediAlarm.data.medicine.MedicineDao
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTime

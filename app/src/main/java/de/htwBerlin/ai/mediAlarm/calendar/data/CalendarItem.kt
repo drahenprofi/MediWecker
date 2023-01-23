@@ -1,4 +1,4 @@
-package de.htwBerlin.ai.mediAlarm.data.calendar
+package de.htwBerlin.ai.mediAlarm.calendar.data
 
 import de.htwBerlin.ai.mediAlarm.data.medicine.Medicine
 

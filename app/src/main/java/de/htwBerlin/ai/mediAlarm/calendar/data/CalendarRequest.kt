@@ -1,4 +1,4 @@
-package de.htwBerlin.ai.mediAlarm.data.calendar
+package de.htwBerlin.ai.mediAlarm.calendar.data
 
 import com.google.gson.annotations.SerializedName
 
