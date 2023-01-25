@@ -29,7 +29,7 @@ else
 
             @foreach (var plan in Plans)
             {
-                var rythm = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(plan.Rythm);
+                var rythm = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(plan.Rythm, AppInterop.InteropJsonSettings);
 
                 <button class="block group border border-gray-200 shadow-md p-4 rounded" @onclick="() => BaseLayout.Navigate<Edit>(nameof(Edit.Id), plan.Id)">
                     <div class="flex items-center">
