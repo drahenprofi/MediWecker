@@ -6,10 +6,10 @@ import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.Constants
 import de.htwBerlin.ai.mediAlarm.data.alarm.Alarm
 import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
-import de.htwBerlin.ai.mediAlarm.data.rhythm.TimePoint
 import de.htwBerlin.ai.mediAlarm.data.rhythm.TimepointType
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
 import java.util.*
+import kotlin.math.abs
 
 class SuggestionProvider(val context: Context) {
     private val gson = Gson()
@@ -33,7 +33,7 @@ class SuggestionProvider(val context: Context) {
                 val mostRecentAlarms = alarmDao.getMostRecentAlarmsByTimePointUUID(timePoint.uuid)
 
                 val rescheduleSuggested = mostRecentAlarms
-                    .map { it.actualTimeUtc - it.targetTimeUtc > Constants.RESCHEDULE_MINIMUM_DEVIATION_IN_MINUTES * 60 * 1000 }
+                    .map { abs(it.actualTimeUtc - it.targetTimeUtc) > Constants.RESCHEDULE_MINIMUM_DEVIATION_IN_MINUTES * 60 * 1000 }
                     .all { it }
 
                 if (rescheduleSuggested) {
@@ -57,7 +57,7 @@ class SuggestionProvider(val context: Context) {
                                 RescheduleSuggestion(
                                     alarm.medicineId,
                                     RescheduleSuggestionType.RescheduleSleepTime,
-                                    getSuggestedTimeFromMidnightForWakeUpTime(alarm)
+                                    getSuggestedTimeFromMidnightForSleepTime(alarm)
                                 ),
                                 RescheduleSuggestion(
                                     alarm.medicineId,
@@ -128,6 +128,6 @@ class SuggestionProvider(val context: Context) {
         calendar.timeInMillis = alarm.targetTimeUtc
         val day = alarm.targetTimeUtc - calendar[Calendar.HOUR_OF_DAY] * 60 * 60 * 1000 - calendar[Calendar.MINUTE] * 60 * 1000 - calendar[Calendar.SECOND] * 1000
 
-        return alarm.targetTimeUtc - day + Constants.RESCHEDULE_MINIMUM_DEVIATION_IN_MINUTES * 60 * 1000
+        return (alarm.targetTimeUtc - day) / 1000 / 60 + Constants.RESCHEDULE_MINIMUM_DEVIATION_IN_MINUTES
     }
 }
