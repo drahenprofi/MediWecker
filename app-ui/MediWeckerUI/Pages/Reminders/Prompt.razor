@@ -110,6 +110,7 @@
     {
         suggestion.SuggestedTimeFromMidnight = (long) newTime.TotalMinutes;
 
+        await AppInterop.ConfirmRescheduleSuggestionAsync(suggestion);
         await AppInterop.ShowAlertAsync("Änderung angewendet.");
         BaseLayout.Navigate<Index>();
     }
@@ -118,6 +119,7 @@
     {
         suggestion.SuggestedTimeFromMidnight = (long) newTime.TotalMinutes;
 
+        await AppInterop.ConfirmRescheduleSuggestionAsync(suggestion);
         await AppInterop.ShowAlertAsync("Änderung angewendet.");
         BaseLayout.Navigate<Index>();
     }

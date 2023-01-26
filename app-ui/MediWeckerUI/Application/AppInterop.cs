@@ -11,7 +11,7 @@ public class AppInterop
 {
     public EventCallback<ReminderPromptRequestData> OnReminderPromptShowRequest;
     public static JsonSerializerOptions InteropJsonSettings = default;
-    
+
     private readonly IJSRuntime _js;
     private readonly NavigationManager _navigationManager;
     private bool _mockPermissionsGiven = true;
@@ -43,27 +43,37 @@ public class AppInterop
 
     public async Task<List<RescheduleSuggestion>> SubmitReminderPromptResponseDataAsync(ReminderPromptResponseData data)
     {
-        if (!IsInApp()) return new List<RescheduleSuggestion>
-        {
-            new RescheduleSuggestion()
+        if (!IsInApp())
+            return new List<RescheduleSuggestion>
             {
-                Type = RescheduleSuggestionType.RescheduleAbsoluteTime,
-                MedicineId = 1,
-                SuggestedTimeFromMidnight = 600
-            },
-            new RescheduleSuggestion()
-            {
-                Type = RescheduleSuggestionType.RescheduleWakeUpTime,
-                MedicineId = 1,
-                SuggestedTimeFromMidnight = 600
-            }
-        };
+                new RescheduleSuggestion()
+                {
+                    Type = RescheduleSuggestionType.RescheduleAbsoluteTime,
+                    MedicineId = 1,
+                    SuggestedTimeFromMidnight = 600
+                },
+                new RescheduleSuggestion()
+                {
+                    Type = RescheduleSuggestionType.RescheduleWakeUpTime,
+                    MedicineId = 1,
+                    SuggestedTimeFromMidnight = 600
+                }
+            };
 
-        var responseJson = await _js.InvokeAsync<string>("Android.submitReminderPromptResponse", JsonSerializer.Serialize(data));
+        var responseJson =
+            await _js.InvokeAsync<string>("Android.submitReminderPromptResponse", JsonSerializer.Serialize(data));
 
         return JsonSerializer.Deserialize<List<RescheduleSuggestion>>(responseJson, InteropJsonSettings);
     }
-    
+
+    public async Task ConfirmRescheduleSuggestionAsync(RescheduleSuggestion suggestion)
+    {
+        if (!IsInApp()) return;
+
+        await _js.InvokeVoidAsync("Android.confirmRescheduleSuggestion",
+            JsonSerializer.Serialize(suggestion, InteropJsonSettings));
+    }
+
     public async Task ShowAlertAsync(string message)
     {
         if (!IsInApp()) return;
@@ -99,7 +109,8 @@ public class AppInterop
                 {
                     Medicine = (await GetAllPlansAsync()).First(),
 
-                    ScheduledTimeUtc = DateTimeOffset.UtcNow.AddMinutes(random.Next(-600, 6000)).ToUnixTimeMilliseconds(),
+                    ScheduledTimeUtc = DateTimeOffset.UtcNow.AddMinutes(random.Next(-600, 6000))
+                        .ToUnixTimeMilliseconds(),
                     ActualTimeUtc = 1,
                     UserResponded = true
                 });
@@ -110,12 +121,12 @@ public class AppInterop
 
 
         //Console.WriteLine($"GetCalendarItemsAsync serializing request");
-        
+
         var requestJson = JsonSerializer.Serialize(new CalendarRequest
             { From = from.ToUnixTimeMilliseconds(), To = to.ToUnixTimeMilliseconds() });
 
         //Console.WriteLine($"GetCalendarItemsAsync request JSON is {requestJson}");
-        
+
         var json = await _js.InvokeAsync<string>("Android.getCalendarData", requestJson);
 
         //Console.WriteLine($"GetCalendarItemsAsync returned JSON is {json}");
@@ -236,9 +247,9 @@ public class AppInterop
         if (!IsInApp()) return;
 
         var json = JsonSerializer.Serialize(medicine);
-        
+
         Console.WriteLine($"AddPlanAsync: {json}");
-        
+
         await JSRuntimeExtensions.InvokeVoidAsync(_js, "Android.insertMedicine", json);
     }
 
