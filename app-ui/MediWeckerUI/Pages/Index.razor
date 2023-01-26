@@ -135,7 +135,7 @@
                                 }
                                 else
                                 {
-                                  <div class="bg-yellow-400 text-xs text-center py-0.5 rounded-t border-x-2 border-yellow-400 border-t-2">
+                                    <div class="bg-yellow-400 text-xs text-center py-0.5 rounded-t border-x-2 border-yellow-400 border-t-2">
                                         Nicht eingenommen
                                     </div>
                                 }
@@ -150,44 +150,52 @@
                                         @intakeTime.ToLocalTime().ToString("dddd' der 'dd'., 'HH:mm' Uhr'")
                                     </div>
 
-                                    <div class="mt-4 flex">
-                                        @if (difference.Ticks < 0 && difference > TimeSpan.FromMinutes(-20))
-                                        {
-                                            <span class="bg-lime-400 text-lime-800 font-semibold px-5 py-1 rounded-full">Jetzt einnehmen</span>
-                                        }
-                                        else if (difference.Ticks > 0 && difference < TimeSpan.FromSeconds(60))
-                                        {
-                                            <span class="bg-gray-100 font-semibold px-5 py-1 rounded-full">In unter einer Minute</span>
-                                        }
-                                        else
-                                        {
-                                            if (difference.Ticks > 0)
+                                    @if (!calendarItem.UserResponded)
+                                    {
+                                        <div class="mt-4 flex">
+                                            @if (difference.Ticks < 0 && difference > TimeSpan.FromMinutes(-20) && !calendarItem.UserResponded)
                                             {
-                                                <span class="bg-gray-100 font-semibold px-5 py-1 rounded-full">@intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)</span>
+                                                <span class="bg-lime-400 text-lime-800 font-semibold px-5 py-1 rounded-full">Jetzt einnehmen</span>
+                                            }
+                                            else if (difference.Ticks > 0 && difference < TimeSpan.FromSeconds(60))
+                                            {
+                                                <span class="bg-gray-100 font-semibold px-5 py-1 rounded-full">In unter einer Minute</span>
                                             }
                                             else
                                             {
-                                                <span class="bg-red-700 text-red-100 font-semibold px-5 py-1 rounded-full">@intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)</span>
+                                                if (difference.Ticks > 0)
+                                                {
+                                                    <span class="bg-gray-100 font-semibold px-5 py-1 rounded-full">@intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="@(calendarItem.UserResponded ? "bg-gray-100" : "bg-red-700 text-red-100") font-semibold px-5 py-1 rounded-full">
+                                                        @intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)
+                                                    </span>
+                                                }
                                             }
-                                        }
 
-                                        @if (hasActualTime)
-                                        {
-                                            if (actualTime == intakeTime)
+                                            @if (hasActualTime)
                                             {
+                                                if (actualTime == intakeTime)
+                                                {
+                                                }
+                                                else
+                                                {
+                                                }
                                             }
-                                            else
-                                            {
-                                            }
-                                        }
+                                        </div>
+                                    }
+                                </div>
+
+                                @if (intakeTime < DateTimeOffset.Now && !calendarItem.UserResponded)
+                                {
+                                    <div>
+                                        <svg class="w-6 h-6 text-gray-300 group-hover:translate-x-1 group-hover:text-gray-600 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                                        </svg>
                                     </div>
-                                </div>
-
-                                <div>
-                                    <svg class="w-6 h-6 text-gray-300 group-hover:translate-x-1 group-hover:text-gray-600 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
-                                    </svg>
-                                </div>
+                                }
                             </div>
                         </button>
                     }
