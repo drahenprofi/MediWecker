@@ -4,31 +4,31 @@ import com.google.gson.annotations.SerializedName
 
 data class UserTime(
     @SerializedName("WakeupMonday")
-    val wakeupMonday: Long,
+    var wakeupMonday: Long,
     @SerializedName("WakeupTuesday")
-    val wakeupTuesday: Long,
+    var wakeupTuesday: Long,
     @SerializedName("WakeupWednesday")
-    val wakeupWednesday: Long,
+    var wakeupWednesday: Long,
     @SerializedName("WakeupThursday")
-    val wakeupThursday: Long,
+    var wakeupThursday: Long,
     @SerializedName("WakeupFriday")
-    val wakeupFriday: Long,
+    var wakeupFriday: Long,
     @SerializedName("WakeupSaturday")
-    val wakeupSaturday: Long,
+    var wakeupSaturday: Long,
     @SerializedName("WakeupSunday")
-    val wakeupSunday: Long,
+    var wakeupSunday: Long,
     @SerializedName("SleepMonday")
-    val sleepMonday: Long,
+    var sleepMonday: Long,
     @SerializedName("SleepTuesday")
-    val sleepTuesday: Long,
+    var sleepTuesday: Long,
     @SerializedName("SleepWednesday")
-    val sleepWednesday: Long,
+    var sleepWednesday: Long,
     @SerializedName("SleepThursday")
-    val sleepThursday: Long,
+    var sleepThursday: Long,
     @SerializedName("SleepFriday")
-    val sleepFriday: Long,
+    var sleepFriday: Long,
     @SerializedName("SleepSaturday")
-    val sleepSaturday: Long,
+    var sleepSaturday: Long,
     @SerializedName("SleepSunday")
-    val sleepSunday: Long
+    var sleepSunday: Long
 )

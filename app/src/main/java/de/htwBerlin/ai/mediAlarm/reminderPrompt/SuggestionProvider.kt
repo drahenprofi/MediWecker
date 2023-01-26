@@ -42,11 +42,13 @@ class SuggestionProvider(val context: Context) {
                             return listOf(
                                 RescheduleSuggestion(
                                     alarm.medicineId,
+                                    alarm.id,
                                     RescheduleSuggestionType.RescheduleWakeUpTime,
                                     getSuggestedTimeFromMidnightForWakeUpTime(alarm)
                                 ),
                                 RescheduleSuggestion(
                                     alarm.medicineId,
+                                    alarm.id,
                                     RescheduleSuggestionType.RescheduleAbsoluteTime,
                                     getSuggestedTimeFromMidnightForAbsoluteTime(alarm)
                                 )
@@ -56,11 +58,13 @@ class SuggestionProvider(val context: Context) {
                             return listOf(
                                 RescheduleSuggestion(
                                     alarm.medicineId,
+                                    alarm.id,
                                     RescheduleSuggestionType.RescheduleSleepTime,
                                     getSuggestedTimeFromMidnightForSleepTime(alarm)
                                 ),
                                 RescheduleSuggestion(
                                     alarm.medicineId,
+                                    alarm.id,
                                     RescheduleSuggestionType.RescheduleAbsoluteTime,
                                     getSuggestedTimeFromMidnightForAbsoluteTime(alarm)
                                 )
@@ -70,6 +74,7 @@ class SuggestionProvider(val context: Context) {
                             return listOf(
                                 RescheduleSuggestion(
                                     alarm.medicineId,
+                                    alarm.id,
                                     RescheduleSuggestionType.RescheduleAbsoluteTime,
                                     getSuggestedTimeFromMidnightForAbsoluteTime(alarm)
                                 )
@@ -82,6 +87,7 @@ class SuggestionProvider(val context: Context) {
             return listOf(
                 RescheduleSuggestion(
                     alarm.medicineId,
+                    alarm.id,
                     RescheduleSuggestionType.Acknowledged,
                     0L
                 )

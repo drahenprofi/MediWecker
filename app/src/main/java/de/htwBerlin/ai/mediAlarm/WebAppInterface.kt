@@ -17,6 +17,8 @@ import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTime
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
 import de.htwBerlin.ai.mediAlarm.reminderPrompt.ReminderPromptResponseHandler
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.RescheduleSuggestion
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.Rescheduler
 import java.util.*
 
 class WebAppInterface internal constructor(c: Context) {
@@ -84,6 +86,12 @@ class WebAppInterface internal constructor(c: Context) {
         val response = gson.fromJson(responseJson, ReminderPromptResponse::class.java)
         val rescheduleSuggestions = ReminderPromptResponseHandler(mContext).handle(response)
         return gson.toJson(rescheduleSuggestions)
+    }
+
+    @JavascriptInterface
+    fun confirmRescheduleSuggestion(suggestionJson: String) {
+        val suggestion = gson.fromJson(suggestionJson, RescheduleSuggestion::class.java)
+        Rescheduler(mContext).reschedule(suggestion)
     }
 
     @JavascriptInterface
