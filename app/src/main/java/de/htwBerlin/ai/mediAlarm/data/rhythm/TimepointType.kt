@@ -2,8 +2,7 @@ package de.htwBerlin.ai.mediAlarm.data.rhythm
 
 import com.google.gson.annotations.SerializedName
 
-enum class TimepointType
-{
+enum class TimepointType {
     @SerializedName("0")
     AbsoluteTime,
     @SerializedName("1")

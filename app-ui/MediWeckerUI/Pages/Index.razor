@@ -6,6 +6,7 @@
 @using Humanizer
 @using System.Globalization
 @using System.Text.Json
+@implements IDisposable
 
 @code {
 
@@ -23,6 +24,8 @@
     public List<CalendarItem> CalendarItems { get; set; }
     public List<Medicine> Plans { get; set; }
 
+    private CancellationTokenSource _cancelAutomaticRefresh = new CancellationTokenSource();
+
     protected override async Task OnInitializedAsync()
     {
         Layout.UpdateTab(MainLayout.NavigationTab.Calendar);
@@ -37,6 +40,15 @@
         }
 
         await RefreshCalendarAsync();
+
+        _ = Task.Run(async () =>
+        {
+            while (!_cancelAutomaticRefresh.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromMinutes(1));
+                await RefreshCalendarAsync();
+            }
+        });
     }
 
     protected async Task RefreshCalendarAsync()
@@ -55,6 +67,10 @@
         await RefreshCalendarAsync();
     }
 
+    public void Dispose()
+    {
+        _cancelAutomaticRefresh.Cancel();
+    }
 
 }
 
@@ -91,7 +107,7 @@
                         {
                             renderedHereMarker = true;
 
-                            <div class="bg-lime-400/90 py-0.5 px-3 text-xs font-semibold text-center rounded-full flex items-center justify-center gap-3">
+                            <div class="border-t-2 border-lime-400/90 py-1.5 shadow px-3 text-xs font-semibold text-center flex items-center justify-center gap-3">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
                                 </svg>
@@ -101,55 +117,90 @@
                                 </svg>
                             </div>
                         }
-                        
-                        <button class="border-2 border-gray-50 shadow p-3 rounded flex items-center">
-                            <div class="grow shrink-0 text-left">
-                                <div class="text-lg font-semibold">@calendarItem.Medicine.Name</div>
 
-                                <div class="text-sm">
-                                    @calendarItem.Medicine.Amount,
-                                    @intakeTime.ToLocalTime().ToString("dddd' der 'dd'., 'HH:mm' Uhr'")
+                        <button>
+                            @if (calendarItem.UserResponded)
+                            {
+                                if (Math.Abs(calendarItem.ActualTimeUtc - calendarItem.ScheduledTimeUtc) <
+                                    TimeSpan.FromMinutes(10).TotalMilliseconds)
+                                {
+                                    <div class="bg-lime-400 text-xs text-center py-0.5 rounded-t border-x-2 border-lime-400 border-t-2">
+                                        Pünktlich eingenommen
+                                    </div>
+                                }
+                                else if (calendarItem.ActualTimeUtc != 0)
+                                {
+                                    <div class="bg-gray-50 text-xs text-center py-0.5 rounded-t border-x-2 border-gray-50 border-t-2">
+                                        Verspätet um <span class="font-semibold">@DateTimeOffset.FromUnixTimeMilliseconds(calendarItem.ActualTimeUtc).ToLocalTime().ToString("HH:mm") Uhr</span> eingenommen
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="bg-yellow-400 text-xs text-center py-0.5 rounded-t border-x-2 border-yellow-400 border-t-2">
+                                        Nicht eingenommen
+                                    </div>
+                                }
+                            }
+
+                            <div class="border-gray-50 shadow rounded-x rounded-b overflow-hidden flex items-center @(calendarItem.UserResponded ? "p-3 border-x-2 border-b-2" : "p-3 border-2")">
+                                <div class="grow shrink-0 text-left">
+                                    <div class="text-lg font-semibold">@calendarItem.Medicine.Name</div>
+
+                                    <div class="text-sm">
+                                        @calendarItem.Medicine.Amount,
+                                        @intakeTime.ToLocalTime().ToString("dddd' der 'dd'., 'HH:mm' Uhr'")
+                                    </div>
+
+                                    @if (!calendarItem.UserResponded)
+                                    {
+                                        <div class="mt-4 flex">
+                                            @if (difference.Ticks < 0 && difference > TimeSpan.FromMinutes(-20) && !calendarItem.UserResponded)
+                                            {
+                                                <span class="bg-lime-400 text-lime-800 font-semibold px-5 py-1 rounded-full">Jetzt einnehmen</span>
+                                            }
+                                            else if (difference.Ticks > 0 && difference < TimeSpan.FromSeconds(60))
+                                            {
+                                                <span class="bg-gray-100 font-semibold px-5 py-1 rounded-full">In unter einer Minute</span>
+                                            }
+                                            else
+                                            {
+                                                if (difference.Ticks > 0)
+                                                {
+                                                    <span class="bg-gray-100 font-semibold px-5 py-1 rounded-full">@intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="@(calendarItem.UserResponded ? "bg-gray-100" : "bg-red-700 text-red-100") font-semibold px-5 py-1 rounded-full">
+                                                        @intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)
+                                                    </span>
+                                                }
+                                            }
+
+                                            @if (hasActualTime)
+                                            {
+                                                if (actualTime == intakeTime)
+                                                {
+                                                }
+                                                else
+                                                {
+                                                }
+                                            }
+                                        </div>
+                                    }
                                 </div>
 
-                                <div class="mt-4 flex">
-                                    @if (difference.Ticks < 0 && difference > TimeSpan.FromMinutes(-20))
-                                    {
-                                        <span class="bg-lime-400 text-lime-800 font-semibold px-5 py-1 rounded-full">Jetzt einnehmen</span>
-                                    }
-                                    else
-                                    {
-                                        if (difference.Ticks > 0)
-                                        {
-                                            <span class="bg-gray-100 font-semibold px-5 py-1 rounded-full">@intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="bg-red-700 text-red-100 font-semibold px-5 py-1 rounded-full">@intakeTime.Humanize(DateTimeOffset.UtcNow, CultureInfo.CurrentCulture)</span>
-                                        }
-                                    }
-                                    
-                                    @if (hasActualTime)
-                                    {
-                                        if (actualTime == intakeTime)
-                                        {
-                                            
-                                        }
-                                        else
-                                        {
-                                            
-                                        }
-                                    }
-                                </div>
-                            </div>
-
-                            <div>
-                                <svg class="w-6 h-6 text-gray-300 group-hover:translate-x-1 group-hover:text-gray-600 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
-                                </svg>
+                                @if (intakeTime < DateTimeOffset.Now && !calendarItem.UserResponded)
+                                {
+                                    <div>
+                                        <svg class="w-6 h-6 text-gray-300 group-hover:translate-x-1 group-hover:text-gray-600 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                }
                             </div>
                         </button>
                     }
-                    
+
                     @if (!renderedHereMarker)
                     {
                         <div class="bg-lime-400/90 py-0.5 px-3 text-xs font-semibold text-center rounded-full flex items-center justify-center gap-3">

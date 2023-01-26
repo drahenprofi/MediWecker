@@ -12,7 +12,7 @@ interface MedicineDao {
     fun getAll(): List<Medicine>
 
     @Query("SELECT * FROM medicine WHERE id = :id")
-    fun get(id: Long): Medicine
+    fun get(id: Long): Medicine?
 
     @Query("SELECT * FROM medicine WHERE id IN (:medicineIds)")
     fun loadAllByIds(medicineIds: List<Long>): List<Medicine>

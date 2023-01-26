@@ -49,25 +49,9 @@
         //     await Task.Delay(TimeSpan.FromSeconds(1));
         //     await OnReminderPromptRequest(new ReminderPromptRequestData()
         //     {
-        //         Medicine = new Medicine
-        //         {
-        //             Id = 0,
-        //             Name = "Ibuprofen",
-        //             Amount = "1 Tablette",
-        //             Rythm = JsonSerializer.Serialize(new Rythm
-        //             {
-        //                 IntervalDays = new IntervalDaysData { Days = 1 },
-        //                 Timepoints = new List<Timepoint>
-        //                 {
-        //                     new()
-        //                     {
-        //                         Type = TimepointType.Morning
-        //                     }
-        //                 }
-        //             })
-        //         },
-        //
-        //         ScheduledTimeUtc = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        //         MedicineId = 1,
+        //         ScheduledTimeUtc = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+        //         AlarmId = 1,
         //     });
         // });
     }

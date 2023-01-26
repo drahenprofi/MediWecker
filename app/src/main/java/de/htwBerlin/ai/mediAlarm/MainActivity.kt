@@ -14,7 +14,7 @@ import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.data.Constants
-import de.htwBerlin.ai.mediAlarm.data.reminderPrompt.ReminderPromptRequest
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.ReminderPromptRequest
 import de.htwBerlin.ai.mediAlarm.notification.NotificationCanceller
 
 

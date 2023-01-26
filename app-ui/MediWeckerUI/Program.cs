@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Blazored.Modal;
 using FluentValidation;
 using MediWeckerUI;
@@ -22,5 +24,10 @@ typeof(Program).Assembly.GetTypes()
 
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+// Default JSON interop settings
+AppInterop.InteropJsonSettings = new JsonSerializerOptions();
+AppInterop.InteropJsonSettings.PropertyNameCaseInsensitive = true;
+AppInterop.InteropJsonSettings.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
 
 await builder.Build().RunAsync();

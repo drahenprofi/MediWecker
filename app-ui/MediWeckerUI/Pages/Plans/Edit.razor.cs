@@ -58,7 +58,7 @@ public partial class Edit : IDisposable
 
         if (Plan == null) return;
         
-        Rythm = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm);
+        Rythm = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm, AppInterop.InteropJsonSettings);
     }
 
 
@@ -100,7 +100,7 @@ public partial class Edit : IDisposable
 
     protected async Task OnClickEditRythmAsync()
     {
-        RythmEditCopy = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm);
+        RythmEditCopy = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm, AppInterop.InteropJsonSettings);
         IsEditingRythm = true;
 
         StateHasChanged();
@@ -108,7 +108,7 @@ public partial class Edit : IDisposable
 
     protected async Task OnClickEditTimepointsAsync()
     {
-        RythmEditCopy = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm);
+        RythmEditCopy = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm, AppInterop.InteropJsonSettings);
         IsEditingTimepoints = true;
 
         StateHasChanged();
@@ -159,7 +159,7 @@ public partial class Edit : IDisposable
         IsEditingRythm = false;
         IsEditingTimepoints = false;
 
-        RythmEditCopy = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm);
+        RythmEditCopy = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm, AppInterop.InteropJsonSettings);
 
         InvokeAsync(StateHasChanged);
     }
@@ -167,7 +167,7 @@ public partial class Edit : IDisposable
     protected async Task OnRythmSubmitAsync()
     {
         Plan.Rythm = JsonSerializer.Serialize(RythmEditCopy);
-        Rythm = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm);
+        Rythm = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm, AppInterop.InteropJsonSettings);
 
         Console.WriteLine($"New state: {Plan.Rythm}");
         
@@ -182,7 +182,7 @@ public partial class Edit : IDisposable
     protected async Task OnTimepointsSubmitAsync()
     {
         Plan.Rythm = JsonSerializer.Serialize(RythmEditCopy);
-        Rythm = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm);
+        Rythm = JsonSerializer.Deserialize<Application.Features.Planning.Rythm>(Plan.Rythm, AppInterop.InteropJsonSettings);
         
         Console.WriteLine($"New state: {Plan.Rythm}");
         

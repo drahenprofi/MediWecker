@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import java.util.UUID
 
 @Dao
 interface AlarmDao {
@@ -34,4 +35,7 @@ interface AlarmDao {
 
     @Query("SELECT * FROM alarm WHERE medicineId = :medicineId AND isExpired ORDER BY targetTimeUtc DESC LIMIT 1")
     fun getMostRecentExpiredAlarmByMedicineId(medicineId: Long): Alarm?
+
+    @Query("SELECT * FROM alarm WHERE timePointUUID = :uuid AND isExpired ORDER BY targetTimeUtc DESC LIMIT 3")
+    fun getMostRecentAlarmsByTimePointUUID(uuid: UUID): List<Alarm>
 }

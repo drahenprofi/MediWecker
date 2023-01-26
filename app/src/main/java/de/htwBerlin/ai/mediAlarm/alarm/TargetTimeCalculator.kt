@@ -15,7 +15,7 @@ class TargetTimeCalculator(val context: Context) {
     private val userTimes = UserTimePreferences(context).get()
     private val alarmDao = AppDatabase.getDatabase(context).alarmDao()
 
-    fun calculate(medicine: Medicine, calendar: Calendar): Long {
+    fun calculate(medicine: Medicine, calendar: Calendar): Pair<Long, UUID> {
         val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
 
         val now = calendar.timeInMillis
@@ -23,17 +23,17 @@ class TargetTimeCalculator(val context: Context) {
         val currentTimeFromMidnight = (calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)) * 60 * 1000
 
         val pendingAlarmsToday = getAlarmTimePoints(rhythm.timePoints, calendar[Calendar.DAY_OF_WEEK])
-            .map { time -> time * 60 * 1000 }
-            .filter { time -> time > currentTimeFromMidnight }
-            .sorted()
+            .map { timePoint -> Pair(timePoint.first * 60 * 1000, timePoint.second) }
+            .filter { timePoint -> timePoint.first > currentTimeFromMidnight }
+            .sortedBy { it.first }
 
-        var scheduledDayDifference = if (rhythm.intervalDays != null) {
+        var scheduledDayDifference: Int = if (rhythm.intervalDays != null) {
             val mostRecentExpiredAlarm = alarmDao.getMostRecentExpiredAlarmByMedicineId(medicine.id)
 
             if (mostRecentExpiredAlarm != null) {
-                val dayDifference = (now - mostRecentExpiredAlarm.targetTimeUtc) / 1000 / 60 / 60 / 24
+                val dayDifference = (now - mostRecentExpiredAlarm.targetTimeUtc).toInt() / 1000 / 60 / 60 / 24
 
-                if (dayDifference == 0L && pendingAlarmsToday.isNotEmpty()) {
+                if (dayDifference == 0 && pendingAlarmsToday.isNotEmpty()) {
                     0
                 } else {
                     (rhythm.intervalDays.days - dayDifference) % rhythm.intervalDays.days
@@ -50,7 +50,7 @@ class TargetTimeCalculator(val context: Context) {
         }
 
         if (scheduledDayDifference == 0 && pendingAlarmsToday.any()) {
-            return currentDay + pendingAlarmsToday.first()
+            return Pair(currentDay + pendingAlarmsToday.first().first, pendingAlarmsToday.first().second)
         }
 
         scheduledDayDifference = if (rhythm.intervalDays != null) {
@@ -64,53 +64,56 @@ class TargetTimeCalculator(val context: Context) {
         val plannedDay = (calendar[Calendar.DAY_OF_WEEK] + scheduledDayDifference) % 8
 
         val nextPendingAlarm = getAlarmTimePoints(rhythm.timePoints, plannedDay)
-            .map { time -> time * 60 * 1000 }
-            .sorted()
+            .map { timePoint -> Pair(timePoint.first * 60 * 1000, timePoint.second) }
+            .sortedBy { it.first }
 
-        return currentDay + nextPendingAlarm.first() + 1000 * 60 * 60 * 24 * scheduledDayDifference
+        return Pair(
+            currentDay + nextPendingAlarm.first().first + 1000 * 60 * 60 * 24 * scheduledDayDifference,
+            nextPendingAlarm.first().second
+        )
     }
 
-    private fun getAlarmTimePoints(timePoints: List<TimePoint>, weekDay: Int): List<Long> {
-        val result = mutableListOf<Long>()
+    private fun getAlarmTimePoints(timePoints: List<TimePoint>, weekDay: Int): List<Pair<Long, UUID>> {
+        val result = mutableListOf<Pair<Long, UUID>>()
 
         for (timePoint in timePoints) {
             when(timePoint.type) {
-                TimepointType.AbsoluteTime -> result.add(timePoint.absoluteTimeFromMidnight!!)
+                TimepointType.AbsoluteTime -> result.add(Pair(timePoint.absoluteTimeFromMidnight!!, timePoint.uuid))
                 TimepointType.Morning -> when (weekDay) {
-                    Calendar.MONDAY -> result.add(userTimes.wakeupMonday)
-                    Calendar.TUESDAY -> result.add(userTimes.wakeupTuesday)
-                    Calendar.WEDNESDAY -> result.add(userTimes.wakeupWednesday)
-                    Calendar.THURSDAY -> result.add(userTimes.wakeupThursday)
-                    Calendar.FRIDAY -> result.add(userTimes.wakeupFriday)
-                    Calendar.SATURDAY -> result.add(userTimes.wakeupSaturday)
-                    Calendar.SUNDAY -> result.add(userTimes.wakeupSunday)
+                    Calendar.MONDAY -> result.add(Pair(userTimes.wakeupMonday, timePoint.uuid))
+                    Calendar.TUESDAY -> result.add(Pair(userTimes.wakeupTuesday, timePoint.uuid))
+                    Calendar.WEDNESDAY -> result.add(Pair(userTimes.wakeupWednesday, timePoint.uuid))
+                    Calendar.THURSDAY -> result.add(Pair(userTimes.wakeupThursday, timePoint.uuid))
+                    Calendar.FRIDAY -> result.add(Pair(userTimes.wakeupFriday, timePoint.uuid))
+                    Calendar.SATURDAY -> result.add(Pair(userTimes.wakeupSaturday, timePoint.uuid))
+                    Calendar.SUNDAY -> result.add(Pair(userTimes.wakeupSunday, timePoint.uuid))
                 }
                 TimepointType.Midday -> when (weekDay) {
-                    Calendar.MONDAY -> result.add((userTimes.wakeupMonday + userTimes.sleepMonday) / 2)
-                    Calendar.TUESDAY -> result.add((userTimes.wakeupTuesday + userTimes.sleepTuesday) / 2)
-                    Calendar.WEDNESDAY -> result.add((userTimes.wakeupWednesday + userTimes.sleepWednesday) / 2)
-                    Calendar.THURSDAY -> result.add((userTimes.wakeupThursday + userTimes.sleepThursday) / 2)
-                    Calendar.FRIDAY -> result.add((userTimes.wakeupFriday + userTimes.sleepFriday) / 2)
-                    Calendar.SATURDAY -> result.add((userTimes.wakeupSaturday + userTimes.sleepSaturday) / 2)
-                    Calendar.SUNDAY -> result.add((userTimes.wakeupSunday + userTimes.sleepSunday) / 2)
+                    Calendar.MONDAY -> result.add(Pair((userTimes.wakeupMonday + userTimes.sleepMonday) / 2, timePoint.uuid))
+                    Calendar.TUESDAY -> result.add(Pair((userTimes.wakeupTuesday + userTimes.sleepTuesday) / 2, timePoint.uuid))
+                    Calendar.WEDNESDAY -> result.add(Pair((userTimes.wakeupWednesday + userTimes.sleepWednesday) / 2, timePoint.uuid))
+                    Calendar.THURSDAY -> result.add(Pair((userTimes.wakeupThursday + userTimes.sleepThursday) / 2, timePoint.uuid))
+                    Calendar.FRIDAY -> result.add(Pair((userTimes.wakeupFriday + userTimes.sleepFriday) / 2, timePoint.uuid))
+                    Calendar.SATURDAY -> result.add(Pair((userTimes.wakeupSaturday + userTimes.sleepSaturday) / 2, timePoint.uuid))
+                    Calendar.SUNDAY -> result.add(Pair((userTimes.wakeupSunday + userTimes.sleepSunday) / 2, timePoint.uuid))
                 }
                 TimepointType.Evening -> when (weekDay) {
-                    Calendar.MONDAY -> result.add(userTimes.sleepMonday)
-                    Calendar.TUESDAY -> result.add(userTimes.sleepTuesday)
-                    Calendar.WEDNESDAY -> result.add(userTimes.sleepWednesday)
-                    Calendar.THURSDAY -> result.add(userTimes.sleepThursday)
-                    Calendar.FRIDAY -> result.add(userTimes.sleepFriday)
-                    Calendar.SATURDAY -> result.add(userTimes.sleepSaturday)
-                    Calendar.SUNDAY -> result.add(userTimes.sleepSunday)
+                    Calendar.MONDAY -> result.add(Pair(userTimes.sleepMonday, timePoint.uuid))
+                    Calendar.TUESDAY -> result.add(Pair(userTimes.sleepTuesday, timePoint.uuid))
+                    Calendar.WEDNESDAY -> result.add(Pair(userTimes.sleepWednesday, timePoint.uuid))
+                    Calendar.THURSDAY -> result.add(Pair(userTimes.sleepThursday, timePoint.uuid))
+                    Calendar.FRIDAY -> result.add(Pair(userTimes.sleepFriday, timePoint.uuid))
+                    Calendar.SATURDAY -> result.add(Pair(userTimes.sleepSaturday, timePoint.uuid))
+                    Calendar.SUNDAY -> result.add(Pair(userTimes.sleepSunday, timePoint.uuid))
                 }
                 TimepointType.Night -> when (weekDay) {
-                    Calendar.MONDAY -> result.add(userTimes.sleepMonday + 4 * 60)
-                    Calendar.TUESDAY -> result.add(userTimes.sleepTuesday + 4 * 60)
-                    Calendar.WEDNESDAY -> result.add(userTimes.sleepWednesday + 4 * 60)
-                    Calendar.THURSDAY -> result.add(userTimes.sleepThursday + 4 * 60)
-                    Calendar.FRIDAY -> result.add(userTimes.sleepFriday + 4 * 60)
-                    Calendar.SATURDAY -> result.add(userTimes.sleepSaturday + 4 * 60)
-                    Calendar.SUNDAY -> result.add(userTimes.sleepSunday + 4 * 60)
+                    Calendar.MONDAY -> result.add(Pair(userTimes.sleepMonday + 4 * 60, timePoint.uuid))
+                    Calendar.TUESDAY -> result.add(Pair(userTimes.sleepTuesday + 4 * 60, timePoint.uuid))
+                    Calendar.WEDNESDAY -> result.add(Pair(userTimes.sleepWednesday + 4 * 60, timePoint.uuid))
+                    Calendar.THURSDAY -> result.add(Pair(userTimes.sleepThursday + 4 * 60, timePoint.uuid))
+                    Calendar.FRIDAY -> result.add(Pair(userTimes.sleepFriday + 4 * 60, timePoint.uuid))
+                    Calendar.SATURDAY -> result.add(Pair(userTimes.sleepSaturday + 4 * 60, timePoint.uuid))
+                    Calendar.SUNDAY -> result.add(Pair(userTimes.sleepSunday + 4 * 60, timePoint.uuid))
                 }
             }
         }
