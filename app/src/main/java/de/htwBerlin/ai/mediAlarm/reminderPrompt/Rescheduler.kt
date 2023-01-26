@@ -34,7 +34,7 @@ class Rescheduler(val context: Context) {
         if (medicine != null && alarm != null) {
             val rhythm = gson.fromJson(medicine.rhythm, Rhythm::class.java)
 
-            rhythm.timePoints.map { timePoint ->
+            rhythm.timePoints = rhythm.timePoints.map { timePoint ->
                 if (timePoint.uuid == alarm.timePointUUID) {
                     TimePoint(TimepointType.AbsoluteTime, suggestion.suggestedTimeFromMidnight, timePoint.uuid)
                 } else {
