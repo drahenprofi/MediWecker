@@ -10,6 +10,8 @@ import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
 import de.htwBerlin.ai.mediAlarm.data.rhythm.TimePoint
 import de.htwBerlin.ai.mediAlarm.data.rhythm.TimepointType
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.RescheduleSuggestion
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.RescheduleSuggestionType
 import java.util.Calendar
 
 class Rescheduler(val context: Context) {

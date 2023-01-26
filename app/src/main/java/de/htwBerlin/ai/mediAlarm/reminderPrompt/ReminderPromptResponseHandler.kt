@@ -1,10 +1,10 @@
 package de.htwBerlin.ai.mediAlarm.reminderPrompt
 
 import android.content.Context
-import android.util.Log
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
-import de.htwBerlin.ai.mediAlarm.data.alarm.Alarm
+import de.htwBerlin.ai.mediAlarm.notification.NotificationCanceller
 import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.ReminderPromptResponse
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.RescheduleSuggestion
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
@@ -12,6 +12,7 @@ class ReminderPromptResponseHandler(context: Context) {
     private val database = AppDatabase.getDatabase(context)
     private val alarmDao = database.alarmDao()
 
+    private val notificationCanceller = NotificationCanceller(context)
     private val suggestionProvider = SuggestionProvider(context)
 
     fun handle(reminderPromptResponse: ReminderPromptResponse): List<RescheduleSuggestion> {
@@ -21,6 +22,8 @@ class ReminderPromptResponseHandler(context: Context) {
             if (alarm != null) {
                 alarm.actualTimeUtc = reminderPromptResponse.actualTimeUtc
                 alarm.userResponded = true
+
+                notificationCanceller.cancel(alarm.notificationId)
 
                 alarmDao.update(alarm)
             }

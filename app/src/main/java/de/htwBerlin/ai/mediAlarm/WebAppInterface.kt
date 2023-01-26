@@ -2,7 +2,6 @@ package de.htwBerlin.ai.mediAlarm
 
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import android.webkit.JavascriptInterface
 import android.widget.Toast
 import com.google.gson.Gson
@@ -18,7 +17,7 @@ import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTime
 import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
 import de.htwBerlin.ai.mediAlarm.reminderPrompt.ReminderPromptResponseHandler
-import de.htwBerlin.ai.mediAlarm.reminderPrompt.RescheduleSuggestion
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.RescheduleSuggestion
 import de.htwBerlin.ai.mediAlarm.reminderPrompt.Rescheduler
 import java.util.*
 
