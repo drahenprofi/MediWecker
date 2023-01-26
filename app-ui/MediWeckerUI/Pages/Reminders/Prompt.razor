@@ -29,7 +29,7 @@
 
     protected override void OnInitialized()
     {
-        TimeString = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc).ToLocalTime().TimeOfDay.ToString("hh\\:mm\\:ss");
+        TimeString = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc).TimeOfDay.ToString("hh\\:mm\\:ss");
     }
 
     protected override async Task OnInitializedAsync()
