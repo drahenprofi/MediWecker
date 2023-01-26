@@ -1,11 +1,12 @@
 ﻿@page "/"
 @page "/assets"
 @page "/index_mobile.html"
-@using MediWeckerUI.Application
-@using MediWeckerUI.Application.Features.Planning
 @using Humanizer
+@using MediWeckerUI.Application
+@using MediWeckerUI.Application.Features.Notifications
+@using MediWeckerUI.Application.Features.Planning
+@using MediWeckerUI.Pages.Setup
 @using System.Globalization
-@using System.Text.Json
 @implements IDisposable
 
 @code {
@@ -24,7 +25,7 @@
     public List<CalendarItem> CalendarItems { get; set; }
     public List<Medicine> Plans { get; set; }
 
-    private CancellationTokenSource _cancelAutomaticRefresh = new CancellationTokenSource();
+    private readonly CancellationTokenSource _cancelAutomaticRefresh = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -35,7 +36,7 @@
 
         if (setupRequired || anyPermissionRequired)
         {
-            BaseLayout.Navigate<Setup.Welcome>();
+            BaseLayout.Navigate<Welcome>();
             return;
         }
 
@@ -72,6 +73,23 @@
         _cancelAutomaticRefresh.Cancel();
     }
 
+    private async Task CalendarItemClickAsync(CalendarItem calendarItem)
+    {
+        // Dont react to clicks on calendar items that are in the future
+        if (DateTimeOffset.FromUnixTimeMilliseconds(calendarItem.ScheduledTimeUtc) > DateTimeOffset.UtcNow) return;
+
+        // Dont react to clicks on calendar items that the user has already responded to
+        if (calendarItem.UserResponded)
+            return;
+
+        await AppInterop.ShowReminderPromptAsync(new ReminderPromptRequestData
+        {
+            ScheduledTimeUtc = calendarItem.ScheduledTimeUtc,
+            AlarmId = calendarItem.AlarmId,
+            MedicineId = calendarItem.Medicine.Id
+        });
+    }
+
 }
 
 <div class="container mx-auto max-w-4xl p-4 animate-fade-move-in">
@@ -94,7 +112,7 @@
                 }
                 else
                 {
-                    bool renderedHereMarker = false;
+                    var renderedHereMarker = false;
 
                     foreach (var calendarItem in CalendarItems.OrderBy(x => x.ScheduledTimeUtc))
                     {
@@ -118,7 +136,7 @@
                             </div>
                         }
 
-                        <button>
+                        <button @onclick="() => CalendarItemClickAsync(calendarItem)">
                             @if (calendarItem.UserResponded)
                             {
                                 if (Math.Abs(calendarItem.ActualTimeUtc - calendarItem.ScheduledTimeUtc) <
@@ -179,9 +197,6 @@
                                             @if (hasActualTime)
                                             {
                                                 if (actualTime == intakeTime)
-                                                {
-                                                }
-                                                else
                                                 {
                                                 }
                                             }

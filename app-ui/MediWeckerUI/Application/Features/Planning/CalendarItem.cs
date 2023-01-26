@@ -6,4 +6,5 @@ public class CalendarItem
     public long ScheduledTimeUtc { get; set; }
     public long ActualTimeUtc { get; set; }
     public bool UserResponded { get; set; }
+    public long AlarmId { get; set; }
 }

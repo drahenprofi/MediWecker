@@ -38,6 +38,11 @@ public class AppInterop
         Console.WriteLine($"ShowReminderPromptAsync: requestJson = {requestJson}");
         var request = JsonSerializer.Deserialize<ReminderPromptRequestData>(requestJson, InteropJsonSettings);
 
+        await ShowReminderPromptAsync(request);
+    }
+
+    public async Task ShowReminderPromptAsync(ReminderPromptRequestData request)
+    {
         await OnReminderPromptShowRequest.InvokeAsync(request);
     }
 
