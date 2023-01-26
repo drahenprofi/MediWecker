@@ -3,7 +3,7 @@
 public class RescheduleSuggestion
 {
     public long MedicineId { get; set; }
-    public string AlarmId { get; set; }
+    public long AlarmId { get; set; }
     public RescheduleSuggestionType Type { get; set; }
     public long SuggestedTimeFromMidnight { get; set; }
 }
