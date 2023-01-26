@@ -71,7 +71,7 @@ public class AppInterop
         if (!IsInApp()) return;
 
         await _js.InvokeVoidAsync("Android.confirmRescheduleSuggestion",
-            JsonSerializer.Serialize(suggestion, InteropJsonSettings));
+            JsonSerializer.Serialize(suggestion));
     }
 
     public async Task ShowAlertAsync(string message)
