@@ -6,6 +6,7 @@ import android.util.Log
 import android.webkit.JavascriptInterface
 import android.widget.Toast
 import com.google.gson.Gson
+import de.htwBerlin.ai.mediAlarm.alarm.MedicineRescheduler
 import de.htwBerlin.ai.mediAlarm.alarm.MedicineScheduler
 import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.ReminderPromptResponse
@@ -127,6 +128,8 @@ class WebAppInterface internal constructor(c: Context) {
         medicine.rhythm = gson.toJson(rhythm)
 
         medicineDao.update(medicine)
+
+        MedicineRescheduler(mContext).reschedule(medicine)
     }
 
     @JavascriptInterface
