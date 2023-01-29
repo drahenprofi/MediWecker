@@ -7,7 +7,6 @@ import de.htwBerlin.ai.mediAlarm.data.Constants
 import de.htwBerlin.ai.mediAlarm.data.alarm.Alarm
 import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
 import de.htwBerlin.ai.mediAlarm.data.rhythm.TimepointType
-import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
 import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.RescheduleSuggestion
 import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.RescheduleSuggestionType
 import java.util.*
@@ -19,8 +18,6 @@ class SuggestionProvider(val context: Context) {
     private val database = AppDatabase.getDatabase(context)
     private val alarmDao = database.alarmDao()
     private val medicineDao = database.medicineDao()
-
-    private val userTime = UserTimePreferences(context).get()
 
     fun getSuggestion(alarm: Alarm?): List<RescheduleSuggestion> {
         if (alarm != null) {
@@ -34,13 +31,15 @@ class SuggestionProvider(val context: Context) {
 
                 val mostRecentAlarms = alarmDao.getMostRecentAlarmsByTimePointUUID(timePoint.uuid)
 
-                val rescheduleSuggested = mostRecentAlarms
+                val relevantAlarms = mostRecentAlarms
+                    .filter { it.actualTimeUtc > 0L }
                     .map { abs(it.actualTimeUtc - it.targetTimeUtc) > Constants.RESCHEDULE_MINIMUM_DEVIATION_IN_MINUTES * 60 * 1000 }
-                    .all { it }
+
+                val rescheduleSuggested = relevantAlarms.isNotEmpty() && relevantAlarms.all { it }
 
                 val suggestedTimeFromMidnight = getRoundedTimeFromMidnightFromTicks(
                     mostRecentAlarms
-                        .filter { it.actualTimeUtc > 0 }
+                        .filter { it.actualTimeUtc > 0L }
                         .map { it.actualTimeUtc - it.targetTimeUtc }
                         .average()
                         .toLong() + alarm.targetTimeUtc
@@ -115,8 +114,8 @@ class SuggestionProvider(val context: Context) {
         val unRoundedMinutes = calendar[Calendar.MINUTE]
         val mod = unRoundedMinutes % 10
         calendar.add(Calendar.MINUTE, if (mod < 6) -mod else 10 - mod)
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
 
         return (calendar.timeInMillis - day) / 1000 / 60
     }
