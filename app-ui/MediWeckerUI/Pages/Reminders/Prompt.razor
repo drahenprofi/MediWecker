@@ -29,7 +29,7 @@
 
     protected override void OnInitialized()
     {
-        TimeString = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc).TimeOfDay.ToString("hh\\:mm\\:ss");
+        TimeString = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc).ToLocalTime().TimeOfDay.ToString("hh\\:mm\\:ss");
     }
 
     protected override async Task OnInitializedAsync()
@@ -66,6 +66,7 @@
             throw new InvalidOperationException("Time string is in incorrect format.");
         }
 
+        // User gives time in local timezone, subtract offset so e.g. germany 18:00+1 becomes 17:00+0
         actualIntakeTimeOfDay = actualIntakeTimeOfDay - DateTimeOffset.Now.Offset;
 
         var plannedIntake = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc);
