@@ -20,8 +20,8 @@
     [Inject]
     public AppInterop AppInterop { get; set; }
 
-    public DateTimeOffset From { get; set; } = DateTimeOffset.UtcNow.AddHours(-6);
-    public DateTimeOffset To { get; set; } = DateTimeOffset.UtcNow.AddHours(24);
+    public DateTimeOffset From { get; set; }
+    public DateTimeOffset To { get; set; }
     public List<CalendarItem> CalendarItems { get; set; }
     public List<Medicine> Plans { get; set; }
 
@@ -29,6 +29,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        From = new DateTimeOffset(DateTimeOffset.Now.Year, DateTimeOffset.Now.Month, DateTimeOffset.Now.Day, 0, 0, 0, DateTimeOffset.Now.Offset).ToUniversalTime();
+        To = From.AddDays(2).AddSeconds(-1);
+        
         Layout.UpdateTab(MainLayout.NavigationTab.Calendar);
 
         var setupRequired = await AppInterop.GetUserTimesDataSetupRequiredAsync();
@@ -124,10 +127,10 @@
                 @* </div> *@
                 <div class="text-sm text-center">
                     <div>
-                        <span class="font-semibold">Von:</span> @From.ToLocalTime().ToString("dddd' der 'dd'., 'HH:mm' Uhr'")
+                        <span class="font-semibold">Von:</span> @From.ToLocalTime().ToString("dddd' der 'dd'.'MM'.'")
                     </div>
                     <div>
-                        <span class="font-semibold">Bis:</span>  @To.ToLocalTime().ToString("dddd' der 'dd'., 'HH:mm' Uhr'")
+                        <span class="font-semibold">Bis:</span>  @To.ToLocalTime().ToString("dddd' der 'dd'.'MM'.'")
                     </div>
                 </div>
                 @* <div> *@
