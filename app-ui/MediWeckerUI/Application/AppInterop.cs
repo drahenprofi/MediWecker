@@ -116,8 +116,8 @@ public class AppInterop
 
                     ScheduledTimeUtc = DateTimeOffset.UtcNow.AddMinutes(random.Next(-600, 6000))
                         .ToUnixTimeMilliseconds(),
-                    ActualTimeUtc = 1,
-                    UserResponded = true
+                    ActualTimeUtc = 0,
+                    UserResponded = false
                 });
             }
 
