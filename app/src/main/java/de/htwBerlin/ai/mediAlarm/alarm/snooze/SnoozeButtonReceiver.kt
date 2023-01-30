@@ -6,19 +6,27 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
+import de.htwBerlin.ai.mediAlarm.data.AppDatabase
 import de.htwBerlin.ai.mediAlarm.data.Constants
 import de.htwBerlin.ai.mediAlarm.notification.NotificationCanceller
+import java.util.concurrent.Executors
 import kotlin.random.Random
 
 class SnoozeButtonReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val medicineId = intent.getLongExtra(Constants.MEDICINE_ID, 0)
         val alarmId = intent.getLongExtra(Constants.ALARM_ID, 0)
-        val notificationId = intent.getIntExtra(Constants.NOTIFICATION_ID, 0)
+        val executor = Executors.newSingleThreadExecutor()
 
-        NotificationCanceller(context).cancel(notificationId)
+        executor.execute {
+            val alarm = AppDatabase.getDatabase(context).alarmDao().get(alarmId)
 
-        createSnoozeAlarm(context, medicineId, alarmId)
+            if (alarm != null) {
+                NotificationCanceller(context).cancel(alarm.notificationId)
+            }
+
+            createSnoozeAlarm(context, medicineId, alarmId)
+        }
     }
 
     private fun createSnoozeAlarm(context: Context, medicineId: Long, alarmId: Long) {

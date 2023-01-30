@@ -24,7 +24,11 @@ class SnoozeAlarmReceiver : BroadcastReceiver() {
             val alarm = alarmDao.get(alarmId)
 
             if (medicine != null && alarm != null) {
-                NotificationSender().send(context, medicine, alarm)
+                val notificationId = NotificationSender().send(context, medicine, alarm)
+
+                alarm.notificationId = notificationId
+
+                alarmDao.update(alarm)
             }
         }
     }

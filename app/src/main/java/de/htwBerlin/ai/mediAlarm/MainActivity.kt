@@ -15,8 +15,6 @@ import androidx.webkit.WebViewClientCompat
 import com.google.gson.Gson
 import de.htwBerlin.ai.mediAlarm.data.Constants
 import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.ReminderPromptRequest
-import de.htwBerlin.ai.mediAlarm.notification.NotificationCanceller
-
 
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
     private lateinit var preferences: SharedPreferences
@@ -71,9 +69,6 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
             val medicineId = intent.getLongExtra(Constants.MEDICINE_ID, 0)
             val alarmId = intent.getLongExtra(Constants.ALARM_ID, 0)
             val scheduledTimeUtc = intent.getLongExtra(Constants.SCHEDULED_TIME_UTC, 0)
-            val notificationId = intent.getIntExtra(Constants.NOTIFICATION_ID, 0)
-
-            NotificationCanceller(this).cancel(notificationId)
 
             val request = ReminderPromptRequest(medicineId, alarmId, scheduledTimeUtc)
 

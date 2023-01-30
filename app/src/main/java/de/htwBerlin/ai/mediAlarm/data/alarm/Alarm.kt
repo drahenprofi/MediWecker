@@ -11,7 +11,8 @@ data class Alarm(
     val timePointUUID: UUID,
     val targetTimeUtc: Long,
     var isExpired: Boolean = false,
-    var userResponded: Boolean = false
+    var userResponded: Boolean = false,
+    var notificationId: Int = 0
 ) {
     @PrimaryKey(autoGenerate = true) var id: Long = 0
     var actualTimeUtc: Long = 0

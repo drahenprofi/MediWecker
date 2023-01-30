@@ -7,7 +7,8 @@ import de.htwBerlin.ai.mediAlarm.data.Constants
 import de.htwBerlin.ai.mediAlarm.data.alarm.Alarm
 import de.htwBerlin.ai.mediAlarm.data.rhythm.Rhythm
 import de.htwBerlin.ai.mediAlarm.data.rhythm.TimepointType
-import de.htwBerlin.ai.mediAlarm.data.userTime.UserTimePreferences
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.RescheduleSuggestion
+import de.htwBerlin.ai.mediAlarm.reminderPrompt.data.RescheduleSuggestionType
 import java.util.*
 import kotlin.math.abs
 
@@ -17,8 +18,6 @@ class SuggestionProvider(val context: Context) {
     private val database = AppDatabase.getDatabase(context)
     private val alarmDao = database.alarmDao()
     private val medicineDao = database.medicineDao()
-
-    private val userTime = UserTimePreferences(context).get()
 
     fun getSuggestion(alarm: Alarm?): List<RescheduleSuggestion> {
         if (alarm != null) {
@@ -32,9 +31,19 @@ class SuggestionProvider(val context: Context) {
 
                 val mostRecentAlarms = alarmDao.getMostRecentAlarmsByTimePointUUID(timePoint.uuid)
 
-                val rescheduleSuggested = mostRecentAlarms
+                val relevantAlarms = mostRecentAlarms
+                    .filter { it.actualTimeUtc > 0L }
                     .map { abs(it.actualTimeUtc - it.targetTimeUtc) > Constants.RESCHEDULE_MINIMUM_DEVIATION_IN_MINUTES * 60 * 1000 }
-                    .all { it }
+
+                val rescheduleSuggested = relevantAlarms.isNotEmpty() && relevantAlarms.all { it }
+
+                val suggestedTimeFromMidnight = getRoundedTimeFromMidnightFromTicks(
+                    mostRecentAlarms
+                        .filter { it.actualTimeUtc > 0L }
+                        .map { it.actualTimeUtc - it.targetTimeUtc }
+                        .average()
+                        .toLong() + alarm.targetTimeUtc
+                )
 
                 if (rescheduleSuggested) {
                     when (timePoint.type) {
@@ -44,13 +53,13 @@ class SuggestionProvider(val context: Context) {
                                     alarm.medicineId,
                                     alarm.id,
                                     RescheduleSuggestionType.RescheduleWakeUpTime,
-                                    getSuggestedTimeFromMidnightForWakeUpTime(alarm)
+                                    suggestedTimeFromMidnight
                                 ),
                                 RescheduleSuggestion(
                                     alarm.medicineId,
                                     alarm.id,
                                     RescheduleSuggestionType.RescheduleAbsoluteTime,
-                                    getSuggestedTimeFromMidnightForAbsoluteTime(alarm)
+                                    suggestedTimeFromMidnight
                                 )
                             )
                         }
@@ -60,13 +69,13 @@ class SuggestionProvider(val context: Context) {
                                     alarm.medicineId,
                                     alarm.id,
                                     RescheduleSuggestionType.RescheduleSleepTime,
-                                    getSuggestedTimeFromMidnightForSleepTime(alarm)
+                                    suggestedTimeFromMidnight
                                 ),
                                 RescheduleSuggestion(
                                     alarm.medicineId,
                                     alarm.id,
                                     RescheduleSuggestionType.RescheduleAbsoluteTime,
-                                    getSuggestedTimeFromMidnightForAbsoluteTime(alarm)
+                                    suggestedTimeFromMidnight
                                 )
                             )
                         }
@@ -76,7 +85,7 @@ class SuggestionProvider(val context: Context) {
                                     alarm.medicineId,
                                     alarm.id,
                                     RescheduleSuggestionType.RescheduleAbsoluteTime,
-                                    getSuggestedTimeFromMidnightForAbsoluteTime(alarm)
+                                    suggestedTimeFromMidnight
                                 )
                             )
                         }
@@ -97,43 +106,17 @@ class SuggestionProvider(val context: Context) {
         return listOf()
     }
 
-    private fun getSuggestedTimeFromMidnightForWakeUpTime(alarm: Alarm): Long {
+    private fun getRoundedTimeFromMidnightFromTicks(ticks: Long): Long {
         val calendar = Calendar.getInstance()
-        calendar.timeInMillis = alarm.targetTimeUtc
+        calendar.timeInMillis = ticks
+        val day = ticks - calendar[Calendar.HOUR_OF_DAY] * 60 * 60 * 1000 - calendar[Calendar.MINUTE] * 60 * 1000 - calendar[Calendar.SECOND] * 1000
 
-        return when (calendar[Calendar.DAY_OF_WEEK]) {
-            Calendar.MONDAY -> userTime.wakeupMonday
-            Calendar.TUESDAY -> userTime.wakeupTuesday
-            Calendar.WEDNESDAY -> userTime.wakeupWednesday
-            Calendar.THURSDAY -> userTime.wakeupThursday
-            Calendar.FRIDAY -> userTime.wakeupFriday
-            Calendar.SATURDAY -> userTime.wakeupSaturday
-            Calendar.SUNDAY -> userTime.wakeupSunday
-            else -> 0
-        } + Constants.RESCHEDULE_MINIMUM_DEVIATION_IN_MINUTES
-    }
+        val unRoundedMinutes = calendar[Calendar.MINUTE]
+        val mod = unRoundedMinutes % 10
+        calendar.add(Calendar.MINUTE, if (mod < 6) -mod else 10 - mod)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
 
-    private fun getSuggestedTimeFromMidnightForSleepTime(alarm: Alarm): Long {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = alarm.targetTimeUtc
-
-        return when (calendar[Calendar.DAY_OF_WEEK]) {
-            Calendar.MONDAY -> userTime.sleepMonday
-            Calendar.TUESDAY -> userTime.sleepTuesday
-            Calendar.WEDNESDAY -> userTime.sleepWednesday
-            Calendar.THURSDAY -> userTime.sleepThursday
-            Calendar.FRIDAY -> userTime.sleepFriday
-            Calendar.SATURDAY -> userTime.sleepSaturday
-            Calendar.SUNDAY -> userTime.sleepSunday
-            else -> 0
-        } + Constants.RESCHEDULE_MINIMUM_DEVIATION_IN_MINUTES
-    }
-
-    private fun getSuggestedTimeFromMidnightForAbsoluteTime(alarm: Alarm): Long {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = alarm.targetTimeUtc
-        val day = alarm.targetTimeUtc - calendar[Calendar.HOUR_OF_DAY] * 60 * 60 * 1000 - calendar[Calendar.MINUTE] * 60 * 1000 - calendar[Calendar.SECOND] * 1000
-
-        return (alarm.targetTimeUtc - day) / 1000 / 60 + Constants.RESCHEDULE_MINIMUM_DEVIATION_IN_MINUTES
+        return (calendar.timeInMillis - day) / 1000 / 60
     }
 }
