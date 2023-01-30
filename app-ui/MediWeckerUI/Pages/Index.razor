@@ -148,9 +148,18 @@
                                 }
                                 else if (calendarItem.ActualTimeUtc != 0)
                                 {
-                                    <div class="bg-gray-50 text-xs text-center py-0.5 rounded-t border-x-2 border-gray-50 border-t-2">
-                                        Verspätet um <span class="font-semibold">@DateTimeOffset.FromUnixTimeMilliseconds(calendarItem.ActualTimeUtc).ToLocalTime().ToString("HH:mm") Uhr</span> eingenommen
-                                    </div>
+                                    if (calendarItem.ActualTimeUtc > calendarItem.ScheduledTimeUtc)
+                                    {
+                                        <div class="bg-gray-50 text-xs text-center py-0.5 rounded-t border-x-2 border-gray-50 border-t-2">
+                                            Verspätet um <span class="font-semibold">@DateTimeOffset.FromUnixTimeMilliseconds(calendarItem.ActualTimeUtc).ToLocalTime().ToString("HH:mm") Uhr</span> eingenommen
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-gray-50 text-xs text-center py-0.5 rounded-t border-x-2 border-gray-50 border-t-2">
+                                            Verfrüht um <span class="font-semibold">@DateTimeOffset.FromUnixTimeMilliseconds(calendarItem.ActualTimeUtc).ToLocalTime().ToString("HH:mm") Uhr</span> eingenommen
+                                        </div>
+                                    }
                                 }
                                 else
                                 {

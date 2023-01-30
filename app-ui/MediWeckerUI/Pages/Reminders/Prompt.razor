@@ -66,7 +66,7 @@
             throw new InvalidOperationException("Time string is in incorrect format.");
         }
 
-        // User gives time in local timezone, subtract offset so e.g. germany 18:00+1 becomes 17:00+0
+    // User gives time in local timezone, subtract offset so e.g. germany 18:00+1 becomes 17:00+0
         actualIntakeTimeOfDay = actualIntakeTimeOfDay - DateTimeOffset.Now.Offset;
 
         var plannedIntake = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc);
@@ -186,7 +186,7 @@
                     </div>
 
                     <div class="grow">
-                        <div class="font-semibold text-lg">Zu spät eingenommen?</div>
+                        <div class="font-semibold text-lg">Zu spät/früh eingenommen?</div>
                         <div class="mt-0.5">Bitte geben Sie die Uhrzeit an, zu der die Einnahme erfolgte.</div>
 
                         <div class="flex gap-2 mt-4">
@@ -304,7 +304,7 @@ else if (Suggestions != null && Suggestions.Count > 0)
 
                     <div class="mt-2 text-sm">
                         @{
-                            int dayIndex = ((int) intakeTime.DayOfWeek - 1) % 7;
+                            var dayIndex = ((int) intakeTime.DayOfWeek - 1) % 7;
 
                             if (suggestion.Type is RescheduleSuggestionType.RescheduleWakeUpTime)
                             {
