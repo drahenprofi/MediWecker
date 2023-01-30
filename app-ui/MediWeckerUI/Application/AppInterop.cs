@@ -108,7 +108,7 @@ public class AppInterop
         {
             var items = new List<CalendarItem>();
 
-            for (var i = 0; i < 5; i++)
+            for (var i = 0; i < 8; i++)
             {
                 items.Add(new CalendarItem
                 {

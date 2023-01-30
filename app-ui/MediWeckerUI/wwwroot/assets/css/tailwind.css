@@ -995,6 +995,10 @@ textarea:focus, input:focus{
   position: relative;
 }
 
+.sticky {
+  position: sticky;
+}
+
 .inset-0 {
   top: 0px;
   right: 0px;
@@ -1012,6 +1016,10 @@ textarea:focus, input:focus{
 
 .left-0 {
   left: 0px;
+}
+
+.top-3 {
+  top: 0.75rem;
 }
 
 .z-10 {
@@ -1129,6 +1137,11 @@ textarea:focus, input:focus{
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
+}
+
+.-mx-3 {
+  margin-left: -0.75rem;
+  margin-right: -0.75rem;
 }
 
 .mt-5 {
@@ -1265,6 +1278,10 @@ textarea:focus, input:focus{
 
 .h-24 {
   height: 6rem;
+}
+
+.max-h-full {
+  max-height: 100%;
 }
 
 .w-4 {
@@ -1886,6 +1903,14 @@ textarea:focus, input:focus{
 
 .font-bold {
   font-weight: 700;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.normal-case {
+  text-transform: none;
 }
 
 .tracking-tight {
