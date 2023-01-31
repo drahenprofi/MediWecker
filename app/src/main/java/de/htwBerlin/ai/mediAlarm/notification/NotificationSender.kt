@@ -20,16 +20,16 @@ import kotlin.random.Random
 class NotificationSender {
     private val channelId = "1"
 
-    fun send(context: Context, medicine: Medicine, alarm: Alarm) {
+    fun send(context: Context, medicine: Medicine, alarm: Alarm): Int {
         createNotificationChannel(context)
 
         val notificationId = Random.nextInt()
 
-        val clickPendingIntent = getClickPendingIntent(context, medicine, alarm, notificationId)
-        val snoozePendingIntent = getSnoozePendingIntent(context, medicine, alarm, notificationId)
+        val clickPendingIntent = getClickPendingIntent(context, medicine, alarm)
+        val snoozePendingIntent = getSnoozePendingIntent(context, medicine, alarm)
 
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.sym_def_app_icon)
+            .setSmallIcon(R.drawable.notification)
             .setContentTitle("Medicine Reminder")
             .setContentText(medicine.name)
             .setContentIntent(clickPendingIntent)
@@ -45,6 +45,8 @@ class NotificationSender {
         mNotificationManager.notify(notificationId, notification)
 
         Log.d("Medicine Reminder", "Sent notification for medicine ${medicine.name}")
+
+        return notificationId
     }
 
     private fun createNotificationChannel(context: Context) {
@@ -64,25 +66,23 @@ class NotificationSender {
         }
     }
 
-    private fun getClickPendingIntent(context: Context, medicine: Medicine, alarm: Alarm, notificationId: Int): PendingIntent {
+    private fun getClickPendingIntent(context: Context, medicine: Medicine, alarm: Alarm): PendingIntent {
         val scheduledTimeUtc = Calendar.getInstance().timeInMillis
 
         val clickIntent = Intent(context, MainActivity::class.java).apply {
             putExtra(Constants.MEDICINE_ID, medicine.id)
             putExtra(Constants.ALARM_ID, alarm.id)
             putExtra(Constants.SCHEDULED_TIME_UTC, scheduledTimeUtc)
-            putExtra(Constants.NOTIFICATION_ID, notificationId)
             putExtra(Constants.NOTIFICATION_CLICK, true)
         }
 
         return PendingIntent.getActivity(context, medicine.id.toInt(), clickIntent, PendingIntent.FLAG_IMMUTABLE)
     }
 
-    private fun getSnoozePendingIntent(context: Context, medicine: Medicine, alarm: Alarm, notificationId: Int): PendingIntent {
+    private fun getSnoozePendingIntent(context: Context, medicine: Medicine, alarm: Alarm): PendingIntent {
         val snoozeIntent = Intent(context, SnoozeButtonReceiver::class.java).apply {
             putExtra(Constants.MEDICINE_ID, medicine.id)
             putExtra(Constants.ALARM_ID, alarm.id)
-            putExtra(Constants.NOTIFICATION_ID, notificationId)
         }
 
         return PendingIntent.getBroadcast(context, medicine.id.toInt(), snoozeIntent, PendingIntent.FLAG_IMMUTABLE)

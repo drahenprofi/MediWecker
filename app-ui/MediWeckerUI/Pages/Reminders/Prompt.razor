@@ -29,7 +29,7 @@
 
     protected override void OnInitialized()
     {
-        TimeString = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc).TimeOfDay.ToString("hh\\:mm\\:ss");
+        TimeString = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc).ToLocalTime().TimeOfDay.ToString("hh\\:mm\\:ss");
     }
 
     protected override async Task OnInitializedAsync()
@@ -66,20 +66,69 @@
             throw new InvalidOperationException("Time string is in incorrect format.");
         }
 
+    // User gives time in local timezone, subtract offset so e.g. germany 18:00+1 becomes 17:00+0
         actualIntakeTimeOfDay = actualIntakeTimeOfDay - DateTimeOffset.Now.Offset;
 
         var plannedIntake = DateTimeOffset.FromUnixTimeMilliseconds(RequestData.ScheduledTimeUtc);
         var plannedIntakeTimeOfDay = plannedIntake.TimeOfDay; //new TimeSpan(plannedIntake.TimeOfDay.Hours, plannedIntake.TimeOfDay.Minutes, 0);
 
-    // If the user entered a time smaller than the planned intake time of day, then assume he means a time after
-    // the planned intake time.
-        if (plannedIntakeTimeOfDay > actualIntakeTimeOfDay)
+    // Depending on whether the actualIntakeTimeOfDay is within 12 hours before or past the plannedIntakeTimeOfDay,
+    // decide whether the time should be treated as "too late" or "too early".
+
+    // By default, assume we were too early
+        var timeDifference = TimeSpan.Zero;
+        var tooLateCutoff = actualIntakeTimeOfDay.Add(TimeSpan.FromHours(12));
+        var tooEarlyCutoff = actualIntakeTimeOfDay.Add(TimeSpan.FromHours(-12));
+
+
+        if (plannedIntakeTimeOfDay.Add(TimeSpan.FromHours(12)) > TimeSpan.FromHours(24))
         {
-            actualIntakeTimeOfDay = actualIntakeTimeOfDay.Add(TimeSpan.FromDays(1));
+            if (actualIntakeTimeOfDay > plannedIntakeTimeOfDay)
+            {
+                timeDifference = actualIntakeTimeOfDay - plannedIntakeTimeOfDay;
+                //Console.WriteLine("Case 1");
+            }
+            else if (actualIntakeTimeOfDay < TimeSpan.FromHours(12) - (TimeSpan.FromHours(24) - plannedIntakeTimeOfDay))
+            {
+                timeDifference = actualIntakeTimeOfDay.Add(TimeSpan.FromHours(24)) - plannedIntakeTimeOfDay;
+                //Console.WriteLine("Case 2");
+            }
+        }
+        else
+        {
+            if (actualIntakeTimeOfDay > plannedIntakeTimeOfDay && actualIntakeTimeOfDay - plannedIntakeTimeOfDay < TimeSpan.FromHours(12))
+            {
+                //Console.WriteLine("Case 3");
+                timeDifference = actualIntakeTimeOfDay - plannedIntakeTimeOfDay;
+            }
         }
 
-        var differenceTime = actualIntakeTimeOfDay - plannedIntakeTimeOfDay;
-        var actualIntake = plannedIntake.Add(differenceTime);
+        if (timeDifference == TimeSpan.Zero)
+        {
+            if (plannedIntakeTimeOfDay.Add(TimeSpan.FromHours(-12)) < TimeSpan.Zero)
+            {
+                if (actualIntakeTimeOfDay < plannedIntakeTimeOfDay)
+                {
+                    timeDifference = actualIntakeTimeOfDay - plannedIntakeTimeOfDay;
+                    //Console.WriteLine("Case 4");
+                }
+                else if (actualIntakeTimeOfDay > TimeSpan.FromHours(24) - (TimeSpan.FromHours(12) - plannedIntakeTimeOfDay))
+                {
+                    timeDifference = actualIntakeTimeOfDay.Add(TimeSpan.FromHours(-24)) - plannedIntakeTimeOfDay;
+                    //Console.WriteLine("Case 5");
+                }
+            }
+            else
+            {
+                timeDifference = actualIntakeTimeOfDay - plannedIntakeTimeOfDay;
+                //Console.WriteLine("Case 6");
+            }
+        }
+
+        var actualIntake = plannedIntake.Add(timeDifference);
+
+        // Console.WriteLine(plannedIntake);
+        // Console.WriteLine(actualIntake);
 
         await OnSuggestionsReceivedAsync(await AppInterop.SubmitReminderPromptResponseDataAsync(new ReminderPromptResponseData
         {
@@ -185,7 +234,7 @@
                     </div>
 
                     <div class="grow">
-                        <div class="font-semibold text-lg">Zu spät eingenommen?</div>
+                        <div class="font-semibold text-lg">Zu spät/früh eingenommen?</div>
                         <div class="mt-0.5">Bitte geben Sie die Uhrzeit an, zu der die Einnahme erfolgte.</div>
 
                         <div class="flex gap-2 mt-4">
@@ -260,9 +309,9 @@ else if (Suggestions != null && Suggestions.Count > 0)
                                     else
                                     {
                                         <span>
-                                            Aktuell steht die Einnahme im Zusammenhang mit Ihrer Aufstehuhrzeit. Stattdessen
-                                            können Sie die Einnahme zu einer festen Uhrzeit verschieben, die unabhängig Ihrer Aufstehuhrzeit
-                                            ist. Dies betrifft die Einnahme an allen Tagen. <span class="text-blue-400 underline" @onclick="@(() => IsShowingAbsoluteExplanation = false)">Ausblenden</span>
+                                            Mit dieser Änderung wird die Einnahme zu einer festen Zeit geändert, die Sie im folgenden auswählen können.
+                                            Sie werden Einnahme-Erinnerungen demnach an jedem Einnahmetag zu dieser festen Uhrzeit erhalten. 
+                                            <span class="text-blue-400 underline" @onclick="@(() => IsShowingAbsoluteExplanation = false)">Ausblenden</span>
                                         </span>
                                     }
                                 </div>
@@ -303,7 +352,7 @@ else if (Suggestions != null && Suggestions.Count > 0)
 
                     <div class="mt-2 text-sm">
                         @{
-                            int dayIndex = ((int) intakeTime.DayOfWeek - 1) % 7;
+                            var dayIndex = ((int) intakeTime.DayOfWeek - 1) % 7;
 
                             if (suggestion.Type is RescheduleSuggestionType.RescheduleWakeUpTime)
                             {

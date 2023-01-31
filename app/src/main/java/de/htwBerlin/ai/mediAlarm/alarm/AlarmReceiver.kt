@@ -25,9 +25,11 @@ class AlarmReceiver: BroadcastReceiver() {
                 val medicine = medicineDao.get(alarm.medicineId)
 
                 if (medicine != null) {
-                    NotificationSender().send(context, medicine, alarm)
+                    val notificationId = NotificationSender().send(context, medicine, alarm)
 
                     alarm.isExpired = true
+                    alarm.notificationId = notificationId
+
                     alarmDao.update(alarm)
 
                     MedicineScheduler(context).schedule(medicine)

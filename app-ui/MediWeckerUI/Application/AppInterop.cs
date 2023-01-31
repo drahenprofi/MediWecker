@@ -38,6 +38,11 @@ public class AppInterop
         Console.WriteLine($"ShowReminderPromptAsync: requestJson = {requestJson}");
         var request = JsonSerializer.Deserialize<ReminderPromptRequestData>(requestJson, InteropJsonSettings);
 
+        await ShowReminderPromptAsync(request);
+    }
+
+    public async Task ShowReminderPromptAsync(ReminderPromptRequestData request)
+    {
         await OnReminderPromptShowRequest.InvokeAsync(request);
     }
 
@@ -103,7 +108,7 @@ public class AppInterop
         {
             var items = new List<CalendarItem>();
 
-            for (var i = 0; i < 5; i++)
+            for (var i = 0; i < 8; i++)
             {
                 items.Add(new CalendarItem
                 {
@@ -111,8 +116,8 @@ public class AppInterop
 
                     ScheduledTimeUtc = DateTimeOffset.UtcNow.AddMinutes(random.Next(-600, 6000))
                         .ToUnixTimeMilliseconds(),
-                    ActualTimeUtc = 1,
-                    UserResponded = true
+                    ActualTimeUtc = 0,
+                    UserResponded = false
                 });
             }
 

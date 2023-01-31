@@ -32,6 +32,7 @@ class CalendarRequestProcessor(val context: Context) {
 
                 CalendarItem(
                     medicine,
+                    alarm.id,
                     alarm.targetTimeUtc,
                     alarm.actualTimeUtc,
                     alarm.userResponded
@@ -57,7 +58,7 @@ class CalendarRequestProcessor(val context: Context) {
                 scheduledTimeUtc = targetTimeCalculatorResult.first
 
                 if (scheduledTimeUtc < request.to) {
-                    result.add(CalendarItem(medicine, scheduledTimeUtc, 0))
+                    result.add(CalendarItem(medicine, 0L, scheduledTimeUtc, 0))
                 }
             }
         }
